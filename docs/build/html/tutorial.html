@@ -1,0 +1,281 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to use muonic &mdash; muonic 1.0_rc documentation</title>
+    
+    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0_rc',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="muonic 1.0_rc documentation" href="index.html" />
+    <link rel="next" title="Fermilab DAQ - hardware documentation" href="hardware.html" />
+    <link rel="prev" title="muonic setup and installation" href="setup.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="setup.html" title="muonic setup and installation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">muonic 1.0_rc documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="how-to-use-muonic">
+<h1>How to use muonic<a class="headerlink" href="#how-to-use-muonic" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="start-muonic">
+<h2>start muonic<a class="headerlink" href="#start-muonic" title="Permalink to this headline">¶</a></h2>
+<p>If you have setup muonic via the provided setup.py script or if you hav put the package somewhere in your PYTHONPATH, simple call from the terminal</p>
+<p><tt class="docutils literal"><span class="pre">muonic</span> <span class="pre">[OPTIONS]</span> <span class="pre">xy</span></tt></p>
+<p>where <tt class="docutils literal"><span class="pre">xy</span></tt> are two characters which you can choose freely. You will find this two letters occuring in automatically generated files, so that you can identify them.</p>
+<p>For help you can call</p>
+<p><tt class="docutils literal"><span class="pre">muonic</span> <span class="pre">--help</span></tt></p>
+<p>[OPTIONS]</p>
+<dl class="option">
+<dt id="cmdoption-muonic-s">
+<tt class="descname">-s</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-muonic-s" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">use the simulation mode of muonic. This should only used for testing and developing the software</tt></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-muonic-d">
+<tt class="descname">-d</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-muonic-d" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">debug mode. Use it to generate more log messages on the console.</tt></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-muonic-t">
+<tt class="descname">-t</tt><tt class="descclassname"> sec</tt><a class="headerlink" href="#cmdoption-muonic-t" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">change the timewindow for the calculation of the rates. If you expect very low rates, you might consider to change it to larger values.</tt></dt>
+<dt>
+<tt class="descname">default is 5 seconds.</tt></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-muonic-p">
+<tt class="descname">-p</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-muonic-p" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">automatically write a file with pulsetimes in a non hexadecimal representation</tt></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-muonic-n">
+<tt class="descname">-n</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-muonic-n" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">supress any status messages in the output raw data file, might be useful if you want use muonic only for data taking and use another script afterwards for analysis.</tt></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="saving-files-with-muonic">
+<h2>Saving files with muonic<a class="headerlink" href="#saving-files-with-muonic" title="Permalink to this headline">¶</a></h2>
+<p>All files which are saved by muonic are ASCII files. The filenames are as follows:</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">currently all files are saved under $HOME/muonic_data. This directory must exist. If you use the provided setup script, it is created automatically</p>
+</div>
+<p><cite>YYYY-MM-DD_HH-MM-SS_TYPE_MEASUREMENTTME_xy</cite></p>
+<ul class="simple">
+<li><cite>YYYY-MM-DD</cite> is the date of the measurement start</li>
+<li><cite>HH-MM-SS</cite> is the GMT time of the measurement start</li>
+<li><cite>MEASUREMENTTIME</cite> if muonic is closed, each file gets is corresponding measurement time (in hours) assigned.</li>
+<li><cite>xy</cite> the two letters which were specified at the start of muonic</li>
+<li><cite>TYPE</cite> might be one of the following:</li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><cite>RAW</cite> the raw ASCII output of the DAQ card, this is only saved if the &#8216;Save to file&#8217; button in clicked in the &#8216;Daq output&#8217; window of muonic</li>
+<li><cite>R</cite> is an automatically saved ASCII file which contains the rate measurement data, this can then be used to plot with e.g. gnuplot later on</li>
+<li><cite>L</cite> specifies a file with times of registered muon decays. This file is automatically saved if a muon decay measurement is started.</li>
+<li><cite>P</cite> stands for a file which contains a non-hex representation of the registered pulses. This file is only save if the <cite>-p</cite> option is given at the start of muonic</li>
+</ul>
+</div></blockquote>
+<p>Representation of the pulses:</p>
+<p><cite>(69.15291364, [(0.0, 12.5)], [(2.5, 20.0)], [], [])</cite></p>
+<p>This is a python-tuple which contains the triggertime of the event and four lists with more tuples. The lists represent the channels (0-3 from left to right) and each tuple stands for a leading and a falling edge of a registered pulse. To get the exact time of the pulse start, one has to add the pulse LE and FE times to the triggertime</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For calculation of the LE and FE pulse times a TMC is used. It seems that for some DAQs cards a TMC bin is 1.25 ns wide, allthough the documentation says something else.
+The triggertime is calculated using a CPLD which runs in some cards at 25MHz, which gives a binwidth of the CPLD time of 40 ns.
+Please keep this limited precision in mind when adding CPLD and TMC times.</p>
+</div>
+</div>
+<div class="section" id="performing-measurements-with-muonic">
+<h2>Performing measurements with muonic<a class="headerlink" href="#performing-measurements-with-muonic" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setting-up-the-daq">
+<h3>Setting up the DAQ<a class="headerlink" href="#setting-up-the-daq" title="Permalink to this headline">¶</a></h3>
+<p>For DAQ setup it is recommended to use the &#8216;settings&#8217; menu, allthough everything can also be setup via the command line in the DAQ output window (see below.)
+Muonic translates the chosen settings to the corresponding DAQ commands and sends them to the DAQ. So if you want to change things like the coincidence time window, you have to issue the corresponding DAQ command in the DAQ output window.</p>
+<p>Two menu items are of interest here:
+* Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You have to ensure that the checkboxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The concidence is realized by the DAQ in a way that no specific channels can be given. Instead this is meant as an &#8216;any&#8217; condition.
+So &#8216;twofold&#8217; means that &#8216;any two of the enabled channels&#8217; must claim signal instead of two specific ones (like 1 and 2).</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Measurements ad DESY indicated that the veto feature of the DAq might not work properly in all cases.</p>
+</div>
+<ul class="simple">
+<li>Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A proper calibration of the individual channels is the key to a succesfull measurement!</p>
+</div>
+</div>
+<div class="section" id="looking-at-raw-daq-data">
+<h3>Looking at raw DAQ data<a class="headerlink" href="#looking-at-raw-daq-data" title="Permalink to this headline">¶</a></h3>
+<p>The first tab of muonic displays the raw ASCII DAQ data.
+This can be saved to a file. If the DAQ status messages should be supressed in that file, the option <cite>-n</cite> should be given at the start of muonic.
+The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
+To issue such an command periodically, you can use the button &#8216;Periodic Call&#8217;</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The two most importand DAQ commands are &#8216;CD&#8217; (&#8216;counter disable&#8217;) and &#8216;CE&#8217; (&#8216;counter enable&#8217;). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.</p>
+</div>
+</div>
+<div class="section" id="muon-rates">
+<h3>Muon Rates<a class="headerlink" href="#muon-rates" title="Permalink to this headline">¶</a></h3>
+<p>In this tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
+In the block on the left side of the tab the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. The measurement can be reset by clicking on &#8216;Restart&#8217;. The &#8216;Stop&#8217; button can be used to temporarily hold the plot to have a better look at it.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can use the displayed &#8216;max rate&#8217; at the left bottom to check if anything with the measurement went wrong.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the &#8216;R&#8217; file.(see above)</p>
+</div>
+</div>
+<div class="section" id="muon-lifetime">
+<h3>Muon Lifetime<a class="headerlink" href="#muon-lifetime" title="Permalink to this headline">¶</a></h3>
+<p>A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on &#8216;Fit!&#8217;. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This feature might not work properly, especially when used with the standard scintilators! Use it with extreme care.</p>
+</div>
+</div>
+<div class="section" id="pulse-analyzer">
+<h3>Pulse Analyzer<a class="headerlink" href="#pulse-analyzer" title="Permalink to this headline">¶</a></h3>
+<p>You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How to use muonic</a><ul>
+<li><a class="reference internal" href="#start-muonic">start muonic</a></li>
+<li><a class="reference internal" href="#saving-files-with-muonic">Saving files with muonic</a></li>
+<li><a class="reference internal" href="#performing-measurements-with-muonic">Performing measurements with muonic</a><ul>
+<li><a class="reference internal" href="#setting-up-the-daq">Setting up the DAQ</a></li>
+<li><a class="reference internal" href="#looking-at-raw-daq-data">Looking at raw DAQ data</a></li>
+<li><a class="reference internal" href="#muon-rates">Muon Rates</a></li>
+<li><a class="reference internal" href="#muon-lifetime">Muon Lifetime</a></li>
+<li><a class="reference internal" href="#pulse-analyzer">Pulse Analyzer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="setup.html"
+                        title="previous chapter">muonic setup and installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="hardware.html"
+                        title="next chapter">Fermilab DAQ - hardware documentation</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="setup.html" title="muonic setup and installation"
+             >previous</a> |</li>
+        <li><a href="index.html">muonic 1.0_rc documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,665 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic.gui.MainWindow &mdash; muonic 1.0_rc documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0_rc',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="muonic 1.0_rc documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 1.0_rc documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for muonic.gui.MainWindow</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provides the main window for the gui part of muonic</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># Qt4 imports</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtGui</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span>
+
+<span class="c"># numpy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">n</span>
+
+<span class="c"># stdlib imports</span>
+<span class="kn">import</span> <span class="nn">Queue</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c"># muonic imports</span>
+<span class="kn">from</span> <span class="nn">ThresholdDialog</span> <span class="kn">import</span> <span class="n">ThresholdDialog</span>
+<span class="kn">from</span> <span class="nn">ConfigDialog</span> <span class="kn">import</span> <span class="n">ConfigDialog</span>
+<span class="kn">from</span> <span class="nn">OptionsDialog</span> <span class="kn">import</span> <span class="n">OptionsDialog</span>
+<span class="kn">from</span> <span class="nn">HelpDialog</span> <span class="kn">import</span> <span class="n">HelpDialog</span>
+<span class="kn">from</span> <span class="nn">TabWidget</span> <span class="kn">import</span> <span class="n">TabWidget</span>
+
+<span class="kn">import</span> <span class="nn">muonic.analysis.PulseAnalyzer</span> <span class="kn">as</span> <span class="nn">pa</span>
+
+<span class="n">tr</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QCoreApplication</span><span class="o">.</span><span class="n">translate</span>
+
+<div class="viewcode-block" id="MuonicOptions"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MuonicOptions">[docs]</a><span class="k">class</span> <span class="nc">MuonicOptions</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A simple struct which holds the different</span>
+<span class="sd">    options for the program</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#TODO: alter the constructor in such a way that the options from the command line</span>
+    <span class="c"># can passed directly through!</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">timewindow</span><span class="p">,</span><span class="n">writepulses</span><span class="p">,</span><span class="n">nostatus</span><span class="p">,</span><span class="n">user</span><span class="p">):</span>
+
+        <span class="c"># put the file in the data directory</span>
+        <span class="c"># we chose a global format for naming the files -&gt; decided on 18/01/2012</span>
+        <span class="c"># we use GMT times</span>
+        <span class="c"># &quot; Zur einheitlichen Datenbezeichnung schlage ich folgendes Format vor:</span>
+        <span class="c"># JJJJ-MM-TT_y_x_vn.dateiformat (JJJJ-Jahr; MM-Monat; TT-Speichertag bzw.</span>
+        <span class="c"># Beendigung der Messung; y: G oder L ausw?hlen, G steht f?r **We add R for rate P for pulses and RW for RAW **</span>
+        <span class="c"># Geschwindigkeitsmessung/L f?r Lebensdauermessung; x-Messzeit in Stunden;</span>
+        <span class="c"># v-erster Buchstabe Vorname; n-erster Buchstabe Familienname).&quot;</span>
+        <span class="c"># TODO: consistancy....        </span>
+ 
+        <span class="n">date</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">()</span>
+
+        <span class="c"># this is hard-coded! There must be a better solution...</span>
+        <span class="c"># if you change here, you have to change in setup.py!</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;HOME&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s">&#39;muonic_data&#39;</span>
+ 
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span><span class="s">&quot;</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%s</span><span class="s">_HOURS_</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">tm_year</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mon</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mday</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_hour</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_min</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_sec</span><span class="p">,</span><span class="s">&quot;R&quot;</span><span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">user</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+        <span class="c"># the time when the rate measurement is started</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_mes_start</span> <span class="o">=</span> <span class="n">now</span>     
+        <span class="bp">self</span><span class="o">.</span><span class="n">rawfilename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span><span class="s">&quot;</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%s</span><span class="s">_HOURS_</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">tm_year</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mon</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mday</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_hour</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_min</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_sec</span><span class="p">,</span><span class="s">&quot;RAW&quot;</span><span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">user</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_mes_start</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decayfilename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span><span class="s">&quot;</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%s</span><span class="s">_HOURS_</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">tm_year</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mon</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mday</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_hour</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_min</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_sec</span><span class="p">,</span><span class="s">&quot;L&quot;</span><span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">user</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="n">writepulses</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulsefilename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span><span class="s">&quot;</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">-</span><span class="si">%i</span><span class="s">_</span><span class="si">%s</span><span class="s">_HOURS_</span><span class="si">%s%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">tm_year</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mon</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_mday</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_hour</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_min</span><span class="p">,</span><span class="n">date</span><span class="o">.</span><span class="n">tm_sec</span><span class="p">,</span><span class="s">&quot;P&quot;</span><span class="p">,</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">user</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulse_mes_start</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulsefilename</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulse_mes_start</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># other options...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="o">=</span> <span class="n">timewindow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nostatus</span> <span class="o">=</span> <span class="n">nostatus</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softveto</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mudecaymode</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">showpulses</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decaytrigger</span> <span class="o">=</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="MainWindow"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow">[docs]</a><span class="k">class</span> <span class="nc">MainWindow</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The main application</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inqueue</span><span class="p">,</span> <span class="n">outqueue</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">opts</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">win_parent</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reso_w</span> <span class="o">=</span> <span class="mi">600</span> <span class="c"># adapt these values for</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reso_h</span> <span class="o">=</span> <span class="mi">400</span> <span class="c"># suitable window size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">MuonicOptions</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">opts</span><span class="o">.</span><span class="n">timewindow</span><span class="p">),</span><span class="n">opts</span><span class="o">.</span><span class="n">writepulses</span><span class="p">,</span><span class="n">opts</span><span class="o">.</span><span class="n">nostatus</span><span class="p">,</span><span class="n">opts</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ini</span> <span class="o">=</span> <span class="bp">True</span>  <span class="c"># is it the first time all the functions are called?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_ini</span> <span class="o">=</span> <span class="bp">True</span> <span class="c"># is it the first time thet the mudecaymode is started?        </span>
+
+        <span class="c"># this holds the scalars in the time interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_counts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="c">#[trigger,ch0,ch1,ch2,ch3]</span>
+
+        <span class="c"># keep the last decays</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c"># last time, when the &#39;DS&#39; command was sent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastscalarquery</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thisscalarquery</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastoneppscount</span> <span class="o">=</span> <span class="mi">0</span>
+              
+        <span class="c"># the current thresholds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch0</span> <span class="o">=</span> <span class="s">&#39;n.a.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch1</span> <span class="o">=</span> <span class="s">&#39;n.a.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch2</span> <span class="o">=</span> <span class="s">&#39;n.a.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch3</span> <span class="o">=</span> <span class="s">&#39;n.a.&#39;</span>
+        <span class="c">#self.thresholds = {&quot;ch0&quot; : &quot;n.a.&quot;,&quot;ch1&quot; : &quot;n.a.&quot;,&quot;ch2&quot; : &quot;n.a.&quot;,&quot;ch3&quot; : &quot;n.a.&quot;}</span>
+
+        <span class="c"># the pulseextractor for direct analysis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulseextractor</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">PulseExtractor</span><span class="p">(</span><span class="n">pulsefile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pulsefilename</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="p">()</span>
+
+        <span class="c"># initialize MainWindow gui</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">win_parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reso_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reso_h</span><span class="p">)</span>
+
+        <span class="n">windowtitle</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;muonic&quot;</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="n">windowtitle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statusbar</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="o">.</span><span class="n">statusBar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">showMessage</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Ready&#39;</span><span class="p">))</span>      
+        <span class="c"># prepare fields for scalars </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readout_scalars</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch0_previous</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch1_previous</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch2_previous</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch3_previous</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_trigger_previous</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_time</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;time | chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time </span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        
+        <span class="c"># always write the rate plot data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_file_write</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span> <span class="o">=</span> <span class="n">inqueue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span> <span class="o">=</span> <span class="n">outqueue</span>
+
+        <span class="c"># we have to ensure that the DAQcard does not sent</span>
+        <span class="c"># any automatic status reports every x seconds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;ST N!=1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;ST 0&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;TL&#39;</span><span class="p">)</span>
+
+        <span class="c"># an anchor to the Application</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+
+        <span class="c"># A timer to periodically call processIncoming and check what is in the queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="p">,</span>
+                           <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;timeout()&quot;</span><span class="p">),</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">processIncoming</span><span class="p">)</span>
+ 
+        <span class="c">## Start the timer -- this replaces the initial call to periodicCall</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_widgets</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="MainWindow.create_widgets"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.create_widgets">[docs]</a>    <span class="k">def</span> <span class="nf">create_widgets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>       
+       
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span> <span class="o">=</span> <span class="n">TabWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="p">)</span>
+
+        <span class="c"># provide buttons to exit the application</span>
+        <span class="nb">exit</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s">&#39;/usr/share/icons/gnome/24x24/actions/exit.png&#39;</span><span class="p">),</span> <span class="s">&#39;Exit&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="nb">exit</span><span class="o">.</span><span class="n">setShortcut</span><span class="p">(</span><span class="s">&#39;Ctrl+Q&#39;</span><span class="p">)</span>
+        <span class="nb">exit</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Exit application&#39;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="nb">exit</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;triggered()&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_program</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;closeEmitApp()&#39;</span><span class="p">),</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SLOT</span><span class="p">(</span><span class="s">&#39;close()&#39;</span><span class="p">)</span> <span class="p">)</span>
+
+        <span class="c"># prepare the config menu</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">),</span><span class="s">&#39;Channel Configuration&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Configure the Coincidences and channels&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;triggered()&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_menu</span><span class="p">)</span>
+       
+        <span class="c"># prepare the threshold menu</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">),</span><span class="s">&#39;Thresholds&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">thresholds</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Set trigger thresholds&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">thresholds</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;triggered()&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_menu</span><span class="p">)</span>
+               
+        <span class="c"># the options menu</span>
+        <span class="c">#options = QtGui.QAction(QtGui.QIcon(&#39;&#39;),&#39;Options&#39;, self)</span>
+        <span class="c">#options.setStatusTip(tr(&#39;MainWindow&#39;,&#39;Set program options&#39;))</span>
+        <span class="c">#self.connect(options, QtCore.SIGNAL(&#39;triggered()&#39;), self.options_menu)</span>
+
+        <span class="c"># helpmenu</span>
+        <span class="n">helpdaqcommands</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s">&#39;icons/blah.png&#39;</span><span class="p">),</span><span class="s">&#39;DAQ Commands&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">helpdaqcommands</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;triggered()&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">help_menu</span><span class="p">)</span>
+        <span class="n">scalars</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="s">&#39;icons/blah.png&#39;</span><span class="p">),</span><span class="s">&#39;Scalars&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="c"># create the menubar and fill it with the submenus</span>
+        <span class="n">menubar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">menuBar</span><span class="p">()</span>
+        <span class="n">filemenu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;&amp;File&#39;</span><span class="p">))</span>
+        <span class="n">filemenu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="nb">exit</span><span class="p">)</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;Settings&#39;</span><span class="p">))</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">thresholds</span><span class="p">)</span>
+        <span class="c">#settings.addAction(options)</span>
+
+        <span class="n">helpmenu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;&amp;Help&#39;</span><span class="p">))</span>
+        <span class="n">helpmenu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">helpdaqcommands</span><span class="p">)</span>
+ </div>
+<div class="viewcode-block" id="MainWindow.exit_program"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.exit_program">[docs]</a>    <span class="k">def</span> <span class="nf">exit_program</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function is used either with the &#39;x&#39; button</span>
+<span class="sd">        (then an event has to be passed)</span>
+<span class="sd">        Or it is used with the File-&gt;Exit button, than no event</span>
+<span class="sd">        will be passed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ev</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c"># ask kindly if the user is really sure if she/he wants to exit</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;Attention!&#39;</span><span class="p">,</span>
+                <span class="s">&#39;Do you really want to exit?&#39;</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">No</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reply</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QMessageBox</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+            <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+            <span class="c"># close the RAW file (if any)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">write_file</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">write_file</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">mtime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">raw_mes_start</span>
+                <span class="n">mtime</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">mtime</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="p">(</span><span class="mf">3600.</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">mtime</span><span class="o">.</span><span class="n">days</span><span class="o">*</span><span class="mi">86400</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;The raw data was written for </span><span class="si">%f</span><span class="s"> hours&quot;</span> <span class="o">%</span> <span class="n">mtime</span><span class="p">)</span>
+                <span class="n">newrawfilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">rawfilename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;HOURS&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">mtime</span><span class="p">))</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">rawfilename</span><span class="p">,</span><span class="n">newrawfilename</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">outputfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mudecaymode</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mudecaymode</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">mtime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">dec_mes_start</span>
+                <span class="n">mtime</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">mtime</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="p">(</span><span class="mf">3600.</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">mtime</span><span class="o">.</span><span class="n">days</span><span class="o">*</span><span class="mi">86400</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;The muon decay measurement was active for </span><span class="si">%f</span><span class="s"> hours&quot;</span> <span class="o">%</span> <span class="n">mtime</span><span class="p">)</span>
+                <span class="n">newmufilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">decayfilename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;HOURS&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">mtime</span><span class="p">))</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">decayfilename</span><span class="p">,</span><span class="n">newmufilename</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pulsefilename</span><span class="p">:</span>
+                <span class="n">old_pulsefilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pulsefilename</span>
+                <span class="c"># no pulses shall be extracted any more, </span>
+                <span class="c"># this means changing lots of switches</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pulsefilename</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mudecaymode</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">showpulses</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulseextractor</span><span class="o">.</span><span class="n">close_file</span><span class="p">()</span>
+                <span class="n">mtime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pulse_mes_start</span>
+                <span class="n">mtime</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">mtime</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="p">(</span><span class="mf">3600.</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">mtime</span><span class="o">.</span><span class="n">days</span><span class="o">*</span><span class="mi">86400</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;The pulse extraction measurement was active for </span><span class="si">%f</span><span class="s"> hours&quot;</span> <span class="o">%</span> <span class="n">mtime</span><span class="p">)</span>
+                <span class="n">newpulsefilename</span> <span class="o">=</span> <span class="n">old_pulsefilename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;HOURS&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">mtime</span><span class="p">))</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">old_pulsefilename</span><span class="p">,</span><span class="n">newpulsefilename</span><span class="p">)</span>
+              
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_file_write</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">mtime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">rate_mes_start</span>
+            <span class="n">mtime</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">mtime</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="p">(</span><span class="mf">3600.</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">mtime</span><span class="o">.</span><span class="n">days</span><span class="o">*</span><span class="mi">86400</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;The rate measurement was active for </span><span class="si">%f</span><span class="s"> hours&quot;</span> <span class="o">%</span> <span class="n">mtime</span><span class="p">)</span>
+            <span class="n">newratefilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;HOURS&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">mtime</span><span class="p">))</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span><span class="n">newratefilename</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">writefile</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+ 
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span>           
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;closeEmitApp()&#39;</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ev</span><span class="p">:</span>
+                <span class="n">ev</span><span class="o">.</span><span class="n">ignore</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+    
+    <span class="c">#the individual menus</span></div>
+<div class="viewcode-block" id="MainWindow.threshold_menu"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.threshold_menu">[docs]</a>    <span class="k">def</span> <span class="nf">threshold_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># get the actual Thresholds...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;TL&#39;</span><span class="p">)</span>
+
+        <span class="n">threshold_window</span> <span class="o">=</span> <span class="n">ThresholdDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch1</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch2</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch3</span><span class="p">)</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">threshold_window</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># Here we should set the thresholds</span>
+
+            <span class="c"># We have to check for integers!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Type of input text is </span><span class="si">%s</span><span class="s"> and its value is </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">threshold_window</span><span class="o">.</span><span class="n">ch0_input</span><span class="o">.</span><span class="n">text</span><span class="p">()),</span><span class="n">threshold_window</span><span class="o">.</span><span class="n">ch0_input</span><span class="o">.</span><span class="n">text</span><span class="p">()))</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">threshold_window</span><span class="o">.</span><span class="n">ch0_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+	        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;TL 0 &#39;</span> <span class="o">+</span> <span class="n">threshold_window</span><span class="o">.</span><span class="n">ch0_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Can&#39;t convert to integer: field 0&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">threshold_window</span><span class="o">.</span><span class="n">ch1_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;TL 1 &#39;</span> <span class="o">+</span> <span class="n">threshold_window</span><span class="o">.</span><span class="n">ch1_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Can&#39;t convert to integer: field 1&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">threshold_window</span><span class="o">.</span><span class="n">ch2_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;TL 2 &#39;</span> <span class="o">+</span> <span class="n">threshold_window</span><span class="o">.</span><span class="n">ch2_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Can&#39;t convert to integer: field 2&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">threshold_window</span><span class="o">.</span><span class="n">ch3_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&#39;TL 3 &#39;</span> <span class="o">+</span> <span class="n">threshold_window</span><span class="o">.</span><span class="n">ch3_input</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Can&#39;t convert to integer: field 3&quot;</span><span class="p">)</span>
+	    
+</div>
+<div class="viewcode-block" id="MainWindow.config_menu"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.config_menu">[docs]</a>    <span class="k">def</span> <span class="nf">config_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config_window</span> <span class="o">=</span> <span class="n">ConfigDialog</span><span class="p">()</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            
+            <span class="n">chan0_active</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">activateChan0</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="n">chan1_active</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">activateChan1</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="n">chan2_active</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">activateChan2</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="n">chan3_active</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">activateChan3</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="n">singles</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">coincidenceSingles</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="k">if</span> <span class="n">singles</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="o">.</span><span class="n">do_not_show_trigger</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="o">.</span><span class="n">do_not_show_trigger</span> <span class="o">=</span> <span class="bp">False</span>
+            
+            <span class="n">twofold</span>   <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">coincidenceTwofold</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="n">threefold</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">coincidenceThreefold</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="n">fourfold</span>  <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">coincidenceFourfold</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+
+            <span class="n">noveto</span>    <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">noveto</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+            <span class="n">vetochan1</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">vetochan1</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+            <span class="n">vetochan2</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">vetochan2</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+            <span class="n">vetochan3</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">vetochan3</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+
+            <span class="n">tmp_msg</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    
+            <span class="k">for</span> <span class="n">veto</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">noveto</span><span class="p">,</span><span class="s">&#39;00&#39;</span><span class="p">),(</span><span class="n">vetochan1</span><span class="p">,</span><span class="s">&#39;01&#39;</span><span class="p">),(</span><span class="n">vetochan2</span><span class="p">,</span><span class="s">&#39;10&#39;</span><span class="p">),(</span><span class="n">vetochan3</span><span class="p">,</span><span class="s">&#39;11&#39;</span><span class="p">)]:</span>
+                <span class="k">if</span> <span class="n">veto</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">tmp_msg</span> <span class="o">+=</span> <span class="n">veto</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            
+            <span class="k">if</span> <span class="n">noveto</span><span class="p">:</span>
+                <span class="c"># ensure that there is no veto active and reset the </span>
+                <span class="c"># temp message, just to be sure</span>
+                <span class="n">tmp_msg</span> <span class="o">=</span> <span class="s">&#39;00&#39;</span>
+    
+            <span class="n">coincidence_set</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">for</span> <span class="n">coincidence</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">singles</span><span class="p">,</span><span class="s">&#39;00&#39;</span><span class="p">),(</span><span class="n">twofold</span><span class="p">,</span><span class="s">&#39;01&#39;</span><span class="p">),(</span><span class="n">threefold</span><span class="p">,</span><span class="s">&#39;10&#39;</span><span class="p">),(</span><span class="n">fourfold</span><span class="p">,</span><span class="s">&#39;11&#39;</span><span class="p">)]:</span>
+                <span class="k">if</span> <span class="n">coincidence</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">tmp_msg</span> <span class="o">+=</span> <span class="n">coincidence</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">coincidence_set</span> <span class="o">=</span> <span class="bp">True</span>
+            
+            <span class="c"># else case, just in case</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">coincidence_set</span><span class="p">:</span>
+                <span class="n">tmp_msg</span> <span class="o">+=</span> <span class="s">&#39;00&#39;</span>
+    
+            <span class="c"># now calculate the correct expression for the first</span>
+            <span class="c"># four bits</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;The first four bits are set to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="n">tmp_msg</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;WC 00 &#39;</span> <span class="o">+</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp_msg</span><span class="p">),</span><span class="mi">2</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+    
+            <span class="n">channel_set</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">enable</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;0&#39;</span><span class="p">,</span><span class="s">&#39;0&#39;</span><span class="p">,</span><span class="s">&#39;0&#39;</span><span class="p">,</span><span class="s">&#39;0&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">chan3_active</span><span class="p">,</span><span class="n">chan2_active</span><span class="p">,</span><span class="n">chan1_active</span><span class="p">,</span><span class="n">chan0_active</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">enable</span><span class="p">[</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="s">&#39;1&#39;</span>
+                    <span class="n">channel_set</span> <span class="o">=</span> <span class="bp">True</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">channel_set</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="s">&#39;0&#39;</span>
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">enable</span><span class="p">),</span><span class="mi">2</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;The following message was sent to DAQ: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">msg</span><span class="p">)</span>
+                    
+    
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;channel0 selected </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">chan0_active</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;channel1 selected </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">chan1_active</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;channel2 selected </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">chan2_active</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;channel3 selected </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">chan3_active</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;coincidence singles </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">singles</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;coincidence twofold </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">twofold</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;coincidence threefold </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">threefold</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;coincidence fourfold </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="n">fourfold</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="MainWindow.options_menu"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.options_menu">[docs]</a>    <span class="k">def</span> <span class="nf">options_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">options_window</span> <span class="o">=</span> <span class="n">OptionsDialog</span><span class="p">()</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">options_window</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">softveto</span> <span class="o">=</span> <span class="n">options_window</span><span class="o">.</span><span class="n">VetoCheckbox</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Using Chan3 software veto </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">softveto</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+            </div>
+<div class="viewcode-block" id="MainWindow.help_menu"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.help_menu">[docs]</a>    <span class="k">def</span> <span class="nf">help_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">help_window</span> <span class="o">=</span> <span class="n">HelpDialog</span><span class="p">()</span>
+        <span class="n">help_window</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="MainWindow.clear_function"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.clear_function">[docs]</a>    <span class="k">def</span> <span class="nf">clear_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Clear was called&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="c"># this functions gets everything out of the inqueue</span>
+    <span class="c"># All calculations should happen here</span></div>
+<div class="viewcode-block" id="MainWindow.processIncoming"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.processIncoming">[docs]</a>    <span class="k">def</span> <span class="nf">processIncoming</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handle all the messages currently in the queue (if any).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;length of inqueue: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span><span class="o">.</span><span class="n">qsize</span><span class="p">())</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span><span class="o">.</span><span class="n">qsize</span><span class="p">():</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Got item from inqueue: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="n">msg</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+
+                <span class="c"># Check contents of message and do what it says</span>
+                <span class="c"># As a test, we simply print it</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">text_box</span><span class="o">.</span><span class="n">appendPlainText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">write_file</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">nostatus</span><span class="p">:</span>
+                            <span class="n">fields</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">8</span><span class="p">)):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">outputfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Not writing line &#39;</span><span class="si">%s</span><span class="s">&#39; to file because it does not contain trigger data&quot;</span> <span class="o">%</span><span class="n">msg</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">outputfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="o">+</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Trying to write on closed file, captured!&#39;</span><span class="p">)</span>
+
+
+		<span class="c"># check for threshold information</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;TL&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch0</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch1</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="mi">2</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch2</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="mi">3</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">threshold_ch3</span> <span class="o">=</span> <span class="n">msg</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+                    <span class="k">return</span>  
+
+                <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;ST&#39;</span><span class="p">):</span>
+                    <span class="k">return</span>
+
+                <span class="c"># check for scalar information</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="s">&#39;D&#39;</span> <span class="ow">and</span> <span class="n">msg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;S&#39;</span><span class="p">:</span>                    
+                    <span class="c">#if len(msg) &gt; 5 :</span>
+                        <span class="c"># This is necessary, that the first (unphysical)</span>
+                        <span class="c"># value is omitted from the calculation</span>
+                        <span class="c"># of the rates</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">readout_scalars</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">readout_scalars</span> <span class="o">=</span> <span class="bp">True</span>
+                            <span class="k">break</span>
+                         
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                        <span class="n">time_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thisscalarquery</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Time window </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="n">time_window</span><span class="p">)</span>
+
+                        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="s">&quot;S0&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span><span class="mi">16</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="p">(</span><span class="s">&quot;S1&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span><span class="mi">16</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="p">(</span><span class="s">&quot;S2&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span><span class="mi">16</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="p">(</span><span class="s">&quot;S3&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch3</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span><span class="mi">16</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="p">(</span><span class="s">&quot;S4&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">scalars_trigger</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span><span class="mi">16</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="p">(</span><span class="s">&quot;S5&quot;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">scalars_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span><span class="mi">16</span><span class="p">))</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;unknown item detected: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="n">item</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch0_previous</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch1_previous</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch2_previous</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch3</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch3_previous</span> 
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_trigger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_trigger</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_trigger_previous</span> 
+                        
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch0_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch0</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch1_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch2_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch2</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch3_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_ch3</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_trigger_previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_trigger</span>
+                         
+                        <span class="c">#send the counted scalars to the subwindow</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">scalars_result</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch0</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch1</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch2</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch3</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_trigger</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span> <span class="n">time_window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_trigger</span><span class="p">)</span>
+                        <span class="c">#write the rates to data file</span>
+                        <span class="c"># we have to catch IOErrors, can occur if program is </span>
+                        <span class="c"># exited</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_file_write</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">data_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="si">%f</span><span class="s"> </span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch0</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch1</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch2</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_ch3</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_diff_trigger</span><span class="o">/</span><span class="n">time_window</span><span class="p">,</span><span class="n">time_window</span><span class="p">))</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Rate plot data was written to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">data_file</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+                            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;ValueError, Rate plot data was not written to </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">data_file</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+
+                <span class="c"># check for other status messages          </span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+                    <span class="c">#it is most propably a status message (poor criterion)</span>
+                    <span class="k">return</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mudecaymode</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">showpulses</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">pulsefilename</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="c"># we now assume that we are using chan0-2 for data taking anch chan3 as veto</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulseextractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    
+                    <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">):</span>
+                        <span class="c"># we have to count the triggers in the time intervall</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">channel_counts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>                         
+                        <span class="k">for</span> <span class="n">channel</span><span class="p">,</span><span class="n">pulses</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+                            <span class="k">if</span> <span class="n">pulses</span><span class="p">:</span>
+                                <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="n">pulses</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">channel_counts</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+                    <span class="c"># This can made simpler,</span>
+                    <span class="c"># if the DecayTrigger just looks for </span>
+                    <span class="c"># two adjacent triggers,</span>
+                    <span class="c"># we do not neeed to</span>
+                    <span class="c"># run the pulseextractor.</span>
+                    <span class="c"># This needs some more programming, sort</span>
+                    <span class="c"># of implementing TriggerExtractor...</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mudecaymode</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_ini</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">decaytrigger</span> <span class="o">==</span> <span class="s">&quot;simple&quot;</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">dtrigger</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">DecayTriggerSimple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">softveto</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">decaytrigger</span> <span class="o">==</span> <span class="s">&quot;single&quot;</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">dtrigger</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">DecayTriggerSingle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">softveto</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">decaytrigger</span> <span class="o">==</span> <span class="s">&quot;thorough&quot;</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">dtrigger</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">DecayTriggerThorough</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">softveto</span><span class="p">)</span>
+              
+                                <span class="bp">self</span><span class="o">.</span><span class="n">mu_ini</span> <span class="o">=</span> <span class="bp">False</span> 
+                                            
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">tmpdecay</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtrigger</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span>                   
+                                <span class="k">if</span> <span class="n">tmpdecay</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                                    <span class="n">when</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">tmpdecay</span><span class="o">/</span><span class="mf">100.</span><span class="p">,</span><span class="n">when</span><span class="p">))</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;We have found a decaying muon with a decaytime of </span><span class="si">%f</span><span class="s"> at </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">tmpdecay</span><span class="p">,</span><span class="n">when</span><span class="p">))</span> 
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">muondecaycounter</span> <span class="o">+=</span> <span class="mi">1</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">tabwidget</span><span class="o">.</span><span class="n">lastdecaytime</span> <span class="o">=</span> <span class="n">when</span>
+
+                                <span class="c"># cleanup</span>
+                                <span class="k">del</span> <span class="n">tmpdecay</span>
+
+            <span class="k">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Queue empty!&quot;</span><span class="p">)</span>
+                <span class="k">pass</span>
+   </div>
+<div class="viewcode-block" id="MainWindow.closeEvent"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MainWindow.MainWindow.closeEvent">[docs]</a>    <span class="k">def</span> <span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Is triggered when the window is closed, we have to reimplement it</span>
+<span class="sd">        to provide our special needs for the case the program is ended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Attempting to close Window!&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_program</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 1.0_rc documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
