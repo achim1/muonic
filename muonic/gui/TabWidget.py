@@ -97,21 +97,10 @@ class TabWidget(QtGui.QWidget):
         p3_vertical = QtGui.QVBoxLayout(tab3)
         p4_vertical = QtGui.QVBoxLayout(tab4)
 
-        tab_widget.addTab(tab1, "DAQ output")
-        tab_widget.addTab(tab2, "Muon Rates")
-        tab_widget.addTab(tab3, "Muon Lifetime")
-        tab_widget.addTab(tab4, "PulseAnalyzer")
-        
-        p1_vertical.addWidget(self.text_box)
-        daq_widget = QtGui.QWidget()
-        h_box = QtGui.QHBoxLayout()
-        h_box.addWidget(self.label)
-        h_box.addWidget(self.hello_edit)
-        h_box.addWidget(self.hello_button)
-        h_box.addWidget(self.file_button)
-        h_box.addWidget(self.periodic_button)
-        daq_widget.setLayout(h_box)
-        p1_vertical.addWidget(daq_widget)
+        tab_widget.addTab(tab1, "Muon Rates")
+        tab_widget.addTab(tab2, "Muon Lifetime")
+        tab_widget.addTab(tab3, "PulseAnalyzer")
+        tab_widget.addTab(tab4, "DAQ output")
         
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(tab_widget)
@@ -145,19 +134,19 @@ class TabWidget(QtGui.QWidget):
                               )
 
         # pack theses widget into the vertical box
-        p2_vertical.addWidget(self.scalars_monitor)
+        p1_vertical.addWidget(self.scalars_monitor)
 
         # instantiate the navigation toolbar
-        p2_h_box = QtGui.QHBoxLayout()
+        p1_h_box = QtGui.QHBoxLayout()
         ntb = NavigationToolbar(self.scalars_monitor, self)
-        p2_h_box.addWidget(ntb)
-        p2_h_box.addWidget(self.start_button)
-        p2_h_box.addWidget(self.stop_button)
-        p2_second_widget = QtGui.QWidget()
-        p2_second_widget.setLayout(p2_h_box)
-        p2_vertical.addWidget(p2_second_widget)
+        p1_h_box.addWidget(ntb)
+        p1_h_box.addWidget(self.start_button)
+        p1_h_box.addWidget(self.stop_button)
+        p1_second_widget = QtGui.QWidget()
+        p1_second_widget.setLayout(p1_h_box)
+        p1_vertical.addWidget(p1_second_widget)
 
-        ntb2 = NavigationToolbar(self.lifetime_monitor, self)
+        ntb1 = NavigationToolbar(self.lifetime_monitor, self)
 
         # mudecay tab..
         # activate Muondecay mode with a checkbox
@@ -173,19 +162,19 @@ class TabWidget(QtGui.QWidget):
         self.displayMuons.setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
         self.lastDecay.setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
  
-        p3_vertical.addWidget(self.activateMuondecay)
-        p3_vertical.addWidget(self.displayMuons)
-        p3_vertical.addWidget(self.lastDecay)
-        p3_vertical.addWidget(self.lifetime_monitor)
+        p2_vertical.addWidget(self.activateMuondecay)
+        p2_vertical.addWidget(self.displayMuons)
+        p2_vertical.addWidget(self.lastDecay)
+        p2_vertical.addWidget(self.lifetime_monitor)
 
-        p3_h_box = QtGui.QHBoxLayout()
-        p3_h_box.addWidget(ntb2)
-        p3_h_box.addWidget(self.mufit_button)
-        p3_second_widget = QtGui.QWidget()
-        p3_second_widget.setLayout(p3_h_box)
-        p3_vertical.addWidget(p3_second_widget)
+        p2_h_box = QtGui.QHBoxLayout()
+        p2_h_box.addWidget(ntb1)
+        p2_h_box.addWidget(self.mufit_button)
+        p2_second_widget = QtGui.QWidget()
+        p2_second_widget.setLayout(p2_h_box)
+        p2_vertical.addWidget(p2_second_widget)
 
-        ntb3 = NavigationToolbar(self.pulse_monitor, self)
+        ntb2 = NavigationToolbar(self.pulse_monitor, self)
 
         # the pulseanalyzer tab
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
@@ -194,9 +183,9 @@ class TabWidget(QtGui.QWidget):
                               QtCore.SIGNAL("clicked()"),
                               self.activatePulseanalyzerClicked
                               )
-        p4_vertical.addWidget(self.activatePulseanalyzer)
-        p4_vertical.addWidget(self.pulse_monitor)
-        p4_vertical.addWidget(ntb3)
+        p3_vertical.addWidget(self.activatePulseanalyzer)
+        p3_vertical.addWidget(self.pulse_monitor)
+        p3_vertical.addWidget(ntb2)
 
         # define the begin of the timeintervall 
         # for the rate calculation
@@ -206,6 +195,17 @@ class TabWidget(QtGui.QWidget):
         self.timerEvent(None)
         self.timer = self.startTimer(timewindow*1000)
 
+        p4_vertical.addWidget(self.text_box)
+        daq_widget = QtGui.QWidget()
+        h_box = QtGui.QHBoxLayout()
+        h_box.addWidget(self.label)
+        h_box.addWidget(self.hello_edit)
+        h_box.addWidget(self.hello_button)
+        h_box.addWidget(self.file_button)
+        h_box.addWidget(self.periodic_button)
+        daq_widget.setLayout(h_box)
+        p4_vertical.addWidget(daq_widget)
+        
     def startClicked(self):
         """
         restart the rate measurement
