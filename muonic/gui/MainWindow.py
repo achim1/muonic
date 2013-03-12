@@ -426,111 +426,112 @@ class MainWindow(QtGui.QMainWindow):
                 msg = self.inqueue.get(0)
                 self.logger.debug("Got item from inqueue: %s" %msg.__repr__())
 
-                # Check contents of message and do what it says
-                self.tabwidget.text_box.appendPlainText(str(msg))
-                if self.tabwidget.write_file:
-                    try:
-                        if self.options.nostatus:
-                            fields = msg.rstrip("\n").split(" ")
-                            if ((len(fields) == 16) and (len(fields[0]) == 8)):
-                                self.tabwidget.outputfile.write(str(msg)+'\n')
-                            else:
-                                self.logger.debug("Not writing line '%s' to file because it does not contain trigger data" %msg)
-                        else:
-                            self.tabwidget.outputfile.write(str(msg)+'\n')
-
-                    except ValueError:
-                        self.logger.info('Trying to write on closed file, captured!')
-
-                # check for threshold information
-                if msg.startswith('TL') and len(msg) > 9:
-                    msg = msg.split('=')
-                    self.threshold_ch0 = msg[1][:-2]
-                    self.threshold_ch1 = msg[2][:-2]
-                    self.threshold_ch2 = msg[3][:-2]
-                    self.threshold_ch3 = msg[4]
-                    return  
-
-                # status messages
-                if msg.startswith('ST') or len(msg) < 50:
-                    return
-
-                # check for scalar information
-                if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
-                    self.scalars = msg.split()
-                    time_window = self.thisscalarquery
-                    self.logger.debug("Time window %s" %time_window)
-
-                    for item in self.scalars:
-                        if ("S0" in item) & (len(item) == 11):
-                            self.scalars_ch0 = int(item[3:],16)
-                        elif ("S1" in item) & (len(item) == 11):
-                            self.scalars_ch1 = int(item[3:],16)
-                        elif ("S2" in item) & (len(item) == 11):
-                            self.scalars_ch2 = int(item[3:],16)
-                        elif ("S3" in item) & (len(item) == 11):
-                            self.scalars_ch3 = int(item[3:],16)
-                        elif ("S4" in item) & (len(item) == 11):
-                            self.scalars_trigger = int(item[3:],16)
-                        elif ("S5" in item) & (len(item) == 11):
-                            self.scalars_time = float(int(item[3:],16))
-                        else:
-                            self.logger.debug("unknown item detected: %s" %item.__repr__())
-
-                    self.scalars_diff_ch0 = self.scalars_ch0 - self.scalars_ch0_previous 
-                    self.scalars_diff_ch1 = self.scalars_ch1 - self.scalars_ch1_previous 
-                    self.scalars_diff_ch2 = self.scalars_ch2 - self.scalars_ch2_previous 
-                    self.scalars_diff_ch3 = self.scalars_ch3 - self.scalars_ch3_previous 
-                    self.scalars_diff_trigger = self.scalars_trigger - self.scalars_trigger_previous 
-                    
-                    self.scalars_ch0_previous = self.scalars_ch0
-                    self.scalars_ch1_previous = self.scalars_ch1
-                    self.scalars_ch2_previous = self.scalars_ch2
-                    self.scalars_ch3_previous = self.scalars_ch3
-                    self.scalars_trigger_previous = self.scalars_trigger
-                    #send the counted scalars to the subwindow
-                    self.tabwidget.scalars_result = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
-                    #write the rates to data file
-                    # we have to catch IOErrors, can occur if program is 
-                    # exited
-                    if self.data_file_write:
-                        try:
-                            self.data_file.write('%f %f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_time, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
-                            self.logger.debug("Rate plot data was written to %s" %self.data_file.__repr__())
-                        except ValueError:
-                            self.logger.warning("ValueError, Rate plot data was not written to %s" %self.data_file.__repr__())
-
-                elif (self.options.mudecaymode or self.options.showpulses or self.options.pulsefilename) :
-                    self.pulses = self.pulseextractor.extract(msg)
-                    if self.pulses is not None:
-                        self.pulses_to_show = self.pulses
-
-                    # FIXME: What is that for?      
-                    # -> it is to get the rate from the pulses
-                    # so no more DAQ queries are needed              
-                    if (self.pulses != None):
-                        # we have to count the triggers in the time intervall
-                        self.channel_counts[0] += 1                         
-                        for channel,pulses in enumerate(self.pulses[1:]):
-                            if pulses:
-                                for pulse in pulses:
-                                    self.channel_counts[channel] += 1
-
-                    if self.options.mudecaymode:
-                        if self.pulses != None:
-                            tmpdecay = self.dtrigger.trigger(self.pulses)                   
-                            if tmpdecay != None:
-                                when = time.asctime()
-                                self.decay.append((tmpdecay/100.,when))
-                                self.logger.info('We have found a decaying muon with a decaytime of %f at %s' %(tmpdecay,when)) 
-                                self.tabwidget.muondecaycounter += 1
-                                self.tabwidget.lastdecaytime = when
-                            # cleanup
-                            del tmpdecay
-
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
-                pass
+
+            # Check contents of message and do what it says
+            self.tabwidget.text_box.appendPlainText(str(msg))
+            if self.tabwidget.write_file:
+                try:
+                    if self.options.nostatus:
+                        fields = msg.rstrip("\n").split(" ")
+                        if ((len(fields) == 16) and (len(fields[0]) == 8)):
+                            self.tabwidget.outputfile.write(str(msg)+'\n')
+                        else:
+                            self.logger.debug("Not writing line '%s' to file because it does not contain trigger data" %msg)
+                    else:
+                        self.tabwidget.outputfile.write(str(msg)+'\n')
+
+                except ValueError:
+                    self.logger.info('Trying to write on closed file, captured!')
+
+            # check for threshold information
+            if msg.startswith('TL') and len(msg) > 9:
+                msg = msg.split('=')
+                self.threshold_ch0 = msg[1][:-2]
+                self.threshold_ch1 = msg[2][:-2]
+                self.threshold_ch2 = msg[3][:-2]
+                self.threshold_ch3 = msg[4]
+                return  
+
+            # status messages
+            if msg.startswith('ST') or len(msg) < 50:
+                return
+
+            # check for scalar information
+            if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
+                self.scalars = msg.split()
+                time_window = self.thisscalarquery
+                self.logger.debug("Time window %s" %time_window)
+
+                for item in self.scalars:
+                    if ("S0" in item) & (len(item) == 11):
+                        self.scalars_ch0 = int(item[3:],16)
+                    elif ("S1" in item) & (len(item) == 11):
+                        self.scalars_ch1 = int(item[3:],16)
+                    elif ("S2" in item) & (len(item) == 11):
+                        self.scalars_ch2 = int(item[3:],16)
+                    elif ("S3" in item) & (len(item) == 11):
+                        self.scalars_ch3 = int(item[3:],16)
+                    elif ("S4" in item) & (len(item) == 11):
+                        self.scalars_trigger = int(item[3:],16)
+                    elif ("S5" in item) & (len(item) == 11):
+                        self.scalars_time = float(int(item[3:],16))
+                    else:
+                        self.logger.debug("unknown item detected: %s" %item.__repr__())
+
+                self.scalars_diff_ch0 = self.scalars_ch0 - self.scalars_ch0_previous 
+                self.scalars_diff_ch1 = self.scalars_ch1 - self.scalars_ch1_previous 
+                self.scalars_diff_ch2 = self.scalars_ch2 - self.scalars_ch2_previous 
+                self.scalars_diff_ch3 = self.scalars_ch3 - self.scalars_ch3_previous 
+                self.scalars_diff_trigger = self.scalars_trigger - self.scalars_trigger_previous 
+                
+                self.scalars_ch0_previous = self.scalars_ch0
+                self.scalars_ch1_previous = self.scalars_ch1
+                self.scalars_ch2_previous = self.scalars_ch2
+                self.scalars_ch3_previous = self.scalars_ch3
+                self.scalars_trigger_previous = self.scalars_trigger
+                #send the counted scalars to the subwindow
+                self.tabwidget.scalars_result = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
+                #write the rates to data file
+                # we have to catch IOErrors, can occur if program is 
+                # exited
+                if self.data_file_write:
+                    try:
+                        self.data_file.write('%f %f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_time, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
+                        self.logger.debug("Rate plot data was written to %s" %self.data_file.__repr__())
+                    except ValueError:
+                        self.logger.warning("ValueError, Rate plot data was not written to %s" %self.data_file.__repr__())
+
+            elif (self.options.mudecaymode or self.options.showpulses or self.options.pulsefilename) :
+                self.pulses = self.pulseextractor.extract(msg)
+                if self.pulses is not None:
+                    self.pulses_to_show = self.pulses
+
+                # FIXME: What is that for?      
+                # -> it is to get the rate from the pulses
+                # so no more DAQ queries are needed              
+                if (self.pulses != None):
+                    # we have to count the triggers in the time intervall
+                    self.channel_counts[0] += 1                         
+                    for channel,pulses in enumerate(self.pulses[1:]):
+                        if pulses:
+                            for pulse in pulses:
+                                self.channel_counts[channel] += 1
+
+                if self.options.mudecaymode:
+                    if self.pulses != None:
+                        tmpdecay = self.dtrigger.trigger(self.pulses)                   
+                        if tmpdecay != None:
+                            when = time.asctime()
+                            self.decay.append((tmpdecay/100.,when))
+                            self.logger.info('We have found a decaying muon with a decaytime of %f at %s' %(tmpdecay,when)) 
+                            self.tabwidget.muondecaycounter += 1
+                            self.tabwidget.lastdecaytime = when
+                        # cleanup
+                        del tmpdecay
+
+
    
     def closeEvent(self, ev):
         """
