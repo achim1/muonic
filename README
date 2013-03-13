@@ -55,7 +55,7 @@ A: YES! See the GPL for details, but do not forget, that the authors are not res
    any damaga done to any hard- or software
 
 Q: What to I need to run muonic?
-A: As it python, you do need Python and also several packages:
+A: As it is python, you do need Python and also several packages:
    PyQt4, PySerial, NumPy, SciPy, and Matplotlib
 
 Q: How do I install muonic?
@@ -71,10 +71,6 @@ A: Just type 'muonic --help' in your terminal, muonic will explain how to procee
 
 Q: I stored some data - where is it?
 A: All data is saved in your home directory in the folder muonic_data
-
-
-
-
 
 
 

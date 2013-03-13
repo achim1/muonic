@@ -30,6 +30,16 @@ import shutil
 import numpy as n
 import time
 
+# this must be changed, just for getting this somehow to work
+ANALYSIS_DIR  = os.path.split(pa.__file__)[0]
+GET_NUMBERS   = os.path.join(ANALYSIS_DIR,"get_numbers.py")
+MUON_LIFETIME = os.path.join(ANALYSIS_DIR,"muon_lifetime.py")
+FIT_LIFETIME  = os.path.join(ANALYSIS_DIR,"fit_lifetime.py")
+MUON_VELOCITY = os.path.join(ANALYSIS_DIR,"muon_velocity.py")
+FIT_VELOCITY  = os.path.join(ANALYSIS_DIR,"fit_velocity.py")
+
+
+
 
 tr = QtCore.QCoreApplication.translate
 
@@ -38,7 +48,7 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 
-class TabWidget(QtGui.QWidget):
+class GTabWidget(QtGui.QWidget):
     """
     The TabWidget will provide a tabbed interface.
     All functionality should be represented by tabs in the TabWidget
@@ -495,7 +505,7 @@ class TabWidget(QtGui.QWidget):
 
 
     def activateOfflineClicked(self):
-        print "hier der filename: "+self.mainwindow.self.rawfilename
+        print "hier der filename: "+self.mainwindow.options.rawfilename
         self.outputfile = open(self.mainwindow.options.rawfilename,"w")
         askForString=""
         #dpch0, dpch1, dpch2, dpch3, ch0, ch1, ch2, ch3+++++++++++++++++ 
@@ -636,22 +646,33 @@ class TabWidget(QtGui.QWidget):
             askForString="ls egrep ch0micro | egrep ch1micro | egrep ch2micro | egrep ch3micro"
 
         ch0, ch1, ch2, ch3, dpch0, dpch1, dpch2, dpch3 = 1,1,1,1,1,1,1,1
-        lowerBound = float(self.labelA.displayText())     
+
+
+        # catch this if string is empty (?)...
+        lowerBound = float(self.labelA.displayText())    
+        
+        
+ 
         sampleLifetime = " /home/muonic/muonic-read-only/data/"+self.activateOffline8.displayText()+" "
         rangeLifetime = float(self.BinningInput.displayText())
         date = time.gmtime()
         
+        cmd_string = "python %s %s %i %i %i %i %i %i %i %i | %s > lifetime.tmp && python %s %s > lifetime_to_fit.tmp && python %s %s %i %i" %(MUON_LIFETIME, sampleLifetime, ch0, ch1, ch2, ch3, dpch0, dpch1, dpch2, dpch3, askForString,GET_NUMBERS,os.path.join(os.getcwd(),"lifetime.tmp"),FIT_LIFETIME, os.path.join(os.getcwd(),"lifetime_to_fit.tmp"), lowerBound, rangeLifetime)
 
+        # I didn't get whats the difference between update and start analysis
+        ## well, I changed it, but please verify with the older revision...
+        # FIXME: Ask Gordon(!)
         if self.start_buttonStart.isChecked():
             self.logger.info("start button!")
-            p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_lifetime.py %s %i %i %i %i %i %i %i %i | %s > lifetime.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/lifetime.tmp > lifetime_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_lifetime.py /home/muonic/muonic-read-only/lifetime_to_fit.tmp %i %i" %(sampleLifetime, ch0, ch1, ch2, ch3, dpch0, dpch1, dpch2, dpch3, askForString, lowerBound, rangeLifetime), shell=True)
-            print "hier der filename: "+self.mainwindow.self.rawfilename
+            p = Popen(cmd_string, shell=True)
+
+            print "hier der filename: "+self.mainwindow.options.rawfilename
        
 
 
         if self.start_buttonUpdate.isChecked():
             self.logger.info("Update successful!")
-            p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_lifetime.py %s %i %i %i %i %i %i %i %i | %s > lifetime.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/lifetime.tmp > lifetime_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_lifetime.py /home/muonic/muonic-read-only/lifetime_to_fit.tmp %i %i" %(sampleLifetime, ch0, ch1, ch2, ch3, dpch0, dpch1, dpch2, dpch3, lowerBound, rangeLifetime), shell=True)
+            p = Popen(cmd_string, shell=True)
                     
  
     def activateOfflineClicked1(self):
@@ -701,13 +722,17 @@ class TabWidget(QtGui.QWidget):
             
         #av,bv,cv,dv = 1,2,0,0
 
+        cmd_string = "python %s %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python %s %s > velocity_to_fit.tmp && python %s %s %i" %(MUON_VELOCITY,sampleVelocity,av,bv,cv,dv,distanceChannels,GET_NUMBERS,os.path.join(os.getcwd(),"velocity.tmp"),FIT_VELOCITY,os.path.join(os.getcwd(),"velocity_to_fit.tmp"),rangeVelocity)
         if self.start_buttonStart1.isChecked():
             self.logger.info("start button!")
-            p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_velocity.py %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/velocity.tmp > velocity_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_velocity.py /home/muonic/muonic-read-only/velocity_to_fit.tmp %i" %(sampleVelocity,av,bv,cv,dv,distanceChannels,rangeVelocity), shell=True)
+            p = Popen(cmd_string,shell =True)
+            #p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_velocity.py %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/velocity.tmp > velocity_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_velocity.py /home/muonic/muonic-read-only/velocity_to_fit.tmp %i" %(sampleVelocity,av,bv,cv,dv,distanceChannels,rangeVelocity), shell=True)
                     
         if self.start_buttonUpdate1.isChecked():
             self.logger.info("Update successful!")
-            p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_velocity.py %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/velocity.tmp > velocity_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_velocity.py /home/muonic/muonic-read-only/velocity_to_fit.tmp %i " %(sampleVelocity, av,bv,cv,dv,distanceChannels,rangeVelocity), shell=True)
+            p = Popen(cmd_string,shell=True) #FIXME: we should not execute anything through the shell, because it might be different on different systems!
+
+            #p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_velocity.py %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/velocity.tmp > velocity_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_velocity.py /home/muonic/muonic-read-only/velocity_to_fit.tmp %i " %(sampleVelocity, av,bv,cv,dv,distanceChannels,rangeVelocity), shell=True)
 
         
 
@@ -779,28 +804,23 @@ class TabWidget(QtGui.QWidget):
 
      
     def timerEvent(self,ev):
-        """Custom timerEvent code, called at timer event receive"""
+        """
+        Update the widgets
+        """
         # get the scalar information from the card
         self.mainwindow.outqueue.put('DS')
 
         # we have to know, when we sent the command
         now = time.time()
-        # we define an intervall here
-        if self.mainwindow.ini:
-             self.logger.debug("Ini condition unset!")
-             self.mainwindow.lastscalarquery = now
-             self.mainwindow.ini = False
-        else:
-             self.mainwindow.thisscalarquery = now - self.mainwindow.lastscalarquery
-             self.mainwindow.lastscalarquery = now
-             # when initiaizing, the timewindow is large,
-             # omitting this by requesting values below
-             # an arbitrary of 10000
-             if self.scalars_result and self.scalars_result[5] < 10000:
-                 if not self.holdplot:
-                     self.scalars_monitor.update_plot(self.scalars_result)
+        self.mainwindow.thisscalarquery = now - self.mainwindow.lastscalarquery
+        self.mainwindow.lastscalarquery = now
+        # when initiaizing, the timewindow is large,
+        # omitting this by requesting values below
+        # an arbitrary of 10000
+        if self.scalars_result and self.scalars_result[5] < 10000:
+            if not self.holdplot:
+                self.scalars_monitor.update_plot(self.scalars_result)
 
-    
         self.logger.debug("The differcene between two sent 'DS' commands is %4.2f seconds" %self.mainwindow.thisscalarquery)
 
         

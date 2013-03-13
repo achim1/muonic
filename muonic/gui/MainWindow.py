@@ -23,6 +23,10 @@ from ConfigDialog import ConfigDialog
 from HelpDialog import HelpDialog
 from TabWidget import TabWidget
 
+# temporary, might (should?) go away in future revision..
+# GTabWidget is Gordon's version of TabWidget
+from GTabWidget import GTabWidget
+
 import muonic.analysis.PulseAnalyzer as pa
 tr = QtCore.QCoreApplication.translate
 
@@ -32,7 +36,7 @@ class MuonicOptions:
     options for the program
     """
 
-    def __init__(self,timewindow,writepulses,nostatus,user):
+    def __init__(self,timewindow,writepulses,nostatus,user,gordon):
 
         # put the file in the data directory
         # we chose a global format for naming the files -> decided on 18/01/2012
@@ -69,6 +73,7 @@ class MuonicOptions:
         self.nostatus    = nostatus
         self.mudecaymode = False
         self.showpulses  = False
+        self.gordon      = gordon
 
 class MainWindow(QtGui.QMainWindow):
     """
@@ -78,7 +83,7 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, inqueue, outqueue, logger, opts, root, win_parent = None):
 
         self.logger  = logger
-        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user)
+        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user,opts.gordon)
 
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
@@ -164,7 +169,11 @@ class MainWindow(QtGui.QMainWindow):
         Initialize the tab widget
         """
        
-        self.tabwidget = TabWidget(self, self.options.timewindow, self.logger)       
+        if self.options.gordon:
+            self.tabwidget = GTabWidget(self, self.options.timewindow, self.logger)       
+        else:
+            self.tabwidget = TabWidget(self,self.options.timewindow,self.logger)
+
         self.setCentralWidget(self.tabwidget)
 
         # provide buttons to exit the application
@@ -428,6 +437,7 @@ class MainWindow(QtGui.QMainWindow):
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
+                return 
 
             # Check contents of message and do what it says
             self.tabwidget.text_box.appendPlainText(str(msg))
