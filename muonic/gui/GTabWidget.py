@@ -651,17 +651,15 @@ class GTabWidget(QtGui.QWidget):
         # catch this if string is empty (?)...
         lowerBound = float(self.labelA.displayText())    
         
-        
- 
-        sampleLifetime = " /home/muonic/muonic-read-only/data/"+self.activateOffline8.displayText()+" "
+        sampleLifetime = self.activateOffline8.displayText()+" "
         rangeLifetime = float(self.BinningInput.displayText())
         date = time.gmtime()
         
         cmd_string = "python %s %s %i %i %i %i %i %i %i %i | %s > lifetime.tmp && python %s %s > lifetime_to_fit.tmp && python %s %s %i %i" %(MUON_LIFETIME, sampleLifetime, ch0, ch1, ch2, ch3, dpch0, dpch1, dpch2, dpch3, askForString,GET_NUMBERS,os.path.join(os.getcwd(),"lifetime.tmp"),FIT_LIFETIME, os.path.join(os.getcwd(),"lifetime_to_fit.tmp"), lowerBound, rangeLifetime)
 
-        # I didn't get whats the difference between update and start analysis
-        ## well, I changed it, but please verify with the older revision...
-        # FIXME: Ask Gordon(!)
+        
+        # Gordon: "some users are afraid to click the start button, so I implemented an update button as well...."
+
         if self.start_buttonStart.isChecked():
             self.logger.info("start button!")
             p = Popen(cmd_string, shell=True)
@@ -679,7 +677,7 @@ class GTabWidget(QtGui.QWidget):
 
         self.outputfile = open(self.mainwindow.options.rawfilename,"w")
         distanceChannels =  float(self.labelB.displayText())
-        sampleVelocity = " /home/muonic/muonic-read-only/data/"+self.activateOffline18.displayText() 
+        sampleVelocity = self.activateOffline18.displayText() 
         rangeVelocity =  float(self.BinningInputVelo.displayText())
         av,bv,cv,dv = 0,0,0,0
 
