@@ -5,7 +5,6 @@ from PyQt4.QtGui import QFont
 from PyQt4.QtGui import QFrame
 from PyQt4.QtGui import QLabel
 from subprocess import Popen
-import signal
 
 from LineEdit import LineEdit
 from PeriodicCallDialog import PeriodicCallDialog
@@ -505,8 +504,8 @@ class GTabWidget(QtGui.QWidget):
 
 
     def activateOfflineClicked(self):
-        print "hier der filename: "+self.mainwindow.options.rawfilename
-        self.outputfile = open(self.mainwindow.options.rawfilename,"w")
+        #self.logger.info("hier der filename: "+self.mainwindow.options.rawfilename)
+        #self.outputfile = open(self.mainwindow.options.rawfilename,"r")
         askForString=""
         #dpch0, dpch1, dpch2, dpch3, ch0, ch1, ch2, ch3+++++++++++++++++ 
         ch0, ch1, ch2, ch3, dpch0, dpch1, dpch2, dpch3 = 0,0,0,0,0,0,0,0
@@ -652,6 +651,8 @@ class GTabWidget(QtGui.QWidget):
         lowerBound = float(self.labelA.displayText())    
         
         sampleLifetime = self.activateOffline8.displayText()+" "
+        self.logger.info("Using the following file %s" %sampleLifetime.__repr__())
+
         rangeLifetime = float(self.BinningInput.displayText())
         date = time.gmtime()
         
@@ -663,19 +664,20 @@ class GTabWidget(QtGui.QWidget):
         if self.start_buttonStart.isChecked():
             self.logger.info("start button!")
             p = Popen(cmd_string, shell=True)
-
-            print "hier der filename: "+self.mainwindow.options.rawfilename
-       
+            result = p.communicate()
+            self.logger.info("Subprocess returned" + result.__repr__())
 
 
         if self.start_buttonUpdate.isChecked():
             self.logger.info("Update successful!")
             p = Popen(cmd_string, shell=True)
+            result = p.communicate()
+            self.logger.info("Subprocess returned" + result.__repr__())
                     
  
     def activateOfflineClicked1(self):
 
-        self.outputfile = open(self.mainwindow.options.rawfilename,"w")
+        #self.outputfile = open(self.mainwindow.options.rawfilename,"r")
         distanceChannels =  float(self.labelB.displayText())
         sampleVelocity = self.activateOffline18.displayText() 
         rangeVelocity =  float(self.BinningInputVelo.displayText())
@@ -724,11 +726,15 @@ class GTabWidget(QtGui.QWidget):
         if self.start_buttonStart1.isChecked():
             self.logger.info("start button!")
             p = Popen(cmd_string,shell =True)
+            result = p.communicate()
+            self.logger.info("Subprocess returned" + result.__repr__())
             #p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_velocity.py %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/velocity.tmp > velocity_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_velocity.py /home/muonic/muonic-read-only/velocity_to_fit.tmp %i" %(sampleVelocity,av,bv,cv,dv,distanceChannels,rangeVelocity), shell=True)
                     
         if self.start_buttonUpdate1.isChecked():
             self.logger.info("Update successful!")
             p = Popen(cmd_string,shell=True) #FIXME: we should not execute anything through the shell, because it might be different on different systems!
+            result = p.communicate()
+            self.logger.info("Subprocess returned" + result.__repr__())
 
             #p= Popen("python /home/muonic/muonic-read-only/muonic/analysis/muon_velocity.py %s %i %i %i %i %i | grep meterperseconds > velocity.tmp && python /home/muonic/muonic-read-only/muonic/analysis/get_numbers.py /home/muonic/muonic-read-only/velocity.tmp > velocity_to_fit.tmp && python /home/muonic/muonic-read-only/muonic/analysis/fit_velocity.py /home/muonic/muonic-read-only/velocity_to_fit.tmp %i " %(sampleVelocity, av,bv,cv,dv,distanceChannels,rangeVelocity), shell=True)
 
