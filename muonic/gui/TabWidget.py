@@ -12,6 +12,8 @@ from PeriodicCallDialog import PeriodicCallDialog
 from ScalarsCanvas import ScalarsCanvas
 from LifetimeCanvas import LifetimeCanvas
 from PulseCanvas import PulseCanvas
+from DecayConfigDialog import DecayConfigDialog
+
 
 from muonic.analysis import fit
 
@@ -26,6 +28,9 @@ import os
 import shutil
 import numpy as n
 import time
+
+
+
 
 
 tr = QtCore.QCoreApplication.translate
@@ -233,9 +238,40 @@ class TabWidget(QtGui.QWidget):
         """
  
         now = datetime.datetime.now()
-
         if not self.mainwindow.options.mudecaymode:
             if self.activateMuondecay.isChecked():
+
+                # launch the settings window
+                config_window = DecayConfigDialog()
+                rv = config_window.exec_()
+                if rv == 1:
+
+                    chan0_single = config_window.singleChan0.isChecked()
+                    chan1_single = config_window.singleChan1.isChecked()
+                    chan2_single = config_window.singleChan2.isChecked()
+                    chan3_single = config_window.singleChan3.isChecked()
+                    chan0_double = config_window.doubleChan0.isChecked()
+                    chan1_double = config_window.doubleChan1.isChecked()
+                    chan2_double = config_window.doubleChan2.isChecked()
+                    chan3_double = config_window.doubleChan3.isChecked()
+                    chan0_veto   = config_window.vetoChan0.isChecked()
+                    chan1_veto   = config_window.vetoChan1.isChecked()
+                    chan2_veto   = config_window.vetoChan2.isChecked()
+                    chan3_veto   = config_window.vetoChan3.isChecked()
+
+                    for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
+                        if channel[1]:
+                            self.mainwindow.options.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+                # FIXME! 
+                    for channel in enumerate([chan0_double,chan1_double,chan2_double,chan3_double]):
+                        if channel[1]:
+                            self.mainwindow.options.doublepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+
+                    for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
+                        if channel[1]:
+                            self.mainwindow.options.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+
+
                 self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
 
                 self.logger.warning("Changing gate width and enabeling pulses") 

@@ -276,15 +276,15 @@ class DecayTriggerThorough:
         self.triggerwindow = 10000 # 10 musec set at DAQ -> in ns since
                                    # TMC info is in nsec
 
-    def trigger(self,triggerpulses):
+    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4):
         """
         Hardcoded use of chan 1,2,3!!
         """ 
         ttp = triggerpulses       
 
-        pulses1 = len(ttp[2]) 
-        pulses2 = len(ttp[3])
-        pulses3 = len(ttp[4])
+        pulses1 = len(ttp[single_channel]) # single pulse 
+        pulses2 = len(ttp[double_channel]) # double pulse
+        pulses3 = len(ttp[veto_channel])   # veto pulses
         time    = ttp[0]
 
         decaytime = 0

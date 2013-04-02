@@ -75,6 +75,11 @@ class MuonicOptions:
         self.showpulses  = False
         self.gordon      = gordon
 
+        # options for muondecay
+        self.singlepulsechannel = 2
+        self.doublepulsechannel = 3
+        self.vetopulsechannel   = 4
+
 class MainWindow(QtGui.QMainWindow):
     """
     The main application
@@ -531,7 +536,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 if self.options.mudecaymode:
                     if self.pulses != None:
-                        tmpdecay = self.dtrigger.trigger(self.pulses)                   
+                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel)                   
                         if tmpdecay != None:
                             when = time.asctime()
                             self.decay.append((tmpdecay/100.,when))
