@@ -21,16 +21,11 @@ import time
 from ..analysis import PulseAnalyzer as pa
 
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog
-#from ThresholdDialog import ThresholdDialog
-#from ConfigDialog import ConfigDialog
-#from HelpDialog import HelpDialog
 from TabWidget import TabWidget
 
 # temporary, might (should?) go away in future revision..
 # GTabWidget is Gordon's version of TabWidget
 from GTabWidget import GTabWidget
-
-
 
 tr = QtCore.QCoreApplication.translate
 
@@ -214,7 +209,7 @@ class MainWindow(QtGui.QMainWindow):
         aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
         self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
         # create the menubar and fill it with the submenus
-        menubar = self.menuBar()
+        menubar  = self.menuBar()
         filemenu = menubar.addMenu(tr('MainWindow','&File'))
         filemenu.addAction(exit)
         settings = menubar.addMenu(tr('MainWindow', '&Settings'))

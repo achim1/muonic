@@ -56,10 +56,10 @@ class TabWidget(QtGui.QWidget):
         self.lastdecaytime    = 'None'
 
         # provide the items which should go into the tabs
-        self.label = QtGui.QLabel(tr('MainWindow','Command'))
-        self.hello_edit = LineEdit()
+        self.label        = QtGui.QLabel(tr('MainWindow','Command'))
+        self.hello_edit   = LineEdit()
         self.hello_button = QtGui.QPushButton(tr('MainWindow','Send'))
-        self.file_button = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
+        self.file_button  = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
         self.periodic_button = QtGui.QPushButton(tr('MainWindow', 'Periodic Call'))
 
         QtCore.QObject.connect(self.hello_button,

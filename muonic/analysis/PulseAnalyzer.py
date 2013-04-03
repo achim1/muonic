@@ -284,7 +284,7 @@ class DecayTriggerThorough:
         """
         Trigger on a certain combination of single and doublepulses
         """ 
-        print single_channel, double_channel, veto_channel,mindecaytime
+        #print single_channel, double_channel, veto_channel,mindecaytime
 
         ttp = triggerpulses       
 
@@ -316,7 +316,7 @@ class DecayTriggerThorough:
         # ..
 
 
-        if (pulses1 >= 1) and (selfveto and (not pulses2 )):
+        if (pulses1 >= 1) and ((not selfveto) or (not pulses2 )):
             # RE2 - LE1
             decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
         
@@ -324,7 +324,7 @@ class DecayTriggerThorough:
         # then we do not want to have more than one
         # hit in the first    
         # again: use selfveto to adjust the behavior
-        if (pulses2 == 2) and ((pulses1 == 1) and selfveto):
+        if (pulses2 == 2) and ((pulses1 == 1) or (not selfveto)):
             # subtract rising edges, falling edges might be virtual
             decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
              
@@ -340,7 +340,7 @@ class DecayTriggerThorough:
 if __name__ == '__main__':
 
     	
-    import sys
+    import sys 
 
     data = open(sys.argv[1])
     extractor = PulseExtractor()
