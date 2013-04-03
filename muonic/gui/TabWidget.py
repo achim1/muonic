@@ -7,17 +7,16 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 
 from LineEdit import LineEdit
-from PeriodicCallDialog import PeriodicCallDialog
+#from PeriodicCallDialog import PeriodicCallDialog
 
 from ScalarsCanvas import ScalarsCanvas
 from LifetimeCanvas import LifetimeCanvas
 from PulseCanvas import PulseCanvas
-from DecayConfigDialog import DecayConfigDialog
+from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog
 
 
-from muonic.analysis import fit
+from ..analysis.fit import main as fit
 
-import muonic.analysis.PulseAnalyzer as pa
 
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar
@@ -28,10 +27,6 @@ import os
 import shutil
 import numpy as n
 import time
-
-
-
-
 
 tr = QtCore.QCoreApplication.translate
 
@@ -229,7 +224,7 @@ class TabWidget(QtGui.QWidget):
         """
         fit the muon decay histogram
         """
-        fitresults = fit.main(bincontent=n.asarray(self.lifetime_monitor.heights))
+        fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights))
         self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
     def activateMuondecayClicked(self):
@@ -246,19 +241,21 @@ class TabWidget(QtGui.QWidget):
                 rv = config_window.exec_()
                 if rv == 1:
 
-                    chan0_single = config_window.singleChan0.isChecked()
-                    chan1_single = config_window.singleChan1.isChecked()
-                    chan2_single = config_window.singleChan2.isChecked()
-                    chan3_single = config_window.singleChan3.isChecked()
-                    chan0_double = config_window.doubleChan0.isChecked()
-                    chan1_double = config_window.doubleChan1.isChecked()
-                    chan2_double = config_window.doubleChan2.isChecked()
-                    chan3_double = config_window.doubleChan3.isChecked()
-                    chan0_veto   = config_window.vetoChan0.isChecked()
-                    chan1_veto   = config_window.vetoChan1.isChecked()
-                    chan2_veto   = config_window.vetoChan2.isChecked()
-                    chan3_veto   = config_window.vetoChan3.isChecked()
+                    chan0_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_0")).isChecked()
+                    chan1_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_1")).isChecked()
+                    chan2_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_2")).isChecked()
+                    chan3_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_3")).isChecked()
+                    chan0_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_0")).isChecked()
+                    chan1_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_1")).isChecked()
+                    chan2_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_2")).isChecked()
+                    chan3_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_3")).isChecked()
+                    chan0_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
+                    chan1_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
+                    chan2_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
+                    chan3_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_3")).isChecked()
+                    strict       = config_window.strict.isChecked()
 
+                    self.mainwindow.options.decay_strict = strict
                     for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
                         if channel[1]:
                             self.mainwindow.options.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
@@ -275,6 +272,10 @@ class TabWidget(QtGui.QWidget):
                 self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
 
                 self.logger.warning("Changing gate width and enabeling pulses") 
+                self.logger.info("Looking for single pulse in Channel %i" %self.mainwindow.options.singlepulsechannel)
+                self.logger.info("Looking for double pulse in Channel %i" %self.mainwindow.options.doublepulsechannel)
+                self.logger.info("Using veto pulses in Channel %i" %self.mainwindow.options.vetopulsechannel)
+
                 self.mainwindow.outqueue.put("CE") 
                 self.mainwindow.outqueue.put("WC 03 04")
                                  

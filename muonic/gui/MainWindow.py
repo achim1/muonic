@@ -18,16 +18,20 @@ import shutil
 import time
 
 # muonic imports
-from ThresholdDialog import ThresholdDialog
-from ConfigDialog import ConfigDialog
-from HelpDialog import HelpDialog
+from ..analysis import PulseAnalyzer as pa
+
+from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog
+#from ThresholdDialog import ThresholdDialog
+#from ConfigDialog import ConfigDialog
+#from HelpDialog import HelpDialog
 from TabWidget import TabWidget
 
 # temporary, might (should?) go away in future revision..
 # GTabWidget is Gordon's version of TabWidget
 from GTabWidget import GTabWidget
 
-import muonic.analysis.PulseAnalyzer as pa
+
+
 tr = QtCore.QCoreApplication.translate
 
 class MuonicOptions:
@@ -79,6 +83,7 @@ class MuonicOptions:
         self.singlepulsechannel = 2
         self.doublepulsechannel = 3
         self.vetopulsechannel   = 4
+        self.decay_strict       = False
 
 class MainWindow(QtGui.QMainWindow):
     """
@@ -109,7 +114,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # the pulseextractor for direct analysis
         self.pulseextractor = pa.PulseExtractor(pulsefile=self.options.pulsefilename) 
-        self.dtrigger = pa.DecayTriggerThorough()
+        self.dtrigger = pa.DecayTriggerThorough(logger)
         self.pulses = None
 
         # initialize MainWindow gui
@@ -341,24 +346,25 @@ class MainWindow(QtGui.QMainWindow):
         rv = config_window.exec_()
         if rv == 1:
             
-            chan0_active = config_window.activateChan0.isChecked() 
-            chan1_active = config_window.activateChan1.isChecked() 
-            chan2_active = config_window.activateChan2.isChecked() 
-            chan3_active = config_window.activateChan3.isChecked() 
-            singles = config_window.coincidenceSingles.isChecked() 
+            chan0_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_0")).isChecked() 
+            chan1_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_1")).isChecked() 
+            chan2_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_2")).isChecked() 
+            chan3_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_3")).isChecked() 
+            
+            singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
             if singles:
                 self.tabwidget.scalars_monitor.do_not_show_trigger = True
             else:
                 self.tabwidget.scalars_monitor.do_not_show_trigger = False
             
-            twofold   = config_window.coincidenceTwofold.isChecked() 
-            threefold = config_window.coincidenceThreefold.isChecked() 
-            fourfold  = config_window.coincidenceFourfold.isChecked() 
+            twofold   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_1")).isChecked() 
+            threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 
+            fourfold  = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_3")).isChecked() 
 
-            noveto    = config_window.noveto.isChecked()
-            vetochan1 = config_window.vetochan1.isChecked()
-            vetochan2 = config_window.vetochan2.isChecked()
-            vetochan3 = config_window.vetochan3.isChecked()
+            noveto    = config_window.findChild(QtGui.QGroupBox,QtCore.QString("vetocheckbox")).isChecked()
+            vetochan1 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
+            vetochan2 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
+            vetochan3 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
 
             tmp_msg = ''
     
@@ -536,7 +542,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 if self.options.mudecaymode:
                     if self.pulses != None:
-                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel)                   
+                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,strict = self.options.decay_strict)                   
                         if tmpdecay != None:
                             when = time.asctime()
                             self.decay.append((tmpdecay/100.,when))

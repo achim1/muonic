@@ -7,17 +7,17 @@ from PyQt4.QtGui import QLabel
 from subprocess import Popen
 
 from LineEdit import LineEdit
-from PeriodicCallDialog import PeriodicCallDialog
+from MuonicDialogs import PeriodicCallDialog
 
 from ScalarsCanvas import ScalarsCanvas
 #from LifetimeCanvas import LifetimeCanvas
 from PulseCanvas import PulseCanvas
 #from VelocityCanvas import VelocityCanvas
 
-from muonic.analysis import fit
+from ..analysis import fit
 
-import muonic.analysis.PulseAnalyzer as pa
-import muonic.analysis.get_time as get_time
+from ..analysis import PulseAnalyzer as pa
+from ..analysis import get_time as get_time
 
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar

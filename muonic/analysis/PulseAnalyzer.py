@@ -272,14 +272,17 @@ class DecayTriggerThorough:
     Should operate for a 10mu sec triggerwindow
     """   
 
-    def __init__(self):
+    def __init__(self,logger):
         self.triggerwindow = 10000 # 10 musec set at DAQ -> in ns since
                                    # TMC info is in nsec
+        self.logger = logger
+        self.logger.info("Initializing decay trigger, setting triggerwindow to %i" %self.triggerwindow)
 
-    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4):
+    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,strict=False,minpulses=3):
         """
-        Hardcoded use of chan 1,2,3!!
+        Trigger on a certain combination of single and doublepulses
         """ 
+
         ttp = triggerpulses       
 
         pulses1 = len(ttp[single_channel]) # single pulse 
@@ -289,27 +292,44 @@ class DecayTriggerThorough:
 
         decaytime = 0
 
-        # require at least two pulses in either channel 1 or 2
+        # reject events with too few pulses
+        # in some setups good value will be three
+        # (single pulse + double pulse required)
         # and no hits in the veto channel3
-        if (pulses1 + pulses2 < 3) or pulses3:
-             return None
+        # change this if only one channel is available
+
+        if (pulses1 + pulses2 < minpulses) or pulses3:
+            # reject event if it has to few pulses
+            # or veto pulses
+            self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
+            return None
 
         # check if the muon entered the first channel and
         # decayed there
-        if (pulses1 > 1) and (not pulses2):
+        # use the strict flag to restrict the event
+        # if there are pulses in the "doublepulsechannel"
+        # this makes sense if the muon decayed in the first
+        # channel
+        # if you want that this trigger behaves EXACTLY
+        # like selected use strict!
+        # otherwise use the chance to collect more
+        # statistic 
+        if (pulses1 > 1) and ((not strict) or (not pulses2 )):
             # RE2 - LE1
             decaytime = ttp[2][-1][1] - ttp[2][0][0]
         
         # or it might have entered the second channel
         # then we do not want to have more than one
         # hit in the first    
-        if (pulses2 > 1) and (pulses1 == 1):
+        # again: use strict to adjust the behavior
+        if (pulses2 > 1) and (pulses1 == 1 or (not strict)):
             # subtract rising edges, falling edges might be virtual
             decaytime = ttp[3][-1][0] - ttp[3][0][0]
              
 
         # perform sanity checks
         if (decaytime > 0) and (decaytime < self.triggerwindow):
+            self.logger.debug("Decay with decaytime &d rejected " %decaytime)
             return decaytime
 
 
