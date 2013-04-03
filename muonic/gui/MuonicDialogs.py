@@ -76,18 +76,31 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Double Pulse",objectname = "doublecheckbox",leftoffset=180,setchecked=[2]), 0, 1)
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Veto Pulse",objectname = "vetocheckbox",leftoffset=300,    setchecked=[3]), 0, 2)
         
-        self.strict = QtGui.QCheckBox(self)
-        self.strict.setChecked(False)
-        self.strict.setGeometry(QtCore.QRect(20, 300, 119, 28))
-        self.strict.setText("Do strictly what I say!")
-        grid.addWidget(self.strict,1,0)
+        self.selfveto = QtGui.QCheckBox(self)
+        self.selfveto.setChecked(False)
+        self.selfveto.setGeometry(QtCore.QRect(20, 300, 119, 28))
+        self.selfveto.setText("Use Selfveto")
+        self.selfveto.setToolTip(QtCore.QString("Reject events which have more than\n one pulse in the single pulse channel or\n pulses in the doublepulse channel if double pulses are already detected in the first channel\n WARNING: This option is dedicated for 3 channel scintilator setup!"))
+        grid.addWidget(self.selfveto,1,0)
 
+        # add two line edits to perform cuts on the events
+        self.mintime = QtGui.QLineEdit()
+        self.mintime_label = QtGui.QLabel("Minimum time between\n two pulses (in ns)")
+        self.mintime.setText("0")
+        self.mintime.setValidator(QtGui.QIntValidator())
+        self.mintime.setToolTip(QtCore.QString("Reject events where the double pulses are too close together"))
+        self.mintime.setMaxLength(5)
+        #self.mintime.setMaximumWidth(60)
+        grid.addWidget(self.mintime,2,0)
+        grid.addWidget(self.mintime_label,2,1)
+        
+        
         self.buttonBox = self.createButtonBox(leftoffset=200)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
         
-        grid.addWidget(self.buttonBox,1,1)
+        grid.addWidget(self.buttonBox,2,2)
         self.setLayout(grid)
 
         self.show()
@@ -150,6 +163,10 @@ class ThresholdDialog(MuonicDialog):
         self.ch1_input = QtGui.QLineEdit()
         self.ch2_input = QtGui.QLineEdit()
         self.ch3_input = QtGui.QLineEdit()
+        self.ch0_input.setValidator(QtGui.QIntValidator())
+        self.ch1_input.setValidator(QtGui.QIntValidator())
+        self.ch2_input.setValidator(QtGui.QIntValidator())
+        self.ch3_input.setValidator(QtGui.QIntValidator())
         self.label0 = QtGui.QLabel("Chan0: %s" %thr0)
         self.label1 = QtGui.QLabel("Chan1: %s" %thr1)
         self.label2 = QtGui.QLabel("Chan2: %s" %thr2)
@@ -357,7 +374,9 @@ if __name__ == "__main__":
     import sys
 
     app = QtGui.QApplication(sys.argv)
-    Dialog = ConfigDialog()
+    dialog  = ConfigDialog()
+    ddialog = DecayConfigDialog()
+    tdialog = ThresholdDialog(42,42,42,42)
     sys.exit(app.exec_())
 
 

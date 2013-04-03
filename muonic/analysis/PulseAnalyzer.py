@@ -251,8 +251,10 @@ class PulseExtractor:
                     counter_diff -= int(0xffffffff)
         
                 counter_diff = counter_diff/self.calculatedfrequency
+                
                 #print counter_diff,counter_diff*1e9,' edges diff'
-        
+       
+                 
                 self._calculate_edges(line,counter_diff=counter_diff*1e9)
         # end of if triggerflag
 
@@ -278,10 +280,11 @@ class DecayTriggerThorough:
         self.logger = logger
         self.logger.info("Initializing decay trigger, setting triggerwindow to %i" %self.triggerwindow)
 
-    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,strict=False,minpulses=3):
+    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,selfveto=False,mindecaytime=0):
         """
         Trigger on a certain combination of single and doublepulses
         """ 
+        print single_channel, double_channel, veto_channel,mindecaytime
 
         ttp = triggerpulses       
 
@@ -298,7 +301,7 @@ class DecayTriggerThorough:
         # and no hits in the veto channel3
         # change this if only one channel is available
 
-        if (pulses1 + pulses2 < minpulses) or pulses3:
+        if (pulses1 + pulses2 < 2) or pulses3:
             # reject event if it has to few pulses
             # or veto pulses
             self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
@@ -306,30 +309,30 @@ class DecayTriggerThorough:
 
         # check if the muon entered the first channel and
         # decayed there
-        # use the strict flag to restrict the event
+        # use the selfveto flag to reject the event
         # if there are pulses in the "doublepulsechannel"
         # this makes sense if the muon decayed in the first
         # channel
-        # if you want that this trigger behaves EXACTLY
-        # like selected use strict!
-        # otherwise use the chance to collect more
-        # statistic 
-        if (pulses1 > 1) and ((not strict) or (not pulses2 )):
+        # ..
+
+
+        if (pulses1 >= 1) and (selfveto and (not pulses2 )):
             # RE2 - LE1
-            decaytime = ttp[2][-1][1] - ttp[2][0][0]
+            decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
         
         # or it might have entered the second channel
         # then we do not want to have more than one
         # hit in the first    
-        # again: use strict to adjust the behavior
-        if (pulses2 > 1) and (pulses1 == 1 or (not strict)):
+        # again: use selfveto to adjust the behavior
+        if (pulses2 == 2) and ((pulses1 == 1) and selfveto):
             # subtract rising edges, falling edges might be virtual
-            decaytime = ttp[3][-1][0] - ttp[3][0][0]
+            decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
              
 
+
         # perform sanity checks
-        if (decaytime > 0) and (decaytime < self.triggerwindow):
-            self.logger.debug("Decay with decaytime &d rejected " %decaytime)
+        if (decaytime > mindecaytime) and (decaytime < self.triggerwindow):
+            self.logger.debug("Decay with decaytime %d found " %decaytime)
             return decaytime
 
 

@@ -83,7 +83,8 @@ class MuonicOptions:
         self.singlepulsechannel = 2
         self.doublepulsechannel = 3
         self.vetopulsechannel   = 4
-        self.decay_strict       = False
+        self.decay_selfveto     = False
+        self.decay_mintime      = 0
 
 class MainWindow(QtGui.QMainWindow):
     """
@@ -207,8 +208,11 @@ class MainWindow(QtGui.QMainWindow):
         # helpmenu
         helpdaqcommands = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'DAQ Commands', self)
         self.connect(helpdaqcommands, QtCore.SIGNAL('triggered()'), self.help_menu)
-        scalars = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'Scalars', self)
+        #scalars = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'Scalars', self)
 
+        # about
+        aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
+        self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
         # create the menubar and fill it with the submenus
         menubar = self.menuBar()
         filemenu = menubar.addMenu(tr('MainWindow','&File'))
@@ -219,6 +223,7 @@ class MainWindow(QtGui.QMainWindow):
 
         helpmenu = menubar.addMenu(tr('MainWindow','&Help'))
         helpmenu.addAction(helpdaqcommands)
+        helpmenu.addAction(aboutmuonic)
  
     def exit_program(self,*args):
         """
@@ -310,7 +315,9 @@ class MainWindow(QtGui.QMainWindow):
         if rv == 1:
             # Here we should set the thresholds
 
-            # We have to check for integers!
+            # integer check is done with QValidator in the input field,
+            # no checks necessary
+            # FIXME: Check for value is still necessary
             self.logger.debug("Type of input text is %s and its value is %s" %(type(threshold_window.ch0_input.text()),threshold_window.ch0_input.text()))
 
             try:
@@ -423,6 +430,16 @@ class MainWindow(QtGui.QMainWindow):
         """
         help_window = HelpDialog()
         help_window.exec_()
+        
+    def about_menu(self):
+        """
+        Show a link to the online documentation
+        """
+        QtGui.QMessageBox.information(self,
+                  "about muonic",
+                  "...")
+        
+        
 
     def clear_function(self):
         """
@@ -439,12 +456,12 @@ class MainWindow(QtGui.QMainWindow):
         and parse the result to the corresponding widgets
         """
         
-        self.logger.debug("length of inqueue: %s" %self.inqueue.qsize())
+        #self.logger.debug("length of inqueue: %s" %self.inqueue.qsize())
         while self.inqueue.qsize():
 
             try:
                 msg = self.inqueue.get(0)
-                self.logger.debug("Got item from inqueue: %s" %msg.__repr__())
+                #self.logger.debug("Got item from inqueue: %s" %msg.__repr__())
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
@@ -464,7 +481,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.tabwidget.outputfile.write(str(msg)+'\n')
 
                 except ValueError:
-                    self.logger.info('Trying to write on closed file, captured!')
+                    self.logger.warning('Trying to write on closed file, captured!')
 
             # check for threshold information
             if msg.startswith('TL') and len(msg) > 9:
@@ -542,7 +559,7 @@ class MainWindow(QtGui.QMainWindow):
 
                 if self.options.mudecaymode:
                     if self.pulses != None:
-                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,strict = self.options.decay_strict)                   
+                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime)                   
                         if tmpdecay != None:
                             when = time.asctime()
                             self.decay.append((tmpdecay/100.,when))

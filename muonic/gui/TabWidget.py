@@ -253,9 +253,9 @@ class TabWidget(QtGui.QWidget):
                     chan1_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
                     chan2_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
                     chan3_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_3")).isChecked()
-                    strict       = config_window.strict.isChecked()
-
-                    self.mainwindow.options.decay_strict = strict
+                    self.mainwindow.options.decay_selfveto  = config_window.selfveto.isChecked()
+                    self.mainwindow.options.decay_mintime   = int(config_window.mintime.text())
+                    
                     for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
                         if channel[1]:
                             self.mainwindow.options.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
@@ -272,9 +272,9 @@ class TabWidget(QtGui.QWidget):
                 self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
 
                 self.logger.warning("Changing gate width and enabeling pulses") 
-                self.logger.info("Looking for single pulse in Channel %i" %self.mainwindow.options.singlepulsechannel)
-                self.logger.info("Looking for double pulse in Channel %i" %self.mainwindow.options.doublepulsechannel)
-                self.logger.info("Using veto pulses in Channel %i" %self.mainwindow.options.vetopulsechannel)
+                self.logger.info("Looking for single pulse in Channel %i" %(self.mainwindow.options.singlepulsechannel - 1))
+                self.logger.info("Looking for double pulse in Channel %i" %(self.mainwindow.options.doublepulsechannel - 1 ))
+                self.logger.info("Using veto pulses in Channel %i" %(self.mainwindow.options.vetopulsechannel - 1 ))
 
                 self.mainwindow.outqueue.put("CE") 
                 self.mainwindow.outqueue.put("WC 03 04")
