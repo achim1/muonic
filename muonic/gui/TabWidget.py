@@ -2,21 +2,17 @@
 Manage the different (physics) widgets
 """
 
+#FIXME make individual widgets and provide an easy api to add more..
+
 # Qt4 imports
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
+#muonic imports
 from LineEdit import LineEdit
-#from PeriodicCallDialog import PeriodicCallDialog
-
-from ScalarsCanvas import ScalarsCanvas
-from LifetimeCanvas import LifetimeCanvas
-from PulseCanvas import PulseCanvas
+from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog
-
-
 from ..analysis.fit import main as fit
-
 
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar
@@ -43,25 +39,25 @@ class TabWidget(QtGui.QWidget):
         self.mainwindow = mainwindow
         self.logger = logger
         self.logger.info("Timewindow is %4.2f" %timewindow)
-        self.setGeometry(0,0, self.mainwindow.reso_w,self.mainwindow.reso_h)
-        self.setWindowTitle("Debreate")
-        self.setWindowIcon(QtGui.QIcon("icon.png"))
-        self.resize(self.mainwindow.reso_w,self.mainwindow.reso_h)
-        self.setMinimumSize(self.mainwindow.reso_w,self.mainwindow.reso_h)
-        self.center()
+        self.scalars_monitor  = ScalarsCanvas(self, self.logger)
+        self.lifetime_monitor = LifetimeCanvas(self,self.logger)
+        self.pulse_monitor    = PulseCanvas(self,self.logger)  
+
+        tab_widget = self.create_tabs(["Muon Rates","Muon Lifetime","Pulse Analyzer","DAQ Output"])
+        vbox = QtGui.QVBoxLayout()
+        vbox.addWidget(tab_widget)
+        self.setLayout(vbox)   
+        
+        #################
+        # DAQ widget
+        #################  
+        
         self.write_file       = False
-        self.holdplot         = False
-        self.scalars_result   = False 
-        self.muondecaycounter = 0
-        self.lastdecaytime    = 'None'
-
-        # provide the items which should go into the tabs
-        self.label        = QtGui.QLabel(tr('MainWindow','Command'))
-        self.hello_edit   = LineEdit()
-        self.hello_button = QtGui.QPushButton(tr('MainWindow','Send'))
-        self.file_button  = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
+        self.label           = QtGui.QLabel(tr('MainWindow','Command'))
+        self.hello_edit      = LineEdit()
+        self.hello_button    = QtGui.QPushButton(tr('MainWindow','Send'))
+        self.file_button     = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
         self.periodic_button = QtGui.QPushButton(tr('MainWindow', 'Periodic Call'))
-
         QtCore.QObject.connect(self.hello_button,
                               QtCore.SIGNAL("clicked()"),
                               self.on_hello_clicked
@@ -85,43 +81,24 @@ class TabWidget(QtGui.QWidget):
         # only 500 lines history
         self.text_box.document().setMaximumBlockCount(500)
 
-        #create the several tabs 
-        tab_widget = QtGui.QTabWidget()
-        tab1 = QtGui.QWidget()
-        tab2 = QtGui.QWidget()
-        tab3 = QtGui.QWidget()
-        tab4 = QtGui.QWidget()
+        daq_layout = QtGui.QGridLayout(tab_widget.widget(3))
+        daq_layout.addWidget(self.text_box,0,0,1, 4)
+        daq_layout.addWidget(self.label,1,0)
+        daq_layout.addWidget(self.hello_edit,1,1)
+        daq_layout.addWidget(self.hello_button,1,2) 
+        daq_layout.addWidget(self.file_button,1,2) 
+        daq_layout.addWidget(self.periodic_button,1,3)   
+            
+        ################
+        # Rate widget
+        ################
 
-        p1_vertical = QtGui.QVBoxLayout(tab1)
-        p2_vertical = QtGui.QVBoxLayout(tab2)
-        p3_vertical = QtGui.QVBoxLayout(tab3)
-        p4_vertical = QtGui.QVBoxLayout(tab4)
+        self.holdplot         = False
+        self.scalars_result   = False 
 
-        tab_widget.addTab(tab1, "Muon Rates")
-        tab_widget.addTab(tab2, "Muon Lifetime")
-        tab_widget.addTab(tab3, "PulseAnalyzer")
-        tab_widget.addTab(tab4, "DAQ output")
-        
-        vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(tab_widget)
-        
-        self.setLayout(vbox)
-       
-        self.scalars_monitor  = ScalarsCanvas(self, self.logger)
-        self.lifetime_monitor = LifetimeCanvas(self,self.logger)
-        self.pulse_monitor    = PulseCanvas(self,self.logger)
-
-        # buttons for restart/clear the plot     
+        # buttons for restart/clear the plot rate plot   
         self.start_button = QtGui.QPushButton(tr('MainWindow', 'Restart'))
-        self.stop_button = QtGui.QPushButton(tr('MainWindow', 'Stop'))
-
-        # button for performing a mu lifetime fit
-        self.mufit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!'))
-        
-        QtCore.QObject.connect(self.mufit_button,
-                              QtCore.SIGNAL("clicked()"),
-                              self.mufitClicked
-                              )
+        self.stop_button  = QtGui.QPushButton(tr('MainWindow', 'Stop'))
 
         QtCore.QObject.connect(self.start_button,
                               QtCore.SIGNAL("clicked()"),
@@ -133,22 +110,28 @@ class TabWidget(QtGui.QWidget):
                               self.stopClicked
                               )
 
-        # pack theses widget into the vertical box
-        p1_vertical.addWidget(self.scalars_monitor)
-
-        # instantiate the navigation toolbar
-        p1_h_box = QtGui.QHBoxLayout()
+        rate_widget = QtGui.QGridLayout(tab_widget.widget(0))
+        rate_widget.addWidget(self.scalars_monitor,0,0,1,3)
         ntb = NavigationToolbar(self.scalars_monitor, self)
-        p1_h_box.addWidget(ntb)
-        p1_h_box.addWidget(self.start_button)
-        p1_h_box.addWidget(self.stop_button)
-        p1_second_widget = QtGui.QWidget()
-        p1_second_widget.setLayout(p1_h_box)
-        p1_vertical.addWidget(p1_second_widget)
+        rate_widget.addWidget(ntb,1,0)
+        rate_widget.addWidget(self.start_button,1,1)
+        rate_widget.addWidget(self.stop_button,1,2)
 
+        #################
+        # Mudecay widget
+        #################
+
+        self.mufit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!'))
+        
+        QtCore.QObject.connect(self.mufit_button,
+                              QtCore.SIGNAL("clicked()"),
+                              self.mufitClicked
+                              )
+
+        self.muondecaycounter = 0
+        self.lastdecaytime    = 'None'
         ntb1 = NavigationToolbar(self.lifetime_monitor, self)
 
-        # mudecay tab..
         # activate Muondecay mode with a checkbox
         self.activateMuondecay = QtGui.QCheckBox(self)
         self.activateMuondecay.setText(tr("Dialog", "Check for decayed Muons \n- Warning! this will define your coincidence/Veto settings!", None, QtGui.QApplication.UnicodeUTF8))
@@ -156,33 +139,32 @@ class TabWidget(QtGui.QWidget):
                               QtCore.SIGNAL("clicked()"),
                               self.activateMuondecayClicked
                               )
-
         self.displayMuons = QtGui.QLabel(self)
         self.lastDecay = QtGui.QLabel(self)
         self.displayMuons.setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
         self.lastDecay.setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
  
-        p2_vertical.addWidget(self.activateMuondecay)
-        p2_vertical.addWidget(self.displayMuons)
-        p2_vertical.addWidget(self.lastDecay)
-        p2_vertical.addWidget(self.lifetime_monitor)
+        decay_tab = QtGui.QGridLayout(tab_widget.widget(1))
+        decay_tab.addWidget(self.activateMuondecay,0,0)
+        decay_tab.addWidget(self.displayMuons,1,0)
+        decay_tab.addWidget(self.lastDecay,2,0)
+        decay_tab.addWidget(self.lifetime_monitor,3,0,1,2)
+        decay_tab.addWidget(ntb1,4,0)
+        decay_tab.addWidget(self.mufit_button,4,1)
+        
+        ########################
+        # Pulseanalyzer widget
+        ##########################
 
-        p2_h_box = QtGui.QHBoxLayout()
-        p2_h_box.addWidget(ntb1)
-        p2_h_box.addWidget(self.mufit_button)
-        p2_second_widget = QtGui.QWidget()
-        p2_second_widget.setLayout(p2_h_box)
-        p2_vertical.addWidget(p2_second_widget)
-
-        ntb2 = NavigationToolbar(self.pulse_monitor, self)
-
-        # the pulseanalyzer tab
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
         self.activatePulseanalyzer.setText(tr("Dialog", "Show the last triggered pulses \n in the time interval", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QObject.connect(self.activatePulseanalyzer,
                               QtCore.SIGNAL("clicked()"),
                               self.activatePulseanalyzerClicked
                               )
+        
+        p3_vertical = QtGui.QVBoxLayout(tab_widget.widget(2))
+        ntb2 = NavigationToolbar(self.pulse_monitor, self)
         p3_vertical.addWidget(self.activatePulseanalyzer)
         p3_vertical.addWidget(self.pulse_monitor)
         p3_vertical.addWidget(ntb2)
@@ -195,16 +177,17 @@ class TabWidget(QtGui.QWidget):
         self.timerEvent(None)
         self.timer = self.startTimer(timewindow*1000)
 
-        p4_vertical.addWidget(self.text_box)
-        daq_widget = QtGui.QWidget()
-        h_box = QtGui.QHBoxLayout()
-        h_box.addWidget(self.label)
-        h_box.addWidget(self.hello_edit)
-        h_box.addWidget(self.hello_button)
-        h_box.addWidget(self.file_button)
-        h_box.addWidget(self.periodic_button)
-        daq_widget.setLayout(h_box)
-        p4_vertical.addWidget(daq_widget)
+    def create_tabs(self,tablabels):
+        """
+        Create len(tablabels) tabs in a new widget.
+        Return the new widget
+        """
+        tab_widget = QtGui.QTabWidget()
+        for label in tablabels:
+            tab = QtGui.QWidget()
+            tab_widget.addTab(tab,label)
+        
+        return tab_widget
         
     def startClicked(self):
         """
@@ -267,7 +250,6 @@ class TabWidget(QtGui.QWidget):
                     for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
                         if channel[1]:
                             self.mainwindow.options.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
-
 
                 self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
 

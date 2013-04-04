@@ -76,10 +76,7 @@ def main(bincontent=None):
         # we have to adjust the bins
         # to the values of the used histogram
 
-
-
-
-        bins = numpy.linspace(0,20,84)
+        bins = numpy.linspace(0,10,21)
         bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
 
         # we cut the leading edge of the distribution away for the fit

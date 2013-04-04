@@ -8,10 +8,10 @@ from subprocess import Popen
 
 from LineEdit import LineEdit
 from MuonicDialogs import PeriodicCallDialog
-
-from ScalarsCanvas import ScalarsCanvas
+from MuonicPlotCanvases import ScalarsCanvas,PulseCanvas
+#from ScalarsCanvas import ScalarsCanvas
 #from LifetimeCanvas import LifetimeCanvas
-from PulseCanvas import PulseCanvas
+#from PulseCanvas import PulseCanvas
 #from VelocityCanvas import VelocityCanvas
 
 from ..analysis import fit

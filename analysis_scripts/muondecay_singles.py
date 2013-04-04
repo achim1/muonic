@@ -75,7 +75,7 @@ for filename in files:
     else:
         f = open(filename)
     for line in f:
-        print line
+        #print line
         fields = line.rstrip("\n").split(" ")
         # Ignore malformed lines
         if len(fields) != 16:
@@ -124,24 +124,24 @@ for filename in files:
         correction = fields[15]
         seconds = time_to_seconds(time,correction)+(trigger_count - onepps_count)/freq
         if time == last_time and switched_onepps:
-            print "Correcting delayed onepps switch:",seconds,line
+            #print "Correcting delayed onepps switch:",seconds,line
             seconds = time_to_seconds(time,correction)+(trigger_count - prevlast_onepps)/freq
         else:
             last_time = time
             switched_onepps = False
         
         if trigger_count < last_triggercount and not switched_onepps:
-            print "Correcting trigger count rollover:",seconds,line
+            #print "Correcting trigger count rollover:",seconds,line
             seconds += int(0xFFFFFFFF)/freq
         else:
             last_triggercount = trigger_count
         
         if last_seconds > seconds:
-            print "Wrong event order",seconds,line
+            #print "Wrong event order",seconds,line
             continue
 		
         last_seconds = seconds
-        print seconds
+        #print seconds
 
         pulse_ch0 = False
         pulse_ch1 = False
@@ -157,11 +157,11 @@ for filename in files:
                 wait_f0 = False
                 decay_waiting_ch0 = False
             if fe_0 and wait_fe0:
-                print "Pulse ch0",seconds,line
+                #print "Pulse ch0",seconds,line
                 pulse_ch0 = True
                 wait_fe0 = False
                 if decay_waiting_ch0 and seconds - decay_start_time_ch2 > 20e-6:
-                    print "No decay",seconds,decay_start_time_ch0, seconds - decay_start_time_ch0
+                    #print "No decay",seconds,decay_start_time_ch0, seconds - decay_start_time_ch0
                     decay_waiting_ch0 = False
                 else:
                     decay_waiting_ch0 = False            
@@ -176,11 +176,11 @@ for filename in files:
             if time_ch1 - seconds > 50e-9:
                 wait_f1 = False
             if fe_1 and wait_fe1:
-                print "Pulse ch0",seconds,line
+                #print "Pulse ch0",seconds,line
                 pulse_ch1 = True
                 wait_fe1 = False
                 if decay_waiting_ch1 and seconds - decay_start_time_ch1 > 20e-6:
-                    print "No decay",seconds,decay_start_time_ch1,seconds - decay_start_time_ch1
+                    #print "No decay",seconds,decay_start_time_ch1,seconds - decay_start_time_ch1
                     decay_waiting_ch1 = False
                 else:
                     decay_waiting_ch1 = False            
@@ -194,11 +194,11 @@ for filename in files:
                 wait_f2 = False
                 decay_waiting_ch2 = False
             if fe_2 and wait_fe2:
-                print "Pulse ch2",seconds,line
+                #print "Pulse ch2",seconds,line
                 pulse_ch2 = True
                 wait_fe2 = False
                 if decay_waiting_ch2 and seconds - decay_start_time_ch2 > 20e-6:
-                    print "No decay",seconds,decay_start_time_ch2, seconds - decay_start_time_ch2
+                    #print "No decay",seconds,decay_start_time_ch2, seconds - decay_start_time_ch2
                     decay_waiting_ch2 = False
                 else:
                     decay_waiting_ch2 = False            
@@ -227,7 +227,7 @@ for filename in files:
         if time_ch0 - seconds > 50e-9:
             wait_f0 = False
         if fe_0 and wait_fe0:
-            print "Pulse ch0",seconds,line
+            #print "Pulse ch0",seconds,line
             decay_start_time_ch0 = seconds
             decay_waiting_ch0 = True
             pulse_ch0 = True
@@ -238,7 +238,7 @@ for filename in files:
         if time_ch1 - seconds > 50e-9:
             wait_f1 = False
         if fe_1 and wait_fe1:
-            print "Pulse ch1",seconds,line
+            #print "Pulse ch1",seconds,line
             decay_start_time_ch1 = seconds
             decay_waiting_ch1 = True
             pulse_ch1 = True
@@ -249,7 +249,7 @@ for filename in files:
         if time_ch2 - seconds > 50e-9:
             wait_f2 = False
         if fe_2 and wait_fe2:
-            print "Pulse ch2",seconds,line
+            #print "Pulse ch2",seconds,line
             decay_start_time_ch2 = seconds
             decay_waiting_ch2 = True
             pulse_ch2 = True
@@ -260,7 +260,7 @@ for filename in files:
         if time_ch3 - seconds > 50e-9:
             wait_f3 = False
         if fe_3 and wait_fe3:
-            print "Pulse ch2",seconds,line
+            #print "Pulse ch2",seconds,line
             decay_start_time_ch3 = seconds
             decay_waiting_ch3 = True
             pulse_ch3 = True

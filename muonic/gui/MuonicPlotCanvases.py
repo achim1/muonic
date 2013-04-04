@@ -1,42 +1,124 @@
 """
-Provide a canvas for a matplotlib rate plot
+Provide the canvases for plots in muonic
 """
 
+import matplotlib.pyplot as mp
+import sys
 import pylab as p
 import numpy as n
 from datetime import datetime
 
+# Python Qt4 bindings for GUI objects
+from PyQt4 import QtGui
+
 # Matplotlib Figure object
 from matplotlib.figure import Figure
-#import matplotlib.patches as patches
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
 # Qt4Agg backend. It also inherits from QWidget
 from matplotlib.backends.backend_qt4agg \
 import FigureCanvasQTAgg as FigureCanvas
+
 # import the NavigationToolbar Qt4Agg widget
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar
 
-class ScalarsCanvas(FigureCanvas):
-    """Matplotlib Figure widget to display Muon rates"""
-    def __init__(self, parent, logger):   
-                
-        self.logger = logger
-        self.do_not_show_trigger = False
-        
-        #max length of shown = MAXLENGTH*timewindow
-        self.MAXLENGTH = 40
+class MuonicPlotCanvas(FigureCanvas):
+    """
+    The base class of all muonic plot canvases
+    """
+    
+    def __init__(self,parent,logger,ymin=0,ymax=10,xmin=10,xmax=10,xlabel="xlabel",ylabel="ylabel",grid=True):
        
-        self.fig = Figure(facecolor='white',dpi=72)
+        self.logger = logger
+        
+        self.fig = Figure(facecolor="white",dpi=72)
         self.ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(left=0.1, right=0.6)
-
+  
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)
 
-        #initialize the plot by just calling reset
+        # set specific limits for X and Y axes
+        self.ax.set_ylim(ymin=ymin,ymax=ymax)
+        self.ax.set_xlim(xmin=xmin,xmax=xmax)
+        self.ax.set_xlabel(xlabel)
+        self.ax.set_ylabel(ylabel)
+        self.ax.set_autoscale_on(False)
+        self.ax.grid(grid)
+        # force a redraw of the Figure
+        self.fig.canvas.draw() 
         self.setParent(parent)
+
+
+    def color(self, string, color="none"):
+        """
+        output colored strings on the terminal
+        """
+        colors = { "green": '\033[92m', 'yellow' : '\033[93m', 'red' : '\033[91m', 'blue' : '\033[94m', 'none' : '\033[0m'}
+        return colors[color] + string + colors["none"]   
+
+
+    def update_plot(self):
+        """
+        Instructions to updated this plot
+        implement this individually
+        """
+        raise NotImplementedError
+        
+        
+class PulseCanvas(MuonicPlotCanvas):
+    """
+    Matplotlib Figure widget to display Pulses
+    """
+
+    def __init__(self,parent,logger):
+        super(PulseCanvas,self).__init__(parent,logger,ymin=0,ymax=1.2,xmin=0,xmax=40,xlabel="time in ns",ylabel="ylabel",grid=True)
+            
+  
+    def update_plot(self, pulses):
+      
+        #do a complete redraw of the plot to avoid memory leak!
+        self.ax.clear()
+
+        # set specific limits for X and Y axes
+        self.ax.set_xlim(0, 40)
+        self.ax.set_ylim(ymax=1.2)
+        self.ax.grid()
+        self.ax.set_xlabel('time in ns')
+
+        # and disable figure-wide autoscale
+        self.ax.set_autoscale_on(False)
+
+        # we have only the information that the pulse is over the threshold,
+        # besides that we do not have any information about its height
+        # TODO: It would be nice to implement the thresholds as scaling factors
+
+        self.pulseheight = 1.0
+
+        colors = ['b','g','r','c']
+        labels = ['c0','c1','c2','c3']
+
+        for chan in enumerate(pulses[1:]):
+            for pulse in chan[1]:
+                self.ax.plot([pulse[0],pulse[0],pulse[1],pulse[1]],[0,self.pulseheight,self.pulseheight,0],colors[chan[0]],label=labels[chan[0]],lw=2)
+        try:
+            self.ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
+        except:
+            self.logger.info('An error with the legend occured!')
+            self.ax.legend(loc=2)
+
+        self.fig.canvas.draw()      
+        
+        
+class ScalarsCanvas(MuonicPlotCanvas):
+    
+    def __init__(self,parent,logger):
+        
+        super(ScalarsCanvas,self).__init__(parent,logger)
+        self.do_not_show_trigger = False
+        #max length of shown = MAXLENGTH*timewindow
+        self.MAXLENGTH = 40
         self.reset()
         
     def reset(self):
@@ -167,7 +249,7 @@ class ScalarsCanvas(FigureCanvas):
         if self.do_not_show_trigger:
             string3 = 'total scalars:\nN0 = %i \nN1 = %i \nN2 = %i \nN3 = %i' % (self.N0, self.N1, self.N2 , self.N3)
 
-	    # reduce information for better overview
+        # reduce information for better overview
         string4 = '\ndaq time = %.2f s \nmax rate = %.2f Hz' % (  self.timewindow, ma2 )
                              
         self.ax.text(1.1, -0.1, string1+string4, transform=self.ax.transAxes) 
@@ -175,5 +257,101 @@ class ScalarsCanvas(FigureCanvas):
         self.ax.text(1.1, 0.65, string2, transform=self.ax.transAxes, color='green') 
                    
         self.fig.canvas.draw()
-        
 
+          
+class LifetimeCanvas(MuonicPlotCanvas):
+    """
+    A simple histogram for the use with mu lifetime
+    measurement
+    """
+    
+    
+    def __init__(self,parent,logger):
+       
+        super(LifetimeCanvas,self).__init__(parent,logger,xlabel="time between pulses (microseconds)",ylabel="events")
+        # set specific limits for X and Y axes
+        self.ax.set_ylim(ymin=0)
+        self.ax.set_xlabel('time between pulses (microsec)')
+        self.ax.set_ylabel('events')
+
+        # make a fixed binning from 0 to 20 microseconds
+        self.binning      = n.linspace(0,10,21)
+        self.bincontent   = self.ax.hist(n.array([]), self.binning, fc='b', alpha=0.25)[0]
+        self.hist_patches = self.ax.hist(n.array([]), self.binning, fc='b', alpha=0.25)[2]
+        self.heights = []
+        
+        # force a redraw of the Figure
+        #self.fig.canvas.draw()
+ 
+        #self.setParent(parent)
+
+    def update_plot(self, decaytimes):
+        """
+        decaytimes must be a list of the last decays
+        """
+
+        # avoid memory leak
+        self.ax.clear()
+
+        # we have to do some bad hacking here,
+        # because the p histogram is rather
+        # simple and it is not possible to add
+        # two of them...
+        # however, since we do not want to run into a memory leak
+        # and we also be not dependent on dashi (but maybe
+        # sometimes in the future?) we have to do it
+        # by manipulating rectangles...
+
+        # we want to find the non-empty bins
+        # tmphist is compatible with the decaytime hist...
+
+
+        tmphist = self.ax.hist(decaytimes, self.binning, fc='b', alpha=0.25)[0]
+
+        for histbin in enumerate(tmphist):
+            if histbin[1]:
+                self.hist_patches[histbin[0]].set_height(self.hist_patches[histbin[0]].get_height() + histbin[1])
+            else:
+                pass
+
+        # we want to get the maximum for the ylims
+        # self.heights contains the bincontent!
+
+        self.heights = []
+        for patch in self.hist_patches:
+            self.heights.append(patch.get_height())
+
+        self.logger.debug('lifetimemonitor heights %s' %self.heights.__repr__())
+        self.ax.set_ylim(ymax=max(self.heights)*1.1)
+        self.ax.set_ylim(ymin=0)
+        self.ax.set_xlabel('time between pulses (microsec)')
+        self.ax.set_ylabel('events')
+        
+        # always get rid of unused stuff
+        del tmphist
+
+        # some beautification
+        self.ax.grid()
+ 
+        # we now have to pass our new patches 
+        # to the figure we created..            
+        self.ax.patches = self.hist_patches      
+        self.fig.canvas.draw()
+
+    def show_fit(self,bin_centers,bincontent,fitx,decay,p,covar,chisquare,nbins):
+
+        #self.ax.clear()
+        self.ax.plot(bin_centers,bincontent,"b^",fitx,decay(p,fitx),"b-")
+        self.ax.set_ylim(0,max(bincontent)*1.2)
+        self.ax.set_xlabel("Decay time in microseconds")
+        self.ax.set_ylabel("Events in time bin")
+        try:
+            self.ax.legend(("Data","Fit: (%4.2f +- %4.2f) $\mu$s \n chisq/ndf=%4.2f"%(p[1],n.sqrt(covar[1][1]),chisquare/(nbins-len(p)))),loc=1)
+        except TypeError:
+            self.logger.warn('Covariance Matrix is None, could not calculate fit error!')
+            self.ax.legend(("Data","Fit: (%4.2f) $\mu$s \n chisq/ndf=%4.2f"%(p[1],chisquare/(nbins-len(p)))),loc=1)
+                   
+        self.fig.canvas.draw()
+     
+        
+        

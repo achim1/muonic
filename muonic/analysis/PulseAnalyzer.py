@@ -247,6 +247,7 @@ class PulseExtractor:
                 counter_diff = 0
                 counter_diff = (self.trigger_count - self.lasttriggercount)
                 #print counter_diff, counter_diff > int(0xffffffff)
+                # FIXME: is this correct?
                 if counter_diff > int(0xffffffff):
                     counter_diff -= int(0xffffffff)
         
@@ -275,8 +276,9 @@ class DecayTriggerThorough:
     """   
 
     def __init__(self,logger):
-        self.triggerwindow = 10000 # 10 musec set at DAQ -> in ns since
+        self.triggerwindow = 10000  # 10 musec set at DAQ -> in ns since
                                    # TMC info is in nsec
+                                   
         self.logger = logger
         self.logger.info("Initializing decay trigger, setting triggerwindow to %i" %self.triggerwindow)
 
@@ -315,7 +317,6 @@ class DecayTriggerThorough:
         # channel
         # ..
 
-
         if (pulses1 >= 1) and ((not selfveto) or (not pulses2 )):
             # RE2 - LE1
             decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
@@ -330,10 +331,10 @@ class DecayTriggerThorough:
              
 
 
-        # perform sanity checks
-        if (decaytime > mindecaytime) and (decaytime < self.triggerwindow):
-            self.logger.debug("Decay with decaytime %d found " %decaytime)
-            return decaytime
+        # perform sanity checks                                                   # FIXME:
+        if (decaytime > mindecaytime) and (decaytime < self.triggerwindow -1000): # there is an artefact at the end
+            self.logger.debug("Decay with decaytime %d found " %decaytime)        # of the triggerwindow
+            return decaytime                                                      # so -1000
 
 
 

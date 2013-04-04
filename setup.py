@@ -8,11 +8,11 @@ import subprocess as sub
 
 
 # build the documentation
-man_make  = "make man -C docs"
-html_make = "make html -C docs"
+#man_make  = "make man -C docs"
+#html_make = "make html -C docs"
 
-man_success  = sub.Popen(shlex.split(man_make),stdout=sub.PIPE).communicate()
-html_success = sub.Popen(shlex.split(html_make),stdout=sub.PIPE).communicate()
+#man_success  = sub.Popen(shlex.split(man_make),stdout=sub.PIPE).communicate()
+#html_success = sub.Popen(shlex.split(html_make),stdout=sub.PIPE).communicate()
 
 datapath = (os.getenv('HOME') + os.sep + 'muonic_data')
 
@@ -39,18 +39,18 @@ cline = "chown -R " + str(userid) + ":" + str(userid) + " " + datapath
 
 chown_success = sub.Popen(shlex.split(cline),stdout=sub.PIPE).communicate()
 
-print man_success[0]
-print html_success[0]
-if chown_success[1] is None:
-    print "Successfully changed owner of %s to %s" %(datapath,str(userid))
-    print "---------------------------"
-
-if man_success[1] is None:
-    print "Built manpages succesfully"
-    print "---------------------------"
-if html_success[1] is None:
-    print "Buitl html docs succesfully"
-    print "---------------------------"
-
-print "MUONIC succesfully installed!"
+#print man_success[0]
+#print html_success[0]
+#if chown_success[1] is None:
+#    print "Successfully changed owner of %s to %s" %(datapath,str(userid))
+#    print "---------------------------"
+#
+#if man_success[1] is None:
+#    print "Built manpages succesfully"
+#    print "---------------------------"
+#if html_success[1] is None:
+#    print "Buitl html docs succesfully"
+#    print "---------------------------"
+#
+#print "MUONIC succesfully installed!"
 

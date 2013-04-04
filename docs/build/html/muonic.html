@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>muonic package software reference &mdash; muonic 1.0_rc documentation</title>
+    <title>muonic package software reference &mdash; muonic 1.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0_rc',
+        VERSION:     '1.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="muonic 1.0_rc documentation" href="index.html" />
+    <link rel="top" title="muonic 1.0.1 documentation" href="index.html" />
     <link rel="prev" title="Fermilab DAQ - hardware documentation" href="hardware.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -47,7 +47,7 @@
         <li class="right" >
           <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">muonic 1.0_rc documentation</a> &raquo;</li> 
+        <li><a href="index.html">muonic 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -168,6 +168,12 @@ the configured value is reached</p>
 <em class="property">class </em><tt class="descclassname">muonic.gui.MainWindow.</tt><tt class="descname">MainWindow</tt><big>(</big><em>inqueue</em>, <em>outqueue</em>, <em>logger</em>, <em>opts</em>, <em>root</em>, <em>win_parent=None</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MainWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main application</p>
 <dl class="method">
+<dt id="muonic.gui.MainWindow.MainWindow.about_menu">
+<tt class="descname">about_menu</tt><big>(</big><big>)</big><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow.about_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show a link to the online documentation</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="muonic.gui.MainWindow.MainWindow.clear_function">
 <tt class="descname">clear_function</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MainWindow.clear_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow.clear_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the rate plot by clicking the restart button</p>
@@ -224,7 +230,7 @@ and parse the result to the corresponding widgets</p>
 
 <dl class="class">
 <dt id="muonic.gui.MainWindow.MuonicOptions">
-<em class="property">class </em><tt class="descclassname">muonic.gui.MainWindow.</tt><tt class="descname">MuonicOptions</tt><big>(</big><em>timewindow</em>, <em>writepulses</em>, <em>nostatus</em>, <em>user</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MuonicOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MuonicOptions" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">muonic.gui.MainWindow.</tt><tt class="descname">MuonicOptions</tt><big>(</big><em>timewindow</em>, <em>writepulses</em>, <em>nostatus</em>, <em>user</em>, <em>gordon</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MuonicOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MuonicOptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>A simple struct which holds the different
 options for the program</p>
 </dd></dl>
@@ -315,102 +321,127 @@ QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -&gt; 
 </dd></dl>
 
 </div>
-<div class="section" id="module-muonic.gui.ConfigDialog">
-<span id="muonic-gui-configdialog"></span><h3><cite>muonic.gui.ConfigDialog</cite><a class="headerlink" href="#module-muonic.gui.ConfigDialog" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="module-muonic.gui.MuonicDialogs">
+<span id="muonic-gui-muonicdialogs"></span><h3><cite>muonic.gui.MuonicDialogs</cite><a class="headerlink" href="#module-muonic.gui.MuonicDialogs" title="Permalink to this headline">¶</a></h3>
+<p>Provide the dialog fields for user interaction</p>
 <dl class="class">
-<dt id="muonic.gui.ConfigDialog.ConfigDialog">
-<em class="property">class </em><tt class="descclassname">muonic.gui.ConfigDialog.</tt><tt class="descname">ConfigDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/ConfigDialog.html#ConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.ConfigDialog.ConfigDialog" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="muonic.gui.MuonicDialogs.ConfigDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">ConfigDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#ConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.ConfigDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set Channel configuration</p>
+</dd></dl>
 
-</div>
-<div class="section" id="module-muonic.gui.ThresholdDialog">
-<span id="muonic-gui-thresholddialog"></span><h3><cite>muonic.gui.ThresholdDialog</cite><a class="headerlink" href="#module-muonic.gui.ThresholdDialog" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="muonic.gui.ThresholdDialog.ThresholdDialog">
-<em class="property">class </em><tt class="descclassname">muonic.gui.ThresholdDialog.</tt><tt class="descname">ThresholdDialog</tt><big>(</big><em>thr0</em>, <em>thr1</em>, <em>thr2</em>, <em>thr3</em>, <em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/ThresholdDialog.html#ThresholdDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.ThresholdDialog.ThresholdDialog" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="muonic.gui.MuonicDialogs.DecayConfigDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">DecayConfigDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#DecayConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.DecayConfigDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Settings for the muondecay</p>
+</dd></dl>
 
-</div>
-<div class="section" id="module-muonic.gui.HelpDialog">
-<span id="muonic-gui-helpdialog"></span><h3><cite>muonic.gui.HelpDialog</cite><a class="headerlink" href="#module-muonic.gui.HelpDialog" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="muonic.gui.HelpDialog.HelpDialog">
-<em class="property">class </em><tt class="descclassname">muonic.gui.HelpDialog.</tt><tt class="descname">HelpDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/HelpDialog.html#HelpDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.HelpDialog.HelpDialog" title="Permalink to this definition">¶</a></dt>
+<dt id="muonic.gui.MuonicDialogs.HelpDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">HelpDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#HelpDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.HelpDialog" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="muonic.gui.HelpDialog.HelpDialog.helptext">
-<tt class="descname">helptext</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/HelpDialog.html#HelpDialog.helptext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.HelpDialog.HelpDialog.helptext" title="Permalink to this definition">¶</a></dt>
+<dt id="muonic.gui.MuonicDialogs.HelpDialog.helptext">
+<tt class="descname">helptext</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#HelpDialog.helptext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.HelpDialog.helptext" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show this text in the help window</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-muonic.gui.PeriodicCallDialog">
-<span id="muonic-gui-periodiccalldialog"></span><h3><cite>muonic.gui.PeriodicCallDialog</cite><a class="headerlink" href="#module-muonic.gui.PeriodicCallDialog" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
-<dt id="muonic.gui.PeriodicCallDialog.PeriodicCallDialog">
-<em class="property">class </em><tt class="descclassname">muonic.gui.PeriodicCallDialog.</tt><tt class="descname">PeriodicCallDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/PeriodicCallDialog.html#PeriodicCallDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.PeriodicCallDialog.PeriodicCallDialog" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="muonic.gui.MuonicDialogs.MuonicDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">MuonicDialog</tt><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#MuonicDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.MuonicDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class of all muonic dialogs</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicDialogs.MuonicDialog.createButtonBox">
+<tt class="descname">createButtonBox</tt><big>(</big><em>objectname='buttonBox'</em>, <em>leftoffset=80</em>, <em>topoffset=900</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#MuonicDialog.createButtonBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.MuonicDialog.createButtonBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a custom button for cancel/apply</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox">
+<tt class="descname">createCheckGroupBox</tt><big>(</big><em>label='Single Pulse', objectname='singlecheckbox', radio=False, leftoffset=20, setchecked=None, checkable=False, itemlabels=['Chan0', 'Chan1', 'Chan2', 'Chan3']</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#MuonicDialog.createCheckGroupBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a group of choices</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.PeriodicCallDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">PeriodicCallDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#PeriodicCallDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.PeriodicCallDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue a command periodically</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.ThresholdDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">ThresholdDialog</tt><big>(</big><em>thr0</em>, <em>thr1</em>, <em>thr2</em>, <em>thr3</em>, <em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#ThresholdDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.ThresholdDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Thresholds</p>
+</dd></dl>
 
 </div>
-<div class="section" id="module-muonic.gui.PulseCanvas">
-<span id="muonic-gui-pulsecanvas"></span><h3><cite>muonic.gui.PulseCanvas</cite><a class="headerlink" href="#module-muonic.gui.PulseCanvas" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="module-muonic.gui.MuonicPlotCanvases">
+<span id="muonic-gui-muonicplotcanvases"></span><h3><cite>muonic.gui.MuonicPlotCanvases</cite><a class="headerlink" href="#module-muonic.gui.MuonicPlotCanvases" title="Permalink to this headline">¶</a></h3>
+<p>Provide the canvases for plots in muonic</p>
 <dl class="class">
-<dt id="muonic.gui.PulseCanvas.PulseCanvas">
-<em class="property">class </em><tt class="descclassname">muonic.gui.PulseCanvas.</tt><tt class="descname">PulseCanvas</tt><big>(</big><em>parent</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/PulseCanvas.html#PulseCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.PulseCanvas.PulseCanvas" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matplotlib Figure widget to display Pulses</p>
+<dt id="muonic.gui.MuonicPlotCanvases.LifetimeCanvas">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicPlotCanvases.</tt><tt class="descname">LifetimeCanvas</tt><big>(</big><em>parent</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#LifetimeCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.LifetimeCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple histogram for the use with mu lifetime
+measurement</p>
 <dl class="method">
-<dt id="muonic.gui.PulseCanvas.PulseCanvas.color">
-<tt class="descname">color</tt><big>(</big><em>string</em>, <em>color='none'</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/PulseCanvas.html#PulseCanvas.color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.PulseCanvas.PulseCanvas.color" title="Permalink to this definition">¶</a></dt>
+<dt id="muonic.gui.MuonicPlotCanvases.LifetimeCanvas.show_fit">
+<tt class="descname">show_fit</tt><big>(</big><em>bin_centers</em>, <em>bincontent</em>, <em>fitx</em>, <em>decay</em>, <em>p</em>, <em>covar</em>, <em>chisquare</em>, <em>nbins</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#LifetimeCanvas.show_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.LifetimeCanvas.show_fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicPlotCanvases.LifetimeCanvas.update_plot">
+<tt class="descname">update_plot</tt><big>(</big><em>decaytimes</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#LifetimeCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.LifetimeCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>decaytimes must be a list of the last decays</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicPlotCanvases.</tt><tt class="descname">MuonicPlotCanvas</tt><big>(</big><em>parent</em>, <em>logger</em>, <em>ymin=0</em>, <em>ymax=10</em>, <em>xmin=10</em>, <em>xmax=10</em>, <em>xlabel='xlabel'</em>, <em>ylabel='ylabel'</em>, <em>grid=True</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#MuonicPlotCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base class of all muonic plot canvases</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.color">
+<tt class="descname">color</tt><big>(</big><em>string</em>, <em>color='none'</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#MuonicPlotCanvas.color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.color" title="Permalink to this definition">¶</a></dt>
 <dd><p>output colored strings on the terminal</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="muonic.gui.PulseCanvas.PulseCanvas.update_plot">
-<tt class="descname">update_plot</tt><big>(</big><em>pulses</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/PulseCanvas.html#PulseCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.PulseCanvas.PulseCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
+<dt id="muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.update_plot">
+<tt class="descname">update_plot</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#MuonicPlotCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instructions to updated this plot
+implement this individually</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicPlotCanvases.PulseCanvas">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicPlotCanvases.</tt><tt class="descname">PulseCanvas</tt><big>(</big><em>parent</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#PulseCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.PulseCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matplotlib Figure widget to display Pulses</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicPlotCanvases.PulseCanvas.update_plot">
+<tt class="descname">update_plot</tt><big>(</big><em>pulses</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#PulseCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.PulseCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="module-muonic.gui.ScalarsCanvas">
-<span id="muonic-gui-scalarscanvas"></span><h3><cite>muonic.gui.ScalarsCanvas</cite><a class="headerlink" href="#module-muonic.gui.ScalarsCanvas" title="Permalink to this headline">¶</a></h3>
-<p>Provide a canvas for a matplotlib rate plot</p>
 <dl class="class">
-<dt id="muonic.gui.ScalarsCanvas.ScalarsCanvas">
-<em class="property">class </em><tt class="descclassname">muonic.gui.ScalarsCanvas.</tt><tt class="descname">ScalarsCanvas</tt><big>(</big><em>parent</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/ScalarsCanvas.html#ScalarsCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.ScalarsCanvas.ScalarsCanvas" title="Permalink to this definition">¶</a></dt>
-<dd><p>Matplotlib Figure widget to display Muon rates</p>
-<dl class="method">
-<dt id="muonic.gui.ScalarsCanvas.ScalarsCanvas.reset">
-<tt class="descname">reset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/ScalarsCanvas.html#ScalarsCanvas.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.ScalarsCanvas.ScalarsCanvas.reset" title="Permalink to this definition">¶</a></dt>
+<dt id="muonic.gui.MuonicPlotCanvases.ScalarsCanvas">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicPlotCanvases.</tt><tt class="descname">ScalarsCanvas</tt><big>(</big><em>parent</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#ScalarsCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.ScalarsCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.gui.MuonicPlotCanvases.ScalarsCanvas.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#ScalarsCanvas.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.ScalarsCanvas.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>reseting all data</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="muonic.gui.ScalarsCanvas.ScalarsCanvas.update_plot">
-<tt class="descname">update_plot</tt><big>(</big><em>result</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/ScalarsCanvas.html#ScalarsCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.ScalarsCanvas.ScalarsCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
+<dt id="muonic.gui.MuonicPlotCanvases.ScalarsCanvas.update_plot">
+<tt class="descname">update_plot</tt><big>(</big><em>result</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicPlotCanvases.html#ScalarsCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicPlotCanvases.ScalarsCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-muonic.gui.LifetimeCanvas">
-<span id="muonic-gui-lifetimecanvas"></span><h3><cite>muonic.gui.LifetimeCanvas</cite><a class="headerlink" href="#module-muonic.gui.LifetimeCanvas" title="Permalink to this headline">¶</a></h3>
-<dl class="class">
-<dt id="muonic.gui.LifetimeCanvas.LifetimeCanvas">
-<em class="property">class </em><tt class="descclassname">muonic.gui.LifetimeCanvas.</tt><tt class="descname">LifetimeCanvas</tt><big>(</big><em>parent</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/LifetimeCanvas.html#LifetimeCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.LifetimeCanvas.LifetimeCanvas" title="Permalink to this definition">¶</a></dt>
-<dd><p>A simple histogram for the use with mu lifetime
-measurement</p>
-<dl class="method">
-<dt id="muonic.gui.LifetimeCanvas.LifetimeCanvas.show_fit">
-<tt class="descname">show_fit</tt><big>(</big><em>bin_centers</em>, <em>bincontent</em>, <em>fitx</em>, <em>decay</em>, <em>p</em>, <em>covar</em>, <em>chisquare</em>, <em>nbins</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/LifetimeCanvas.html#LifetimeCanvas.show_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.LifetimeCanvas.LifetimeCanvas.show_fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="muonic.gui.LifetimeCanvas.LifetimeCanvas.update_plot">
-<tt class="descname">update_plot</tt><big>(</big><em>decaytimes</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/LifetimeCanvas.html#LifetimeCanvas.update_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.LifetimeCanvas.LifetimeCanvas.update_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>decaytimes must be a list of the last decays</p>
-</dd></dl>
 
 </dd></dl>
 
@@ -427,13 +458,13 @@ Calculate also a non hex representation of
 leading and falling edges of the pulses</p>
 <dl class="class">
 <dt id="muonic.analysis.PulseAnalyzer.DecayTriggerThorough">
-<em class="property">class </em><tt class="descclassname">muonic.analysis.PulseAnalyzer.</tt><tt class="descname">DecayTriggerThorough</tt><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#DecayTriggerThorough"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.DecayTriggerThorough" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">muonic.analysis.PulseAnalyzer.</tt><tt class="descname">DecayTriggerThorough</tt><big>(</big><em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#DecayTriggerThorough"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.DecayTriggerThorough" title="Permalink to this definition">¶</a></dt>
 <dd><p>We demand a second pulse in the same channel where the muon got stuck
 Should operate for a 10mu sec triggerwindow</p>
 <dl class="method">
 <dt id="muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger">
-<tt class="descname">trigger</tt><big>(</big><em>triggerpulses</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#DecayTriggerThorough.trigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hardcoded use of chan 1,2,3!!</p>
+<tt class="descname">trigger</tt><big>(</big><em>triggerpulses</em>, <em>single_channel=2</em>, <em>double_channel=3</em>, <em>veto_channel=4</em>, <em>selfveto=False</em>, <em>mindecaytime=0</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#DecayTriggerThorough.trigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger on a certain combination of single and doublepulses</p>
 </dd></dl>
 
 </dd></dl>
@@ -520,13 +551,8 @@ time differences for the use with QNet</p>
 <li><a class="reference internal" href="#pyqt4-gui-with-muonic-gui">pyqt4 gui with muonic.gui</a><ul>
 <li><a class="reference internal" href="#muonic-gui-mainwindow"><cite>muonic.gui.MainWindow</cite></a></li>
 <li><a class="reference internal" href="#muonic-gui-tabwidget"><cite>muonic.gui.TabWidget</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.ConfigDialog"><cite>muonic.gui.ConfigDialog</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.ThresholdDialog"><cite>muonic.gui.ThresholdDialog</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.HelpDialog"><cite>muonic.gui.HelpDialog</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.PeriodicCallDialog"><cite>muonic.gui.PeriodicCallDialog</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.PulseCanvas"><cite>muonic.gui.PulseCanvas</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.ScalarsCanvas"><cite>muonic.gui.ScalarsCanvas</cite></a></li>
-<li><a class="reference internal" href="#module-muonic.gui.LifetimeCanvas"><cite>muonic.gui.LifetimeCanvas</cite></a></li>
+<li><a class="reference internal" href="#module-muonic.gui.MuonicDialogs"><cite>muonic.gui.MuonicDialogs</cite></a></li>
+<li><a class="reference internal" href="#module-muonic.gui.MuonicPlotCanvases"><cite>muonic.gui.MuonicPlotCanvases</cite></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-muonic.analysis">analyis package muonic.analysis</a><ul>
@@ -570,7 +596,7 @@ time differences for the use with QNet</p>
         <li class="right" >
           <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
              >previous</a> |</li>
-        <li><a href="index.html">muonic 1.0_rc documentation</a> &raquo;</li> 
+        <li><a href="index.html">muonic 1.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

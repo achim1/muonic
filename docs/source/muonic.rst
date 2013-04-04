@@ -88,54 +88,21 @@ This provides the interface to the different "physics" features of muonic, like 
    :private-members:
 
 
-`muonic.gui.ConfigDialog`
+`muonic.gui.MuonicDialogs`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.ConfigDialog
+.. automodule:: muonic.gui.MuonicDialogs
    :members:
    :undoc-members:
    :private-members:
 
-`muonic.gui.ThresholdDialog`
+`muonic.gui.MuonicPlotCanvases`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.ThresholdDialog
+.. automodule:: muonic.gui.MuonicPlotCanvases
    :members:
    :undoc-members:
    :private-members:
 
-`muonic.gui.HelpDialog`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.HelpDialog
-   :members:
-   :undoc-members:
-   :private-members:
 
-`muonic.gui.PeriodicCallDialog`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.PeriodicCallDialog
-   :members:
-   :undoc-members:
-   :private-members:
-
-`muonic.gui.PulseCanvas`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.PulseCanvas
-   :members:
-   :undoc-members:
-   :private-members:
-
-`muonic.gui.ScalarsCanvas`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.ScalarsCanvas
-   :members:
-   :undoc-members:
-   :private-members:
-
-`muonic.gui.LifetimeCanvas`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. automodule:: muonic.gui.LifetimeCanvas
-   :members:
-   :undoc-members:
-   :private-members:
 
 
 analyis package muonic.analysis

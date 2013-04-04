@@ -1,6 +1,14 @@
+"""
+Provide the dialog fields for user interaction
+"""
+
+
 from PyQt4 import QtCore, QtGui
 
 class MuonicDialog(QtGui.QDialog):
+    """
+    Base class of all muonic dialogs
+    """
     
     def __init__(self):
         pass

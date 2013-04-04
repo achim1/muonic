@@ -432,10 +432,8 @@ class MainWindow(QtGui.QMainWindow):
         """
         QtGui.QMessageBox.information(self,
                   "about muonic",
-                  "...")
+                  "for information see http://code.google.com/p/muonic/")
         
-        
-
     def clear_function(self):
         """
         Reset the rate plot by clicking the restart button
@@ -557,15 +555,14 @@ class MainWindow(QtGui.QMainWindow):
                         tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime)                   
                         if tmpdecay != None:
                             when = time.asctime()
-                            self.decay.append((tmpdecay/100.,when))
+                            #devide by 1000 to get microseconds
+                            self.decay.append((tmpdecay/1000.,when))
                             self.logger.info('We have found a decaying muon with a decaytime of %f at %s' %(tmpdecay,when)) 
                             self.tabwidget.muondecaycounter += 1
                             self.tabwidget.lastdecaytime = when
                         # cleanup
                         del tmpdecay
 
-
-   
     def closeEvent(self, ev):
         """
         Is triggered when the window is closed, we have to reimplement it

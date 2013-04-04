@@ -86,7 +86,7 @@ class SimDaq():
         simulate a busy DAQ
         """
         if self._inWaiting:
-            time.sleep(0.3)
+            time.sleep(0.01)
             self._physics()
             return True
 
@@ -119,6 +119,6 @@ class SimDaqConnection(object):
             
             while self.port.inWaiting():
                 self.outqueue.put(self.port.readline().strip())
-            time.sleep(0.2)
+            time.sleep(0.02)
 
 
