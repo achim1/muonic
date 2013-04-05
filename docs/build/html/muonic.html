@@ -113,7 +113,7 @@ The simulation is only useful if the software-gui should be tested, but no DAQ c
 <span class="target" id="module-muonic.daq.SimDaqConnection"></span><p>Provides a simple DAQ card simulation, so that software can be tested</p>
 <dl class="class">
 <dt id="muonic.daq.SimDaqConnection.SimDaq">
-<em class="property">class </em><tt class="descclassname">muonic.daq.SimDaqConnection.</tt><tt class="descname">SimDaq</tt><big>(</big><em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">muonic.daq.SimDaqConnection.</tt><tt class="descname">SimDaq</tt><big>(</big><em>logger</em>, <em>usefile='simdaq.txt'</em>, <em>createfakerates=True</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="muonic.daq.SimDaqConnection.SimDaq._physics">
 <tt class="descname">_physics</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq._physics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq._physics" title="Permalink to this definition">¶</a></dt>
@@ -171,12 +171,6 @@ the configured value is reached</p>
 <dt id="muonic.gui.MainWindow.MainWindow.about_menu">
 <tt class="descname">about_menu</tt><big>(</big><big>)</big><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow.about_menu" title="Permalink to this definition">¶</a></dt>
 <dd><p>Show a link to the online documentation</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="muonic.gui.MainWindow.MainWindow.clear_function">
-<tt class="descname">clear_function</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MainWindow.clear_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow.clear_function" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset the rate plot by clicking the restart button</p>
 </dd></dl>
 
 <dl class="method">
@@ -270,6 +264,13 @@ All functionality should be represented by tabs in the TabWidget</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="muonic.gui.TabWidget.TabWidget.create_tabs">
+<tt class="descname">create_tabs</tt><big>(</big><em>tablabels</em><big>)</big><a class="headerlink" href="#muonic.gui.TabWidget.TabWidget.create_tabs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create len(tablabels) tabs in a new widget.
+Return the new widget</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="muonic.gui.TabWidget.TabWidget.mufitClicked">
 <tt class="descname">mufitClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/TabWidget.html#TabWidget.mufitClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.TabWidget.TabWidget.mufitClicked" title="Permalink to this definition">¶</a></dt>
 <dd><p>fit the muon decay histogram</p>
@@ -311,6 +312,12 @@ All functionality should be represented by tabs in the TabWidget</p>
 <dd><p>Update the widgets</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="muonic.gui.TabWidget.calculate_rate">
+<tt class="descclassname">muonic.gui.TabWidget.</tt><tt class="descname">calculate_rate</tt><big>(</big><em>pulses</em>, <em>lastpulses</em><big>)</big><a class="headerlink" href="#muonic.gui.TabWidget.calculate_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rates per channel from two lines of pulses</p>
 </dd></dl>
 
 <dl class="function">

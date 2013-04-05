@@ -128,6 +128,8 @@ class PulseExtractor:
                     fe = MAX_TRIGGERWINDOW
                     
                 pulses[ch].append((re,fe))
+                
+            pulses[ch] = sorted(pulses[ch])
 
            # self.pulses[ch] = [(re,fe) for re,fe in self.last_re[ch],self.last_fe[ch])
            # for i in self.pulses[ch]:
@@ -318,7 +320,8 @@ class DecayTriggerThorough:
         # ..
 
         if (pulses1 >= 1) and ((not selfveto) or (not pulses2 )):
-            # RE2 - LE1
+            # RE2 - LE1 
+            # take always the last pulse in the row
             decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
         
         # or it might have entered the second channel

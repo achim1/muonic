@@ -26,6 +26,21 @@ import time
 
 tr = QtCore.QCoreApplication.translate
 
+
+def calculate_rate(pulses,lastpulses):
+    """
+    Get the rates per channel from two lines of pulses 
+    """
+
+    # TODO: get rates for a previosly recorded file
+    # allthough it would be nice to calculate
+    # the rate from pulses
+    # first one has to think of doing this event
+    # or pulse-wise
+
+    raise NotImplementedError
+
+
 class TabWidget(QtGui.QWidget):
     """
     The TabWidget will provide a tabbed interface.
@@ -156,8 +171,44 @@ class TabWidget(QtGui.QWidget):
         # Pulseanalyzer widget
         ##########################
 
+        # TODO: Encapsule the widgets, so that they can
+        # easily included
+        # all widget specific properties should go to that widget
+        
+        def _attach_widget_to_tab(tab,widget,layout): # not used yet
+            """
+            Attach an arbitrary widget to a certain tab
+            widget is a QtGui.QWidget
+            layout must be of type QtGui.QLayout 
+            """
+            p3_vertical = layout(tab)
+            p3_vertical.addWidget(widget)
+            
+        def createPulseanalyzerwidget(): # not used yet
+            """
+            Encapsule the widget
+            """
+
+                
+            activatePulseanalyzer = QtGui.QCheckBox(self)
+            activatePulseanalyzer.setText(tr("Dialog", "Show the last triggered pulses \n in the time interval", None, QtGui.QApplication.UnicodeUTF8))
+            activatePulseanalyzer.setObjectName("activate_pulseanalyser")
+            QtCore.QObject.connect(self.activatePulseanalyzer,
+                                  QtCore.SIGNAL("clicked()"),
+                                  self.activatePulseanalyzerClicked
+                                  )
+                
+            p3_vertical = QtGui.QVBoxLayout(tab_widget.widget(2))
+            ntb2 = NavigationToolbar(self.pulse_monitor, self)
+            p3_vertical.addWidget(self.activatePulseanalyzer)
+            p3_vertical.addWidget(self.pulse_monitor)
+            p3_vertical.addWidget(ntb2)
+            return p3_vertical
+
+        
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
         self.activatePulseanalyzer.setText(tr("Dialog", "Show the last triggered pulses \n in the time interval", None, QtGui.QApplication.UnicodeUTF8))
+        self.activatePulseanalyzer.setObjectName("activate_pulseanalyser")
         QtCore.QObject.connect(self.activatePulseanalyzer,
                               QtCore.SIGNAL("clicked()"),
                               self.activatePulseanalyzerClicked
@@ -209,6 +260,7 @@ class TabWidget(QtGui.QWidget):
         """
         fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights))
         self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
+
 
     def activateMuondecayClicked(self):
         """
@@ -397,4 +449,7 @@ class TabWidget(QtGui.QWidget):
 
         if self.mainwindow.options.showpulses:
             self.pulse_monitor.update_plot(self.mainwindow.pulses_to_show)
+
+
+
 

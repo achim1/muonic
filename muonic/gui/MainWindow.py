@@ -114,10 +114,10 @@ class MainWindow(QtGui.QMainWindow):
         self.pulses = None
 
         # initialize MainWindow gui
-        self.reso_w = 800 # adapt these values for
-        self.reso_h = 450 # suitable window size
+        #self.reso_w = 800 # adapt these values for
+        #self.reso_h = 450 # suitable window size
         QtGui.QMainWindow.__init__(self, win_parent)
-        self.resize(self.reso_w, self.reso_h)
+        #self.resize(self.reso_w, self.reso_h)
 
         windowtitle = QtCore.QString("muonic") 
         self.setWindowTitle(windowtitle)
@@ -432,14 +432,14 @@ class MainWindow(QtGui.QMainWindow):
         """
         QtGui.QMessageBox.information(self,
                   "about muonic",
-                  "for information see http://code.google.com/p/muonic/")
+                  "for information see\n http://code.google.com/p/muonic/")
         
-    def clear_function(self):
-        """
-        Reset the rate plot by clicking the restart button
-        """
-        self.logger.debug("Clear was called")
-        self.tabwidget.scalars_monitor.reset()
+    #def clear_function(self):
+    #    """
+    #    Reset the rate plot by clicking the restart button
+    #    """
+    #    self.logger.debug("Clear was called")
+    #    self.tabwidget.scalars_monitor.reset()
 
     # this functions gets everything out of the inqueue
     # All calculations should happen here

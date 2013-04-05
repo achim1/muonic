@@ -12,15 +12,21 @@ from random import choice
 	
 class SimDaq():
 
-    def __init__(self, logger):
+    def __init__(self, logger,usefile="simdaq.txt",createfakerates=True):
+        
+        # TODO:
+        # Modify this in such a way that
+        # an arbitrary file can be read and computed...
         
         self.logger = logger
         self._pushed_lines = 0
         self._lines_to_push = 10
-        self._simdaq_file = os.path.split(os.path.abspath(__file__))[0] + os.sep + "simdaq.txt"
+        self._simdaq_file = os.path.split(os.path.abspath(__file__))[0] + os.sep + usefile
         self._daq = open(self._simdaq_file)
         self._inWaiting = True 
         self._return_info = False
+        
+        #self._fakerates = createfakerates
         self._scalars_ch0 = 0
         self._scalars_ch1 = 0
         self._scalars_ch2 = 0
@@ -33,20 +39,20 @@ class SimDaq():
         This routine will increase the scalars variables using predefined rates
         Rates are drawn from Poisson distributions
         """
-	
+
         def format_to_8digits(hexstring):
             return hexstring.zfill(8)
         
-
+        
         # draw rates from a poisson distribution,
         self._scalars_ch0 += int(choice(n.random.poisson(12,100)))
         self._scalars_ch1 += int(choice(n.random.poisson(10,100)))
         self._scalars_ch2 += int(choice(n.random.poisson(8,100)))
         self._scalars_ch3 += int(choice(n.random.poisson(11,100)))
         self._scalars_trigger += int(choice(n.random.poisson(2,100)))
-
         self._scalars_to_return = 'DS S0=' + format_to_8digits(hex(self._scalars_ch0)[2:]) + ' S1=' + format_to_8digits(hex(self._scalars_ch1)[2:]) + ' S2=' + format_to_8digits(hex(self._scalars_ch2)[2:]) + ' S3=' + format_to_8digits(hex(self._scalars_ch3)[2:]) + ' S4=' + format_to_8digits(hex(self._scalars_trigger)[2:])
         self.logger.debug("Scalars to return %s" %self._scalars_to_return)
+
 
     def readline(self):
         """
