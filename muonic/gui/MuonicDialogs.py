@@ -84,33 +84,107 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Double Pulse",objectname = "doublecheckbox",leftoffset=180,setchecked=[2]), 0, 1)
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Veto Pulse",objectname = "vetocheckbox",leftoffset=300,    setchecked=[3]), 0, 2)
         
+        
         self.selfveto = QtGui.QCheckBox(self)
         self.selfveto.setChecked(False)
         self.selfveto.setGeometry(QtCore.QRect(20, 300, 119, 28))
         self.selfveto.setText("Use Selfveto")
         self.selfveto.setToolTip(QtCore.QString("Reject events which have more than\n one pulse in the single pulse channel or\n pulses in the doublepulse channel if double pulses are already detected in the first channel\n WARNING: This option is dedicated for 3 channel scintilator setup!"))
-        grid.addWidget(self.selfveto,1,0)
+        grid.addWidget(self.selfveto,2,2)
 
-        # add two line edits to perform cuts on the events
+        # add line edits to perform cuts on the events
         self.mintime = QtGui.QLineEdit()
         self.mintime_label = QtGui.QLabel("Minimum time between\n two pulses (in ns)")
-        self.mintime.setText("0")
+        self.mintime.setText("400")
         self.mintime.setValidator(QtGui.QIntValidator())
         self.mintime.setToolTip(QtCore.QString("Reject events where the double pulses are too close together"))
         self.mintime.setMaxLength(5)
         #self.mintime.setMaximumWidth(60)
         grid.addWidget(self.mintime,2,0)
         grid.addWidget(self.mintime_label,2,1)
+
+
+        pulsewidthgroupBox = QtGui.QGroupBox("Set conditions on pulsewidth")
+        pulsewidthgroupBox.setCheckable(True)
+        pulsewidthgroupBox.setChecked(False)
+        pulsewidthgroupBox.setObjectName("pulsewidthgroupbox")      
+        pulsewidthlayout = QtGui.QGridLayout(pulsewidthgroupBox)
         
+        self.minsinglepulsewidth = QtGui.QLineEdit()
+        self.minsinglepulsewidth.setObjectName("minsinglepulsewidth")
+        self.minsinglepulsewidth_label = QtGui.QLabel("Min mu pulse width (ns)")
+        self.minsinglepulsewidth.setText("10")
+        self.minsinglepulsewidth.setValidator(QtGui.QIntValidator())
+        self.minsinglepulsewidth.setToolTip(QtCore.QString("Define a MINIMUM width for the MUON pulse"))
+        self.minsinglepulsewidth.setMaxLength(3)
+        #self.mintime.setMaximumWidth(60)
+        pulsewidthlayout.addWidget(self.minsinglepulsewidth,0,0)
+        pulsewidthlayout.addWidget(self.minsinglepulsewidth_label,0,1)
+ 
+        self.maxsinglepulsewidth = QtGui.QLineEdit()
+        self.maxsinglepulsewidth.setObjectName("maxsinglepulsewidth")
+        self.maxsinglepulsewidth_label = QtGui.QLabel("Max mu pulse width (ns)")
+        self.maxsinglepulsewidth.setText("300")
+        self.maxsinglepulsewidth.setValidator(QtGui.QIntValidator())
+        self.maxsinglepulsewidth.setToolTip(QtCore.QString("Define a MAXIMUM width for the MUON pulse"))
+        self.maxsinglepulsewidth.setMaxLength(3)
+        #self.mintime.setMaximumWidth(60)
+        pulsewidthlayout.addWidget(self.maxsinglepulsewidth,1,0)
+        pulsewidthlayout.addWidget(self.maxsinglepulsewidth_label,1,1)
+
+        self.mindoublepulsewidth = QtGui.QLineEdit()
+        self.mindoublepulsewidth.setObjectName("mindoublepulsewidth")
+        self.mindoublepulsewidth_label = QtGui.QLabel("Min e pulse width (ns)")
+        self.mindoublepulsewidth.setText("5")
+        self.mindoublepulsewidth.setValidator(QtGui.QIntValidator())
+        self.mindoublepulsewidth.setToolTip(QtCore.QString("Define a MINIMUM width for the ELECTRON pulse"))
+        self.mindoublepulsewidth.setMaxLength(3)
+        #self.mintime.setMaximumWidth(60)
+        pulsewidthlayout.addWidget(self.mindoublepulsewidth,2,0)
+        pulsewidthlayout.addWidget(self.mindoublepulsewidth_label,2,1)
+
+        self.maxdoublepulsewidth = QtGui.QLineEdit()
+        self.maxdoublepulsewidth.setObjectName("maxdoublepulsewidth")
+        self.maxdoublepulsewidth_label = QtGui.QLabel("Max e pulse width (ns)")
+        self.maxdoublepulsewidth.setText("300")
+        self.maxdoublepulsewidth.setValidator(QtGui.QIntValidator())
+        self.maxdoublepulsewidth.setToolTip(QtCore.QString("Define a MINIMUM width for the ELECTRON pulse"))
+        self.maxdoublepulsewidth.setMaxLength(3)
+        #self.mintime.setMaximumWidth(60)
+        pulsewidthlayout.addWidget(self.maxdoublepulsewidth,3,0)
+        pulsewidthlayout.addWidget(self.maxdoublepulsewidth_label,3,1)
+
+        grid.addWidget(pulsewidthgroupBox,3,0,1,3)
+        self.buttonBox = self.createButtonBox(leftoffset=200)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        grid.addWidget(self.buttonBox,4,2)
+        self.setLayout(grid)
+        self.show()
+
+class VelocityConfigDialog(MuonicDialog):
+
+    def __init__(self, *args):
+
+        QtGui.QDialog.__init__(self,*args)
+
+        #self.resize(480, 360)
+        self.setModal(True)
+        self.setWindowTitle("Muon Velocity Configuration")  
+
+        grid = QtGui.QGridLayout()
+        grid.addWidget(self.createCheckGroupBox(radio=True,label="Upper Channel",objectname = "uppercheckbox",leftoffset=20, setchecked=[0]), 0, 0)
+        grid.addWidget(self.createCheckGroupBox(radio=True,label="Lower Channel",objectname = "lowercheckbox",leftoffset=180,setchecked=[1]), 0, 1)
         
         self.buttonBox = self.createButtonBox(leftoffset=200)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
         
-        grid.addWidget(self.buttonBox,2,2)
+        grid.addWidget(self.buttonBox,1,1)
         self.setLayout(grid)
-
         self.show()
 
 class PeriodicCallDialog(MuonicDialog):
@@ -385,6 +459,7 @@ if __name__ == "__main__":
     dialog  = ConfigDialog()
     ddialog = DecayConfigDialog()
     tdialog = ThresholdDialog(42,42,42,42)
+    vdialog = VelocityConfigDialog()
     sys.exit(app.exec_())
 
 

@@ -268,9 +268,28 @@ class PulseExtractor:
         self.pulsefile.close()          
 
 
+#ma a velocity "trigger", so that czts can be defined
+class VelocityTrigger:
+    
+    def __init__(self,logger):
+        self.logger = logger
+        self.logger.info("Velocity trigger initialized")
+        
+    def trigger(self,pulses,upperchannel=0,lowerchannel=1):
+        """
+        Timedifference will be calculated t(upperchannel) - t(lowerchannel)
+        """
+
+        upperpulses = len(pulses[upperchannel])
+        lowerpulses = len(pulses[lowerchannel])
+        
+        if upperpulses and lowerpulses:
+            tdiff = upperpulses[0][0] - lowerpulses[-1][0] # always use rising edge since fe might be virtual
+            return tdiff
+            
+
 
 # trigger on a set of extracted pulses and look for decayed muons
-
 class DecayTriggerThorough:
     """
     We demand a second pulse in the same channel where the muon got stuck
@@ -284,7 +303,7 @@ class DecayTriggerThorough:
         self.logger = logger
         self.logger.info("Initializing decay trigger, setting triggerwindow to %i" %self.triggerwindow)
 
-    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,selfveto=False,mindecaytime=0):
+    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,selfveto=False,mindecaytime=0,minsinglepulsewidth=0,maxsinglepulsewidth=1000,mindoublepulsewidth=0,maxdoublepulsewidth=1000):
         """
         Trigger on a certain combination of single and doublepulses
         """ 
@@ -311,6 +330,7 @@ class DecayTriggerThorough:
             self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
             return None
 
+       
         # check if the muon entered the first channel and
         # decayed there
         # use the selfveto flag to reject the event
@@ -319,21 +339,26 @@ class DecayTriggerThorough:
         # channel
         # ..
 
-        if (pulses1 >= 1) and ((not selfveto) or (not pulses2 )):
+        if (pulses1 > 1) and ((not selfveto) or (not pulses2 )):
             # RE2 - LE1 
             # take always the last pulse in the row
-            decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
+            singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
+            doublepulsewidth = ttp[single_channel][-1][1] - ttp[single_channel][-1][0]
+            if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):
+                decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
         
         # or it might have entered the second channel
         # then we do not want to have more than one
         # hit in the first    
         # again: use selfveto to adjust the behavior
         if (pulses2 == 2) and ((pulses1 == 1) or (not selfveto)):
-            # subtract rising edges, falling edges might be virtual
-            decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
-             
-
-
+            # check if the width of the pulses is as required
+            singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
+            doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
+            if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):          
+                # subtract rising edges, falling edges might be virtual     
+                decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
+            
         # perform sanity checks                                                   # FIXME:
         if (decaytime > mindecaytime) and (decaytime < self.triggerwindow -1000): # there is an artefact at the end
             self.logger.debug("Decay with decaytime %d found " %decaytime)        # of the triggerwindow

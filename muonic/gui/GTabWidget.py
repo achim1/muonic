@@ -60,11 +60,11 @@ class GTabWidget(QtGui.QWidget):
         self.mainwindow = mainwindow
         self.logger = logger
         self.logger.info("Timewindow is %4.2f" %timewindow)
-        self.setGeometry(0,0, self.mainwindow.reso_w,self.mainwindow.reso_h)
+        #self.setGeometry(0,0, self.mainwindow.reso_w,self.mainwindow.reso_h)
         self.setWindowTitle("Debreate")
         self.setWindowIcon(QtGui.QIcon("icon.png"))
-        self.resize(self.mainwindow.reso_w,self.mainwindow.reso_h)
-        self.setMinimumSize(self.mainwindow.reso_w,self.mainwindow.reso_h)
+        #self.resize(self.mainwindow.reso_w,self.mainwindow.reso_h)
+        #self.setMinimumSize(self.mainwindow.reso_w,self.mainwindow.reso_h)
         self.center()
         self.write_file = False
         self.holdplot = False

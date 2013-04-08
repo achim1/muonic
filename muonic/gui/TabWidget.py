@@ -12,6 +12,7 @@ from PyQt4 import QtCore
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog
+from MuonicWidgets import createPulseanalyzerWidget,createVelocityWidget
 from ..analysis.fit import main as fit
 
 from matplotlib.backends.backend_qt4agg \
@@ -41,7 +42,7 @@ def calculate_rate(pulses,lastpulses):
     raise NotImplementedError
 
 
-class TabWidget(QtGui.QWidget):
+class TabWidget(QtGui.QTabWidget):
     """
     The TabWidget will provide a tabbed interface.
     All functionality should be represented by tabs in the TabWidget
@@ -49,61 +50,30 @@ class TabWidget(QtGui.QWidget):
 
     def __init__(self, mainwindow, timewindow, logger):
 
-        QtGui.QWidget.__init__(self)
+        QtGui.QTabWidget.__init__(self)
         
         self.mainwindow = mainwindow
         self.logger = logger
         self.logger.info("Timewindow is %4.2f" %timewindow)
         self.scalars_monitor  = ScalarsCanvas(self, self.logger)
         self.lifetime_monitor = LifetimeCanvas(self,self.logger)
-        self.pulse_monitor    = PulseCanvas(self,self.logger)  
+        self.minsinglepulsewidth = 0
+        self.maxsinglepulsewidth = 500
+        self.mindoublepulsewidth = 0
+        self.maxdoublepulsewidth = 500
 
-        tab_widget = self.create_tabs(["Muon Rates","Muon Lifetime","Pulse Analyzer","DAQ Output"])
-        vbox = QtGui.QVBoxLayout()
-        vbox.addWidget(tab_widget)
-        self.setLayout(vbox)   
-        
-        #################
-        # DAQ widget
-        #################  
-        
-        self.write_file       = False
-        self.label           = QtGui.QLabel(tr('MainWindow','Command'))
-        self.hello_edit      = LineEdit()
-        self.hello_button    = QtGui.QPushButton(tr('MainWindow','Send'))
-        self.file_button     = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
-        self.periodic_button = QtGui.QPushButton(tr('MainWindow', 'Periodic Call'))
-        QtCore.QObject.connect(self.hello_button,
-                              QtCore.SIGNAL("clicked()"),
-                              self.on_hello_clicked
-                              )
-        QtCore.QObject.connect(self.hello_edit,
-                              QtCore.SIGNAL("returnPressed()"),
-                              self.on_hello_clicked
-                              )
-        
-        QtCore.QObject.connect(self.file_button,
-                                QtCore.SIGNAL("clicked()"),
-                                self.on_file_clicked
-                                )
-        QtCore.QObject.connect(self.periodic_button,
-                                QtCore.SIGNAL("clicked()"),
-                                self.on_periodic_clicked
-                                )
+        #self.pulse_monitor    = PulseCanvas(self,self.logger)  
 
-        self.text_box = QtGui.QPlainTextEdit()
-        self.text_box.setReadOnly(True)
-        # only 500 lines history
-        self.text_box.document().setMaximumBlockCount(500)
+        #self.tab_widget = self.create_tabs(["Muon Rates","Muon Lifetime","DAQ Output"])
+        for label in ["Muon Rates","Muon Lifetime"]:
+            tab = QtGui.QWidget()
+            self.addTab(tab,label)
+        
+        #vbox = QtGui.QVBoxLayout()
+        #vbox.addWidget(self.tab_widget)
+        #self.setLayout(vbox)   
+        
 
-        daq_layout = QtGui.QGridLayout(tab_widget.widget(3))
-        daq_layout.addWidget(self.text_box,0,0,1, 4)
-        daq_layout.addWidget(self.label,1,0)
-        daq_layout.addWidget(self.hello_edit,1,1)
-        daq_layout.addWidget(self.hello_button,1,2) 
-        daq_layout.addWidget(self.file_button,1,2) 
-        daq_layout.addWidget(self.periodic_button,1,3)   
-            
         ################
         # Rate widget
         ################
@@ -125,7 +95,7 @@ class TabWidget(QtGui.QWidget):
                               self.stopClicked
                               )
 
-        rate_widget = QtGui.QGridLayout(tab_widget.widget(0))
+        rate_widget = QtGui.QGridLayout(self.widget(0))
         rate_widget.addWidget(self.scalars_monitor,0,0,1,3)
         ntb = NavigationToolbar(self.scalars_monitor, self)
         rate_widget.addWidget(ntb,1,0)
@@ -159,7 +129,7 @@ class TabWidget(QtGui.QWidget):
         self.displayMuons.setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
         self.lastDecay.setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
  
-        decay_tab = QtGui.QGridLayout(tab_widget.widget(1))
+        decay_tab = QtGui.QGridLayout(self.widget(1))
         decay_tab.addWidget(self.activateMuondecay,0,0)
         decay_tab.addWidget(self.displayMuons,1,0)
         decay_tab.addWidget(self.lastDecay,2,0)
@@ -167,6 +137,7 @@ class TabWidget(QtGui.QWidget):
         decay_tab.addWidget(ntb1,4,0)
         decay_tab.addWidget(self.mufit_button,4,1)
         
+        self.decaywidget = self.widget(1)
         ########################
         # Pulseanalyzer widget
         ##########################
@@ -175,51 +146,56 @@ class TabWidget(QtGui.QWidget):
         # easily included
         # all widget specific properties should go to that widget
         
-        def _attach_widget_to_tab(tab,widget,layout): # not used yet
-            """
-            Attach an arbitrary widget to a certain tab
-            widget is a QtGui.QWidget
-            layout must be of type QtGui.QLayout 
-            """
-            p3_vertical = layout(tab)
-            p3_vertical.addWidget(widget)
-            
-        def createPulseanalyzerwidget(): # not used yet
-            """
-            Encapsule the widget
-            """
 
-                
-            activatePulseanalyzer = QtGui.QCheckBox(self)
-            activatePulseanalyzer.setText(tr("Dialog", "Show the last triggered pulses \n in the time interval", None, QtGui.QApplication.UnicodeUTF8))
-            activatePulseanalyzer.setObjectName("activate_pulseanalyser")
-            QtCore.QObject.connect(self.activatePulseanalyzer,
+        
+        self.addTab(createPulseanalyzerWidget(logger),"Pulse Analyzer")
+        #################
+        # DAQ widget
+        #################  
+        def createDAQWidget():
+            tab = QtGui.QWidget()
+            self.write_file       = False
+            self.label           = QtGui.QLabel(tr('MainWindow','Command'))
+            self.hello_edit      = LineEdit()
+            self.hello_button    = QtGui.QPushButton(tr('MainWindow','Send'))
+            self.file_button     = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
+            self.periodic_button = QtGui.QPushButton(tr('MainWindow', 'Periodic Call'))
+            QtCore.QObject.connect(self.hello_button,
                                   QtCore.SIGNAL("clicked()"),
-                                  self.activatePulseanalyzerClicked
+                                  self.on_hello_clicked
                                   )
-                
-            p3_vertical = QtGui.QVBoxLayout(tab_widget.widget(2))
-            ntb2 = NavigationToolbar(self.pulse_monitor, self)
-            p3_vertical.addWidget(self.activatePulseanalyzer)
-            p3_vertical.addWidget(self.pulse_monitor)
-            p3_vertical.addWidget(ntb2)
-            return p3_vertical
-
+            QtCore.QObject.connect(self.hello_edit,
+                                  QtCore.SIGNAL("returnPressed()"),
+                                  self.on_hello_clicked
+                                  )
+            
+            QtCore.QObject.connect(self.file_button,
+                                    QtCore.SIGNAL("clicked()"),
+                                    self.on_file_clicked
+                                    )
+            QtCore.QObject.connect(self.periodic_button,
+                                    QtCore.SIGNAL("clicked()"),
+                                    self.on_periodic_clicked
+                                    )
+            
+            self.text_box = QtGui.QPlainTextEdit()
+            self.text_box.setReadOnly(True)
+            # only 500 lines history
+            self.text_box.document().setMaximumBlockCount(500)
+            
+            daq_layout = QtGui.QGridLayout(tab)
+            daq_layout.addWidget(self.text_box,0,0,1, 4)
+            daq_layout.addWidget(self.label,1,0)
+            daq_layout.addWidget(self.hello_edit,1,1)
+            daq_layout.addWidget(self.hello_button,1,2) 
+            daq_layout.addWidget(self.file_button,1,2) 
+            daq_layout.addWidget(self.periodic_button,1,3)   
+            return tab
         
-        self.activatePulseanalyzer = QtGui.QCheckBox(self)
-        self.activatePulseanalyzer.setText(tr("Dialog", "Show the last triggered pulses \n in the time interval", None, QtGui.QApplication.UnicodeUTF8))
-        self.activatePulseanalyzer.setObjectName("activate_pulseanalyser")
-        QtCore.QObject.connect(self.activatePulseanalyzer,
-                              QtCore.SIGNAL("clicked()"),
-                              self.activatePulseanalyzerClicked
-                              )
-        
-        p3_vertical = QtGui.QVBoxLayout(tab_widget.widget(2))
-        ntb2 = NavigationToolbar(self.pulse_monitor, self)
-        p3_vertical.addWidget(self.activatePulseanalyzer)
-        p3_vertical.addWidget(self.pulse_monitor)
-        p3_vertical.addWidget(ntb2)
-
+        self.addTab(createDAQWidget(),"DAQ Output")
+        self.addTab(createVelocityWidget(logger),"Muon Velocity")
+        # give this widget a more common name
+        self.velocitywidget = self.widget(4)
         # define the begin of the timeintervall 
         # for the rate calculation
         now = time.time()
@@ -228,17 +204,7 @@ class TabWidget(QtGui.QWidget):
         self.timerEvent(None)
         self.timer = self.startTimer(timewindow*1000)
 
-    def create_tabs(self,tablabels):
-        """
-        Create len(tablabels) tabs in a new widget.
-        Return the new widget
-        """
-        tab_widget = QtGui.QTabWidget()
-        for label in tablabels:
-            tab = QtGui.QWidget()
-            tab_widget.addTab(tab,label)
-        
-        return tab_widget
+
         
     def startClicked(self):
         """
@@ -290,6 +256,11 @@ class TabWidget(QtGui.QWidget):
                     chan3_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_3")).isChecked()
                     self.mainwindow.options.decay_selfveto  = config_window.selfveto.isChecked()
                     self.mainwindow.options.decay_mintime   = int(config_window.mintime.text())
+                    if config_window.findChild(QtGui.QGroupBox,QtCore.QString("pulsewidthgroupbox")).isChecked():
+                        self.minsinglepulsewidth = config_window.findChild(QtGui.QLineEdit,QtCore.QString("minsinglepulsewidth")).text()
+                        self.maxsinglepulsewidth = config_window.findChild(QtGui.QLineEdit,QtCore.QString("maxsinglepulsewidth")).text()
+                        self.mindoublepulsewidth = config_window.findChild(QtGui.QLineEdit,QtCore.QString("mindoublepulsewidth")).text()
+                        self.maxdoublepulsewidth = config_window.findChild(QtGui.QLineEdit,QtCore.QString("maxdoublepulsewidth")).text()
                     
                     for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
                         if channel[1]:
@@ -331,25 +302,15 @@ class TabWidget(QtGui.QWidget):
             newmufilename = self.mainwindow.options.decayfilename.replace("HOURS",str(mtime))
             shutil.move(self.mainwindow.options.decayfilename,newmufilename)
      
-    def activatePulseanalyzerClicked(self):
-        """
-        set-up the pulseanalyzer widget
-        """
-
-        if self.activatePulseanalyzer.isChecked():
-            self.mainwindow.options.showpulses = True
-            self.logger.info("PulseAnalyzer active %s" %self.mainwindow.options.showpulses.__repr__())
-        else:
-            self.mainwindow.options.showpulses = False
-            self.logger.info("PulseAnalyzer active %s" %self.mainwindow.options.showpulses.__repr__())
 
 
-    def center(self):
-        screen = QtGui.QDesktopWidget().screenGeometry()
-        size = self.geometry()
-        self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
+    #def center(self):
+    #    screen = QtGui.QDesktopWidget().screenGeometry()
+    #    size = self.geometry()
+    #    self.move((screen.width()-size.width())/2, (screen.height()-size.height())/2)
 
     def on_hello_clicked(self):
+
         """
         send a message to the daq
         """
@@ -414,7 +375,7 @@ class TabWidget(QtGui.QWidget):
         # omitting this by requesting values below
         # an arbitrary of 10000
         if self.scalars_result and self.scalars_result[5] < 10000:
-            if not self.holdplot:
+            if (not self.holdplot):
                 self.scalars_monitor.update_plot(self.scalars_result)
 
         self.logger.debug("The differcene between two sent 'DS' commands is %4.2f seconds" %self.mainwindow.thisscalarquery)
@@ -447,8 +408,10 @@ class TabWidget(QtGui.QWidget):
                 self.mainwindow.mu_file.write('\n')
                 self.mainwindow.decay = []
 
-        if self.mainwindow.options.showpulses:
-            self.pulse_monitor.update_plot(self.mainwindow.pulses_to_show)
+        # putting this in here prohibits the pulseanalyzer to be activatet immediately (this is in principle bad=
+        # but as it has to wait for pulses anyway, this does not matter
+        if self.widget(2).findChild(QtGui.QCheckBox,QtCore.QString("activate_pulseanalyzer")).isChecked(): #self.activatePulseanalyzer.isChecked():
+            self.widget(2).findChild(PulseCanvas,QtCore.QString("pulse_canvas")).update_plot(self.mainwindow.pulses_to_show)
 
 
 

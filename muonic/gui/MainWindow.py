@@ -71,7 +71,7 @@ class MuonicOptions:
         self.timewindow  = timewindow
         self.nostatus    = nostatus
         self.mudecaymode = False
-        self.showpulses  = False
+        #self.showpulses  = False
         self.gordon      = gordon
 
         # options for muondecay
@@ -124,12 +124,14 @@ class MainWindow(QtGui.QMainWindow):
         self.statusbar = QtGui.QMainWindow.statusBar(self)
         self.statusbar.showMessage('Ready')      
         # prepare fields for scalars 
+        
         self.scalars_ch0_previous = 0
         self.scalars_ch1_previous = 0
         self.scalars_ch2_previous = 0
         self.scalars_ch3_previous = 0
         self.scalars_trigger_previous = 0
         self.scalars_time = 0
+
         
         self.pulses_to_show = None
         self.data_file = open(self.options.filename, 'w')
@@ -147,6 +149,7 @@ class MainWindow(QtGui.QMainWindow):
         # get threshold and scalars information
         self.outqueue.put('TL')
         self.outqueue.put('DS')
+        #self.processIncoming() # initialzie the scalar values
         # an anchor to the Application
         self.root = root
 
@@ -157,18 +160,30 @@ class MainWindow(QtGui.QMainWindow):
                            self.processIncoming)
  
         ## Start the timer -- this replaces the initial call to periodicCall
+        # begin to read out the information
         self.create_widgets()
+        #self.tabwiget.
+
+        
+        #time.sleep(2.1) # throw away first value
+        # FIXME: we wait 2xtimewindow till we have a plot
+        # this must be possible with one...
         self.logger.info("initializing DAQ...")
         str = 'ongoing..'
-
         for i in xrange(1,int(self.options.timewindow)):
+            # wait a full cycle, so that the plot is finished at start
             time.sleep(1)
             str += '..'
             self.logger.info(str)
-        self.logger.info("...done!")
 
-        # begin to read out the information
+    
+        #self.outqueue.put('DS')    
+        #time.sleep(1.1) # wati a bit more to be sure
+        #str += '..'
+        #self.logger.info(str)
+        #self.logger.info("...done!")
         self.timer.start(1000)
+
         
     def create_widgets(self):       
         """
@@ -448,7 +463,7 @@ class MainWindow(QtGui.QMainWindow):
         Handle all the messages currently in the inqueue 
         and parse the result to the corresponding widgets
         """
-        
+
         #self.logger.debug("length of inqueue: %s" %self.inqueue.qsize())
         while self.inqueue.qsize():
 
@@ -534,7 +549,7 @@ class MainWindow(QtGui.QMainWindow):
                     except ValueError:
                         self.logger.warning("ValueError, Rate plot data was not written to %s" %self.data_file.__repr__())
 
-            elif (self.options.mudecaymode or self.options.showpulses or self.options.pulsefilename) :
+            elif (self.options.mudecaymode or self.tabwidget.widget(2).findChild(QtGui.QCheckBox,QtCore.QString("activate_pulseanalyzer")) or self.options.pulsefile):#self.options.showpulses or self.options.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
                 if self.pulses is not None:
                     self.pulses_to_show = self.pulses
@@ -552,7 +567,11 @@ class MainWindow(QtGui.QMainWindow):
 
                 if self.options.mudecaymode:
                     if self.pulses != None:
-                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime)                   
+                        minsinglepulsewidth = self.tabwidget.minsinglepulsewidth
+                        maxsinglepulsewidth = self.tabwidget.maxsinglepulsewidth
+                        mindoublepulsewidth = self.tabwidget.mindoublepulsewidth
+                        maxdoublepulsewidth = self.tabwidget.maxdoublepulsewidth
+                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth)                   
                         if tmpdecay != None:
                             when = time.asctime()
                             #devide by 1000 to get microseconds
@@ -562,6 +581,10 @@ class MainWindow(QtGui.QMainWindow):
                             self.tabwidget.lastdecaytime = when
                         # cleanup
                         del tmpdecay
+
+
+        #print "pi"
+        #print self.tabwidget.scalars_result
 
     def closeEvent(self, ev):
         """
