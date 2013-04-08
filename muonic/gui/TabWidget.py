@@ -58,9 +58,9 @@ class TabWidget(QtGui.QTabWidget):
         self.scalars_monitor  = ScalarsCanvas(self, self.logger)
         self.lifetime_monitor = LifetimeCanvas(self,self.logger)
         self.minsinglepulsewidth = 0
-        self.maxsinglepulsewidth = 500
+        self.maxsinglepulsewidth = 100000 #inf
         self.mindoublepulsewidth = 0
-        self.maxdoublepulsewidth = 500
+        self.maxdoublepulsewidth = 100000 #inf
 
         #self.pulse_monitor    = PulseCanvas(self,self.logger)  
 

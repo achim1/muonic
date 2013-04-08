@@ -567,10 +567,10 @@ class MainWindow(QtGui.QMainWindow):
 
                 if self.options.mudecaymode:
                     if self.pulses != None:
-                        minsinglepulsewidth = self.tabwidget.minsinglepulsewidth
-                        maxsinglepulsewidth = self.tabwidget.maxsinglepulsewidth
-                        mindoublepulsewidth = self.tabwidget.mindoublepulsewidth
-                        maxdoublepulsewidth = self.tabwidget.maxdoublepulsewidth
+                        minsinglepulsewidth = int(self.tabwidget.minsinglepulsewidth)
+                        maxsinglepulsewidth = int(self.tabwidget.maxsinglepulsewidth)
+                        mindoublepulsewidth = int(self.tabwidget.mindoublepulsewidth)
+                        maxdoublepulsewidth = int(self.tabwidget.maxdoublepulsewidth)
                         tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth)                   
                         if tmpdecay != None:
                             when = time.asctime()

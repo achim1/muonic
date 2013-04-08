@@ -344,6 +344,9 @@ class DecayTriggerThorough:
             # take always the last pulse in the row
             singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
             doublepulsewidth = ttp[single_channel][-1][1] - ttp[single_channel][-1][0]
+            #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
+            #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
+
             if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):
                 decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
         
@@ -355,6 +358,9 @@ class DecayTriggerThorough:
             # check if the width of the pulses is as required
             singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
             doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
+            #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
+            #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
+            
             if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):          
                 # subtract rising edges, falling edges might be virtual     
                 decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
