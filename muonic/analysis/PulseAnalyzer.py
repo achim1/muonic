@@ -275,16 +275,16 @@ class VelocityTrigger:
         self.logger = logger
         self.logger.info("Velocity trigger initialized")
         
-    def trigger(self,pulses,upperchannel=0,lowerchannel=1):
+    def trigger(self,pulses,upperchannel=1,lowerchannel=2):
         """
         Timedifference will be calculated t(upperchannel) - t(lowerchannel)
         """
-
+        # remember that index 0 is the triggertime
         upperpulses = len(pulses[upperchannel])
         lowerpulses = len(pulses[lowerchannel])
         
         if upperpulses and lowerpulses:
-            tdiff = upperpulses[0][0] - lowerpulses[-1][0] # always use rising edge since fe might be virtual
+            tdiff = pulses[upperchannel][0][0] - pulses[lowerchannel][0][0] # always use rising edge since fe might be virtual
             return tdiff
             
 
@@ -298,24 +298,23 @@ class DecayTriggerThorough:
 
     def __init__(self,logger):
         self.triggerwindow = 10000  # 10 musec set at DAQ -> in ns since
-                                   # TMC info is in nsec
+                                    # TMC info is in nsec
                                    
         self.logger = logger
         self.logger.info("Initializing decay trigger, setting triggerwindow to %i" %self.triggerwindow)
 
-    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,selfveto=False,mindecaytime=0,minsinglepulsewidth=0,maxsinglepulsewidth=1000,mindoublepulsewidth=0,maxdoublepulsewidth=1000):
+    def trigger(self,triggerpulses,single_channel = 2, double_channel = 3, veto_channel = 4,selfveto=False,mindecaytime=0,minsinglepulsewidth=0,maxsinglepulsewidth=12000,mindoublepulsewidth=0,maxdoublepulsewidth=12000):
         """
         Trigger on a certain combination of single and doublepulses
         """ 
         #print single_channel, double_channel, veto_channel,mindecaytime
 
         ttp = triggerpulses       
-
         pulses1 = len(ttp[single_channel]) # single pulse 
         pulses2 = len(ttp[double_channel]) # double pulse
         pulses3 = len(ttp[veto_channel])   # veto pulses
         time    = ttp[0]
-
+        #print ttp
         decaytime = 0
 
         # reject events with too few pulses
@@ -330,7 +329,7 @@ class DecayTriggerThorough:
             self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
             return None
 
-       
+
         # check if the muon entered the first channel and
         # decayed there
         # use the selfveto flag to reject the event
@@ -346,6 +345,7 @@ class DecayTriggerThorough:
             doublepulsewidth = ttp[single_channel][-1][1] - ttp[single_channel][-1][0]
             #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
             #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
+            
 
             if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):
                 decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]

@@ -19,6 +19,8 @@ class SimDaq():
         # an arbitrary file can be read and computed...
         
         self.logger = logger
+        self.ini = True
+
         self._pushed_lines = 0
         self._lines_to_push = 10
         self._simdaq_file = os.path.split(os.path.abspath(__file__))[0] + os.sep + usefile
@@ -59,6 +61,11 @@ class SimDaq():
         read dummy pulses from the simdaq file till
         the configured value is reached
         """
+        if self.ini:
+            self.ini = False
+            return "T0=42  T1=42  T2=42  T3=42"
+
+
 
         if self._return_info:
             self._return_info = False
@@ -87,12 +94,13 @@ class SimDaq():
         if "DS" in command:
             self._return_info = True
 
+
     def inWaiting(self):
         """
         simulate a busy DAQ
         """
         if self._inWaiting:
-            time.sleep(0.01)
+            time.sleep(0.5)
             self._physics()
             return True
 

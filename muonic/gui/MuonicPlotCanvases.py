@@ -28,7 +28,7 @@ class MuonicPlotCanvas(FigureCanvas):
     The base class of all muonic plot canvases
     """
     
-    def __init__(self,parent,logger,ymin=0,ymax=10,xmin=10,xmax=10,xlabel="xlabel",ylabel="ylabel",grid=True):
+    def __init__(self,parent,logger,ymin=0,ymax=10,xmin=0,xmax=10,xlabel="xlabel",ylabel="ylabel",grid=True):
        
         self.logger = logger
         
@@ -40,12 +40,22 @@ class MuonicPlotCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
 
         # set specific limits for X and Y axes
+        #print ymin,ymax
         self.ax.set_ylim(ymin=ymin,ymax=ymax)
         self.ax.set_xlim(xmin=xmin,xmax=xmax)
         self.ax.set_xlabel(xlabel)
         self.ax.set_ylabel(ylabel)
         self.ax.set_autoscale_on(False)
         self.ax.grid(grid)
+        
+        #store the limits for later 
+        self.xmin = xmin
+        self.xmax = xmax
+        self.ymin = ymin
+        self.ymax = ymax
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        
         # force a redraw of the Figure
         self.fig.canvas.draw() 
         self.setParent(parent)
@@ -64,7 +74,7 @@ class MuonicPlotCanvas(FigureCanvas):
         Instructions to updated this plot
         implement this individually
         """
-        raise NotImplementedError
+        self.logger.warning("Update plot is not implemented for this Canvas!")
         
         
 class PulseCanvas(MuonicPlotCanvas):
@@ -74,7 +84,8 @@ class PulseCanvas(MuonicPlotCanvas):
 
     def __init__(self,parent,logger):
         super(PulseCanvas,self).__init__(parent,logger,ymin=0,ymax=1.2,xmin=0,xmax=40,xlabel="time in ns",ylabel="ylabel",grid=True)
-            
+        self.ax.yaxis.set_visible(False)   
+        self.ax.set_title("Oscilloscope") 
   
     def update_plot(self, pulses):
       
@@ -86,7 +97,8 @@ class PulseCanvas(MuonicPlotCanvas):
         self.ax.set_ylim(ymax=1.2)
         self.ax.grid()
         self.ax.set_xlabel('time in ns')
-
+        self.ax.yaxis.set_visible(False)
+        self.ax.set_title("Oscilloscope")
         # and disable figure-wide autoscale
         self.ax.set_autoscale_on(False)
 
@@ -115,7 +127,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
     
     def __init__(self,parent,logger):
         
-        super(ScalarsCanvas,self).__init__(parent,logger)
+        MuonicPlotCanvas.__init__(self,parent,logger,xlabel="Time in s",ylabel="Rate in Hz")
         self.do_not_show_trigger = False
         #max length of shown = MAXLENGTH*timewindow
         self.MAXLENGTH = 40
@@ -126,11 +138,11 @@ class ScalarsCanvas(MuonicPlotCanvas):
 
         self.ax.clear()
         self.ax.grid()
-        self.ax.set_xlabel('time in s')
-        self.ax.set_ylabel('Rate in Hz')
+        self.ax.set_xlabel(self.xlabel)
+        self.ax.set_ylabel(self.ylabel)
 
         # and disable figure-wide autoscale
-        self.ax.set_autoscale_on(False)
+        #self.ax.set_autoscale_on(False)
         self.highest=0
         self.lowest=0
         self.now = datetime.now()#.strftime('%d.%m.%Y %H:%M:%S')
@@ -163,11 +175,11 @@ class ScalarsCanvas(MuonicPlotCanvas):
         #self.ax.set_xlim(0., 5.2)
         #self.ax.set_ylim(0., 100.2)
         self.ax.grid()
-        self.ax.set_xlabel('time in s')
-        self.ax.set_ylabel('Rate in Hz')
+        self.ax.set_xlabel(self.xlabel)
+        self.ax.set_ylabel(self.ylabel)
 
         # and disable figure-wide autoscale
-        self.ax.set_autoscale_on(False)
+        #self.ax.set_autoscale_on(False)
         self.logger.debug("result : %s" %result.__repr__())
 
         # update lines data using the lists with new data
@@ -258,40 +270,31 @@ class ScalarsCanvas(MuonicPlotCanvas):
                    
         self.fig.canvas.draw()
 
-          
-class LifetimeCanvas(MuonicPlotCanvas):
+class MuonicHistCanvas(MuonicPlotCanvas):
     """
-    A simple histogram for the use with mu lifetime
-    measurement
+    A base class for all canvases with a histogram
     """
-    
-    
-    def __init__(self,parent,logger):
-       
-        super(LifetimeCanvas,self).__init__(parent,logger,xlabel="time between pulses (microseconds)",ylabel="events")
-        # set specific limits for X and Y axes
-        self.ax.set_ylim(ymin=0)
-        self.ax.set_xlabel('time between pulses (microsec)')
-        self.ax.set_ylabel('events')
-
-        # make a fixed binning from 0 to 20 microseconds
-        self.binning      = n.linspace(0,10,21)
-        self.bincontent   = self.ax.hist(n.array([]), self.binning, fc='b', alpha=0.25)[0]
-        self.hist_patches = self.ax.hist(n.array([]), self.binning, fc='b', alpha=0.25)[2]
+     
+    def __init__(self,parent,logger,binning,histcolor="b",**kwargs): 
+        #super(MuonicHistCanvas,self).__init__(self,parent,logger,**kwargs)
+        MuonicPlotCanvas.__init__(self,parent,logger,**kwargs)
+        self.binning = binning
+        self.bincontent   = self.ax.hist(n.array([]), self.binning, fc=histcolor, alpha=0.25)[0]
+        self.hist_patches = self.ax.hist(n.array([]), self.binning, fc=histcolor, alpha=0.25)[2]
         self.heights = []
+        self.underflow = 0 #FIXME the current implementation does not know about outliers
+        self.overflow  = 0 #FIXME the current implementation does not know about outliers
+        self.dimension = r"$\mu$s"
         
-        # force a redraw of the Figure
-        #self.fig.canvas.draw()
- 
-        #self.setParent(parent)
+        
+    def update_plot(self,data):    
 
-    def update_plot(self, decaytimes):
-        """
-        decaytimes must be a list of the last decays
-        """
+        if not data:
+            return
 
         # avoid memory leak
         self.ax.clear()
+
 
         # we have to do some bad hacking here,
         # because the p histogram is rather
@@ -304,9 +307,7 @@ class LifetimeCanvas(MuonicPlotCanvas):
 
         # we want to find the non-empty bins
         # tmphist is compatible with the decaytime hist...
-
-
-        tmphist = self.ax.hist(decaytimes, self.binning, fc='b', alpha=0.25)[0]
+        tmphist = self.ax.hist(data, self.binning, fc="b", alpha=0.25)[0]
 
         for histbin in enumerate(tmphist):
             if histbin[1]:
@@ -321,37 +322,66 @@ class LifetimeCanvas(MuonicPlotCanvas):
         for patch in self.hist_patches:
             self.heights.append(patch.get_height())
 
-        self.logger.debug('lifetimemonitor heights %s' %self.heights.__repr__())
+        self.logger.debug('Histogram patch heights %s' %self.heights.__repr__())
         self.ax.set_ylim(ymax=max(self.heights)*1.1)
         self.ax.set_ylim(ymin=0)
-        self.ax.set_xlabel('time between pulses (microsec)')
-        self.ax.set_ylabel('events')
+        self.ax.set_xlabel(self.xlabel)
+        self.ax.set_ylabel(self.ylabel)
         
         # always get rid of unused stuff
         del tmphist
 
         # some beautification
         self.ax.grid()
- 
+
         # we now have to pass our new patches 
         # to the figure we created..            
         self.ax.patches = self.hist_patches      
         self.fig.canvas.draw()
+
 
     def show_fit(self,bin_centers,bincontent,fitx,decay,p,covar,chisquare,nbins):
 
         #self.ax.clear()
         self.ax.plot(bin_centers,bincontent,"b^",fitx,decay(p,fitx),"b-")
         self.ax.set_ylim(0,max(bincontent)*1.2)
-        self.ax.set_xlabel("Decay time in microseconds")
-        self.ax.set_ylabel("Events in time bin")
+        self.ax.set_xlabel(self.xlabel)
+        self.ax.set_ylabel(self.ylabel)
         try:
-            self.ax.legend(("Data","Fit: (%4.2f +- %4.2f) $\mu$s \n chisq/ndf=%4.2f"%(p[1],n.sqrt(covar[1][1]),chisquare/(nbins-len(p)))),loc=1)
+            self.ax.legend(("Data","Fit: (%4.2f +- %4.2f) %s  \n chisq/ndf=%4.2f"%(p[1],n.sqrt(covar[1][1]),self.dimension,chisquare/(nbins-len(p)))),loc=1)
         except TypeError:
             self.logger.warn('Covariance Matrix is None, could not calculate fit error!')
-            self.ax.legend(("Data","Fit: (%4.2f) $\mu$s \n chisq/ndf=%4.2f"%(p[1],chisquare/(nbins-len(p)))),loc=1)
+            self.ax.legend(("Data","Fit: (%4.2f) %s \n chisq/ndf=%4.2f"%(p[1],self.dimension,chisquare/(nbins-len(p)))),loc=1)
                    
         self.fig.canvas.draw()
+
+
+class LifetimeCanvas(MuonicHistCanvas):
+    """
+    A simple histogram for the use with mu lifetime
+    measurement
+    """
+    
+    def __init__(self,parent,logger):       
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0,10,21),xlabel="time between pulses (microseconds)",ylabel="events")
+
      
+class VelocityCanvas(MuonicHistCanvas):  
+    
+    def __init__(self,parent,logger): 
+        #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,2,20),xmin=0.7,xmax=1.3,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
+        self.dimension = r"$c$"
+        
+class PulseWidthCanvas(MuonicHistCanvas):     
+
+    def __init__(self,parent,logger,histcolor="r"): 
+        #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,500,100),histcolor=histcolor,xmin=0.,xmax=500,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
+        self.ax.set_title("Pulsewidths")
+        
+    def update_plot(self,data):
+        super(PulseWidthCanvas,self).update_plot(data)
+        self.ax.set_title("Pulsewidths")
         
         

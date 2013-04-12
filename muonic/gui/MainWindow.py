@@ -20,8 +20,11 @@ import time
 # muonic imports
 from ..analysis import PulseAnalyzer as pa
 
-from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog
-from TabWidget import TabWidget
+from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
+from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
+from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget
+
+#from TabWidget import TabWidget
 
 # temporary, might (should?) go away in future revision..
 # GTabWidget is Gordon's version of TabWidget
@@ -47,16 +50,16 @@ class MuonicOptions:
         # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
         # TODO: consistancy....        
  
-        date = time.gmtime()
 
         # this is hard-coded! There must be a better solution...
         # if you change here, you have to change in setup.py!
         datapath = os.getenv('HOME') + os.sep + 'muonic_data'
  
-        self.filename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",user[0],user[1]) )
         # the time when the rate measurement is started
         now = datetime.datetime.now()
-        self.rate_mes_start = now     
+        #self.rate_mes_start = now     
+        date = time.gmtime()
+        self.filename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",user[0],user[1]) )
         self.rawfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",user[0],user[1]) )
         self.raw_mes_start = False
         self.decayfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",user[0],user[1]) )
@@ -70,16 +73,8 @@ class MuonicOptions:
         # other options...
         self.timewindow  = timewindow
         self.nostatus    = nostatus
-        self.mudecaymode = False
-        #self.showpulses  = False
         self.gordon      = gordon
 
-        # options for muondecay
-        self.singlepulsechannel = 2
-        self.doublepulsechannel = 3
-        self.vetopulsechannel   = 4
-        self.decay_selfveto     = False
-        self.decay_mintime      = 0
 
 class MainWindow(QtGui.QMainWindow):
     """
@@ -88,68 +83,62 @@ class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, inqueue, outqueue, logger, opts, root, win_parent = None):
 
-        self.logger  = logger
-        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user,opts.gordon)
-
-        # this holds the scalars in the time interval
-        self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
-
-        # keep the last decays
-        self.decay = []
-
-        # last time, when the 'DS' command was sent
-        self.lastscalarquery = 0
-        self.thisscalarquery = time.time()
-              
-        # the current thresholds
-        self.threshold_ch0 = 'n.a.'
-        self.threshold_ch1 = 'n.a.'
-        self.threshold_ch2 = 'n.a.'
-        self.threshold_ch3 = 'n.a.'
-        #self.thresholds = {"ch0" : "n.a.","ch1" : "n.a.","ch2" : "n.a.","ch3" : "n.a."}
-
-        # the pulseextractor for direct analysis
-        self.pulseextractor = pa.PulseExtractor(pulsefile=self.options.pulsefilename) 
-        self.dtrigger = pa.DecayTriggerThorough(logger)
-        self.pulses = None
-
-        # initialize MainWindow gui
-        #self.reso_w = 800 # adapt these values for
-        #self.reso_h = 450 # suitable window size
         QtGui.QMainWindow.__init__(self, win_parent)
-        #self.resize(self.reso_w, self.reso_h)
-
-        windowtitle = QtCore.QString("muonic") 
-        self.setWindowTitle(windowtitle)
-        self.statusbar = QtGui.QMainWindow.statusBar(self)
-        self.statusbar.showMessage('Ready')      
-        # prepare fields for scalars 
-        
-        self.scalars_ch0_previous = 0
-        self.scalars_ch1_previous = 0
-        self.scalars_ch2_previous = 0
-        self.scalars_ch3_previous = 0
-        self.scalars_trigger_previous = 0
-        self.scalars_time = 0
-
-        
-        self.pulses_to_show = None
-        self.data_file = open(self.options.filename, 'w')
-        self.data_file.write('time | chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
-        
-        # always write the rate plot data
-        self.data_file_write = True
-
         self.inqueue = inqueue
         self.outqueue = outqueue
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
         self.outqueue.put('ST 0')
-        # get threshold and scalars information
-        self.outqueue.put('TL')
-        self.outqueue.put('DS')
-        #self.processIncoming() # initialzie the scalar values
+
+        self.setWindowTitle(QtCore.QString("muonic") )
+        self.statusbar = QtGui.QMainWindow.statusBar(self)
+        #self.ready = QtGui.QLabel(tr('MainWindow','Ready'))
+        #self.statusbar.addPermanentWidget(self.ready)  
+        loading = QtGui.QProgressDialog(QtCore.QString("Initializing DAQ"), QtCore.QString("Wait for it!"), 0,9)
+        loading.show()          
+        self.logger  = logger
+        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user,opts.gordon)
+        # this holds the scalars in the time interval
+        self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
+        self.outqueue.put('TL') # get the thresholds
+        time.sleep(0.5) #give the daq some time to ract
+        loading.setValue(1)
+        self.threshold_ch0 = 300
+        self.threshold_ch1 = 300
+        self.threshold_ch2 = 300
+        self.threshold_ch3 = 300
+        while self.inqueue.qsize():
+            try:
+                msg = self.inqueue.get(0)
+                self.get_thresholds_from_queue(msg)
+            except Queue.Empty:
+                self.logger.debug("Queue empty!")
+                
+        # the pulseextractor for direct analysis
+        self.pulseextractor = pa.PulseExtractor(pulsefile=self.options.pulsefilename) 
+        self.pulses = None
+
+        # prepare fields for scalars 
+        self.scalars_ch0_previous = 0
+        self.scalars_ch1_previous = 0
+        self.scalars_ch2_previous = 0
+        self.scalars_ch3_previous = 0
+        self.scalars_trigger_previous = 0
+        self.scalars_time = 0
+        # define the begin of the timeintervall 
+        # for the rate calculation
+        now = time.time()
+        self.thisscalarquery = now
+        self.lastscalarquery = now
+        self.query_daq_for_scalars()
+        while self.inqueue.qsize():
+            try:
+                msg = self.inqueue.get(0)
+                self.get_scalars_from_queue(msg)
+            except Queue.Empty:
+                self.logger.debug("Queue empty!")
+        
         # an anchor to the Application
         self.root = root
 
@@ -158,45 +147,38 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.timer,
                            QtCore.SIGNAL("timeout()"),
                            self.processIncoming)
+        
+        #tab widget to hold the different physics widgets
+        self.tabwidget = QtGui.QTabWidget(self)
+        self.tabwidget.mainwindow = self.parentWidget()
+        self.logger.info("Timewindow is %4.2f" %self.options.timewindow)
+
+        self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
+        self.tabwidget.ratewidget = self.tabwidget.widget(0)
+          
+        self.tabwidget.addTab(DecayWidget(logger,parent = self),"Muon Decay")
+        self.tabwidget.decaywidget = self.tabwidget.widget(1)
  
-        ## Start the timer -- this replaces the initial call to periodicCall
-        # begin to read out the information
-        self.create_widgets()
-        #self.tabwiget.
+        self.tabwidget.addTab(PulseanalyzerWidget(logger),"Pulse Analyzer")
+        self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(2)
+     
+        self.tabwidget.addTab(DAQWidget(logger,parent=self),"DAQ Output")
+        self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
 
+        self.tabwidget.daqwidget = self.tabwidget.widget(3)
+        self.tabwidget.velocitywidget = self.tabwidget.widget(4)
         
-        #time.sleep(2.1) # throw away first value
-        # FIXME: we wait 2xtimewindow till we have a plot
-        # this must be possible with one...
-        self.logger.info("initializing DAQ...")
-        str = 'ongoing..'
-        for i in xrange(1,int(self.options.timewindow)):
-            # wait a full cycle, so that the plot is finished at start
-            time.sleep(1)
-            str += '..'
-            self.logger.info(str)
 
-    
-        #self.outqueue.put('DS')    
-        #time.sleep(1.1) # wati a bit more to be sure
-        #str += '..'
-        #self.logger.info(str)
-        #self.logger.info("...done!")
-        self.timer.start(1000)
-
-        
-    def create_widgets(self):       
-        """
-        Initialize the tab widget
-        """
-       
-        if self.options.gordon:
-            self.tabwidget = GTabWidget(self, self.options.timewindow, self.logger)       
-        else:
-            self.tabwidget = TabWidget(self,self.options.timewindow,self.logger)
-
+        # widgets which shuld be dynmacally updated by the timer should be in this list
+        self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,self.tabwidget.pulseanalyzerwidget,self.tabwidget.velocitywidget,self.tabwidget.ratewidget]
+        #self.timerEvent(None)
+        self.widgetupdater = QtCore.QTimer()
+        QtCore.QObject.connect(self.widgetupdater,
+                           QtCore.SIGNAL("timeout()"),
+                           self.widgetUpdate)
+ 
         self.setCentralWidget(self.tabwidget)
-
+        loading.setValue(2)
         # provide buttons to exit the application
         exit = QtGui.QAction(QtGui.QIcon('/usr/share/icons/gnome/24x24/actions/exit.png'), 'Exit', self)
         exit.setShortcut('Ctrl+Q')
@@ -218,11 +200,11 @@ class MainWindow(QtGui.QMainWindow):
         # helpmenu
         helpdaqcommands = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'DAQ Commands', self)
         self.connect(helpdaqcommands, QtCore.SIGNAL('triggered()'), self.help_menu)
-        #scalars = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'Scalars', self)
-
+  
         # about
         aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
         self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
+        
         # create the menubar and fill it with the submenus
         menubar  = self.menuBar()
         filemenu = menubar.addMenu(tr('MainWindow','&File'))
@@ -234,7 +216,36 @@ class MainWindow(QtGui.QMainWindow):
         helpmenu = menubar.addMenu(tr('MainWindow','&Help'))
         helpmenu.addAction(helpdaqcommands)
         helpmenu.addAction(aboutmuonic)
- 
+
+        #time.sleep(0.5)
+        loading.setValue(3)
+        self.processIncoming()
+        for i in xrange(4,int(self.options.timewindow) + 4):
+            # wait a full cycle, so that the plot is finished at start
+            time.sleep(1)
+            loading.setValue(i)
+         
+        self.query_daq_for_scalars()
+        time.sleep(0.5) #wait till the DAQ has responded
+        while self.inqueue.qsize():
+            try:
+                msg = self.inqueue.get(0)
+                self.get_scalars_from_queue(msg)
+            except Queue.Empty:
+                self.logger.debug("Queue empty!")
+           
+        # FIXME: Manually initialize the ratewidget
+        # this is necessary since the call to QtTimer.start()
+        # calls not the fct immediately        
+        time_window = self.thisscalarquery - self.lastscalarquery
+        rates = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
+
+        self.tabwidget.ratewidget.calculate(rates)
+        self.tabwidget.ratewidget.update()
+        self.query_daq_for_scalars()
+        self.timer.start(1000)
+        self.widgetupdater.start(self.options.timewindow*1000)
+        
     def exit_program(self,*args):
         """
         This function is used either with the 'x' button
@@ -254,19 +265,19 @@ class MainWindow(QtGui.QMainWindow):
             now = datetime.datetime.now()
 
             # close the RAW file (if any)
-            if self.tabwidget.write_file:
-                self.tabwidget.write_file = False
+            if self.tabwidget.daqwidget.write_file:
+                self.tabwidget.daqwidget.write_file = False
                 mtime = now - self.options.raw_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The raw data was written for %f hours" % mtime)
                 newrawfilename = self.options.rawfilename.replace("HOURS",str(mtime))
                 shutil.move(self.options.rawfilename,newrawfilename)
-                self.tabwidget.outputfile.close()
+                self.tabwidget.daqwidget.outputfile.close()
 
-            if self.options.mudecaymode:
+            if self.tabwidget.decaywidget.is_active():
 
-                self.options.mudecaymode = False
-                mtime = now - self.options.dec_mes_start
+                #self.options.mudecaymode = False
+                mtime = now - self.tabwidget.decaywidget.dec_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The muon decay measurement was active for %f hours" % mtime)
                 newmufilename = self.options.decayfilename.replace("HOURS",str(mtime))
@@ -277,7 +288,7 @@ class MainWindow(QtGui.QMainWindow):
                 # no pulses shall be extracted any more, 
                 # this means changing lots of switches
                 self.options.pulsefilename = False
-                self.options.mudecaymode = False
+                #self.options.mudecaymode = False
                 self.options.showpulses = False
                 self.pulseextractor.close_file()
                 mtime = now - self.options.pulse_mes_start
@@ -286,9 +297,9 @@ class MainWindow(QtGui.QMainWindow):
                 newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
                 shutil.move(old_pulsefilename,newpulsefilename)
               
-            self.data_file_write = False
-            self.data_file.close()
-            mtime = now - self.options.rate_mes_start
+            self.tabwidget.ratewidget.data_file_write = False
+            self.tabwidget.ratewidget.data_file.close()
+            mtime = now - self.tabwidget.ratewidget.rate_mes_start
             mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
             self.logger.info("The rate measurement was active for %f hours" % mtime)
             newratefilename = self.options.filename.replace("HOURS",str(mtime))
@@ -296,7 +307,7 @@ class MainWindow(QtGui.QMainWindow):
             time.sleep(0.5)
             self.tabwidget.writefile = False
             try:
-                self.mu_file.close()
+                self.tabwidget.decaywidget.mu_file.close()
  
             except AttributeError:
                 pass
@@ -323,37 +334,17 @@ class MainWindow(QtGui.QMainWindow):
         threshold_window = ThresholdDialog(self.threshold_ch0,self.threshold_ch1,self.threshold_ch2,self.threshold_ch3)
         rv = threshold_window.exec_()
         if rv == 1:
-            # Here we should set the thresholds
+            commands = []
+            for ch in ["0","1","2","3"]:
+                val = threshold_window.findChild(QtGui.QSpinBox,QtCore.QString("thr_ch_" + ch)).value()
+                commands.append("TL " + ch + " " + str(val))
+                
+            for cmd in commands:
+                self.outqueue.put(cmd)
+                self.logger.info("Set threshold of channel %s to %s" %(cmd.split()[1],cmd.split()[2]))
 
-            # integer check is done with QValidator in the input field,
-            # no checks necessary
-            # FIXME: Check for value is still necessary
-            self.logger.debug("Type of input text is %s and its value is %s" %(type(threshold_window.ch0_input.text()),threshold_window.ch0_input.text()))
-
-            try:
-                int(threshold_window.ch0_input.text())
-                self.outqueue.put('TL 0 ' + threshold_window.ch0_input.text())
-
-            except ValueError:
-                self.logger.info("Can't convert to integer: field 0")
-            try:
-                int(threshold_window.ch1_input.text())
-                self.outqueue.put('TL 1 ' + threshold_window.ch1_input.text())
-            except ValueError:
-                self.logger.info("Can't convert to integer: field 1")
-            try:
-                int(threshold_window.ch2_input.text())
-                self.outqueue.put('TL 2 ' + threshold_window.ch2_input.text())
-            except ValueError:
-                self.logger.info("Can't convert to integer: field 2")
-            try:
-                int(threshold_window.ch3_input.text())
-                self.outqueue.put('TL 3 ' + threshold_window.ch3_input.text())
-            except ValueError:
-                self.logger.info("Can't convert to integer: field 3")
-        # get the new thresholds
         self.outqueue.put('TL')
-	    
+  
 
     def config_menu(self):
         """
@@ -370,9 +361,9 @@ class MainWindow(QtGui.QMainWindow):
             
             singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
             if singles:
-                self.tabwidget.scalars_monitor.do_not_show_trigger = True
-            else:
-                self.tabwidget.scalars_monitor.do_not_show_trigger = False
+                self.tabwidget.ratewidget.scalars_monitor.do_not_show_trigger = True
+            else:             
+                self.tabwidget.ratewidget.scalars_monitor.do_not_show_trigger = False
             
             twofold   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_1")).isChecked() 
             threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 
@@ -448,143 +439,165 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMessageBox.information(self,
                   "about muonic",
                   "for information see\n http://code.google.com/p/muonic/")
-        
-    #def clear_function(self):
-    #    """
-    #    Reset the rate plot by clicking the restart button
-    #    """
-    #    self.logger.debug("Clear was called")
-    #    self.tabwidget.scalars_monitor.reset()
 
+    def query_daq_for_scalars(self):
+        """
+        Send a "DS" message to DAQ and record the time when this is don
+        """
+        self.lastscalarquery = self.thisscalarquery
+        self.outqueue.put("DS")
+        self.thisscalarquery = time.time()
+
+    def get_scalars_from_queue(self,msg):
+        """
+        Explicitely scan a message for scalar informatioin
+        Returns True if found, else False
+        """
+        
+        if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
+            self.scalars = msg.split()
+            time_window = self.thisscalarquery - self.lastscalarquery
+            self.logger.debug("Time window %s" %time_window)
+            errors = False
+
+            for item in self.scalars:
+                if ("S0" in item) & (len(item) == 11):
+                    self.scalars_ch0 = int(item[3:],16)
+                elif ("S1" in item) & (len(item) == 11):
+                    self.scalars_ch1 = int(item[3:],16)
+                elif ("S2" in item) & (len(item) == 11):
+                    self.scalars_ch2 = int(item[3:],16)
+                elif ("S3" in item) & (len(item) == 11):
+                    self.scalars_ch3 = int(item[3:],16)
+                elif ("S4" in item) & (len(item) == 11):
+                    self.scalars_trigger = int(item[3:],16)
+                elif ("S5" in item) & (len(item) == 11):
+                    self.scalars_time = float(int(item[3:],16))
+                #else:
+                    #self.logger.debug("unknown item detected: %s" %item.__repr__())
+                
+            self.scalars_diff_ch0 = self.scalars_ch0 - self.scalars_ch0_previous 
+            self.scalars_diff_ch1 = self.scalars_ch1 - self.scalars_ch1_previous 
+            self.scalars_diff_ch2 = self.scalars_ch2 - self.scalars_ch2_previous 
+            self.scalars_diff_ch3 = self.scalars_ch3 - self.scalars_ch3_previous 
+            self.scalars_diff_trigger = self.scalars_trigger - self.scalars_trigger_previous 
+            
+            self.scalars_ch0_previous = self.scalars_ch0
+            self.scalars_ch1_previous = self.scalars_ch1
+            self.scalars_ch2_previous = self.scalars_ch2
+            self.scalars_ch3_previous = self.scalars_ch3
+            self.scalars_trigger_previous = self.scalars_trigger
+            
+            return True
+        else:
+            return False 
+                
+    def get_thresholds_from_queue(self,msg):
+        """
+        Explicitely scan message for threshold information
+        Return True if found, else False
+        """
+        if msg.startswith('TL') and len(msg) > 9:
+            msg = msg.split('=')
+            #print msg
+            self.threshold_ch0 = int(msg[1][:-2])
+            self.threshold_ch1 = int(msg[2][:-2])
+            self.threshold_ch2 = int(msg[3][:-2])
+            self.threshold_ch3 = int(msg[4]     )
+            self.logger.debug("Got Thresholds %i %i %i %i" %(self.threshold_ch0,self.threshold_ch1,self.threshold_ch2,self.threshold_ch3))
+            return True
+        else:
+            return False
+        
     # this functions gets everything out of the inqueue
     # All calculations should happen here
     def processIncoming(self):
         """
         Handle all the messages currently in the inqueue 
-        and parse the result to the corresponding widgets
+        and pass the result to the corresponding widgets
         """
-
-        #self.logger.debug("length of inqueue: %s" %self.inqueue.qsize())
         while self.inqueue.qsize():
 
             try:
                 msg = self.inqueue.get(0)
-                #self.logger.debug("Got item from inqueue: %s" %msg.__repr__())
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
                 return 
 
             # Check contents of message and do what it says
-            self.tabwidget.text_box.appendPlainText(str(msg))
-            if self.tabwidget.write_file:
+            self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
+            if self.tabwidget.daqwidget.write_file:
                 try:
                     if self.options.nostatus:
                         fields = msg.rstrip("\n").split(" ")
                         if ((len(fields) == 16) and (len(fields[0]) == 8)):
-                            self.tabwidget.outputfile.write(str(msg)+'\n')
+                            self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
                         else:
                             self.logger.debug("Not writing line '%s' to file because it does not contain trigger data" %msg)
                     else:
-                        self.tabwidget.outputfile.write(str(msg)+'\n')
+                        self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
 
                 except ValueError:
                     self.logger.warning('Trying to write on closed file, captured!')
 
             # check for threshold information
-            if msg.startswith('TL') and len(msg) > 9:
-                msg = msg.split('=')
-                self.threshold_ch0 = msg[1][:-2]
-                self.threshold_ch1 = msg[2][:-2]
-                self.threshold_ch2 = msg[3][:-2]
-                self.threshold_ch3 = msg[4]
-                return  
+            if self.get_thresholds_from_queue(msg):
+                continue
 
             # status messages
             if msg.startswith('ST') or len(msg) < 50:
-                return
-
-            # check for scalar information
-            if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
-                self.scalars = msg.split()
-                time_window = self.thisscalarquery
-                self.logger.debug("Time window %s" %time_window)
-
-                for item in self.scalars:
-                    if ("S0" in item) & (len(item) == 11):
-                        self.scalars_ch0 = int(item[3:],16)
-                    elif ("S1" in item) & (len(item) == 11):
-                        self.scalars_ch1 = int(item[3:],16)
-                    elif ("S2" in item) & (len(item) == 11):
-                        self.scalars_ch2 = int(item[3:],16)
-                    elif ("S3" in item) & (len(item) == 11):
-                        self.scalars_ch3 = int(item[3:],16)
-                    elif ("S4" in item) & (len(item) == 11):
-                        self.scalars_trigger = int(item[3:],16)
-                    elif ("S5" in item) & (len(item) == 11):
-                        self.scalars_time = float(int(item[3:],16))
-                    else:
-                        self.logger.debug("unknown item detected: %s" %item.__repr__())
-
-                self.scalars_diff_ch0 = self.scalars_ch0 - self.scalars_ch0_previous 
-                self.scalars_diff_ch1 = self.scalars_ch1 - self.scalars_ch1_previous 
-                self.scalars_diff_ch2 = self.scalars_ch2 - self.scalars_ch2_previous 
-                self.scalars_diff_ch3 = self.scalars_ch3 - self.scalars_ch3_previous 
-                self.scalars_diff_trigger = self.scalars_trigger - self.scalars_trigger_previous 
+                continue
+            
+            if self.get_scalars_from_queue(msg):
+                time_window = self.thisscalarquery - self.lastscalarquery
+                rates = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
+                self.tabwidget.ratewidget.calculate(rates)
                 
-                self.scalars_ch0_previous = self.scalars_ch0
-                self.scalars_ch1_previous = self.scalars_ch1
-                self.scalars_ch2_previous = self.scalars_ch2
-                self.scalars_ch3_previous = self.scalars_ch3
-                self.scalars_trigger_previous = self.scalars_trigger
-                #send the counted scalars to the subwindow
-                self.tabwidget.scalars_result = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
+                #print self.tabwidget.scalars_result
                 #write the rates to data file
                 # we have to catch IOErrors, can occur if program is 
                 # exited
-                if self.data_file_write:
+                if self.tabwidget.ratewidget.data_file_write:
                     try:
-                        self.data_file.write('%f %f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_time, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
-                        self.logger.debug("Rate plot data was written to %s" %self.data_file.__repr__())
+                        self.tabwidget.ratewidget.data_file.write('%f %f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_time, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
+                        self.logger.debug("Rate plot data was written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
                     except ValueError:
-                        self.logger.warning("ValueError, Rate plot data was not written to %s" %self.data_file.__repr__())
-
-            elif (self.options.mudecaymode or self.tabwidget.widget(2).findChild(QtGui.QCheckBox,QtCore.QString("activate_pulseanalyzer")) or self.options.pulsefile):#self.options.showpulses or self.options.pulsefilename) :
+                        self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
+                continue
+            
+            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.options.pulsefilename or self.tabwidget.velocitywidget.active):#self.options.showpulses or self.options.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
-                if self.pulses is not None:
-                    self.pulses_to_show = self.pulses
-
-                # FIXME: What is that for?      
-                # -> it is to get the rate from the pulses
-                # so no more DAQ queries are needed              
-                if (self.pulses != None):
+                if self.pulses != None:
+                    #self.pulses_to_show = self.pulses
+                    self.tabwidget.pulseanalyzerwidget.calculate(self.pulses)
                     # we have to count the triggers in the time intervall
+                    # FIXME: find a method to calculate rate from 
+                    # previously taken file
                     self.channel_counts[0] += 1                         
                     for channel,pulses in enumerate(self.pulses[1:]):
                         if pulses:
                             for pulse in pulses:
-                                self.channel_counts[channel] += 1
+                                self.channel_counts[channel + 1] += 1
+               
+                    if self.tabwidget.velocitywidget.active:
+                        self.tabwidget.velocitywidget.calculate(self.pulses)
 
-                if self.options.mudecaymode:
-                    if self.pulses != None:
-                        minsinglepulsewidth = int(self.tabwidget.minsinglepulsewidth)
-                        maxsinglepulsewidth = int(self.tabwidget.maxsinglepulsewidth)
-                        mindoublepulsewidth = int(self.tabwidget.mindoublepulsewidth)
-                        maxdoublepulsewidth = int(self.tabwidget.maxdoublepulsewidth)
-                        tmpdecay = self.dtrigger.trigger(self.pulses,single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth)                   
-                        if tmpdecay != None:
-                            when = time.asctime()
-                            #devide by 1000 to get microseconds
-                            self.decay.append((tmpdecay/1000.,when))
-                            self.logger.info('We have found a decaying muon with a decaytime of %f at %s' %(tmpdecay,when)) 
-                            self.tabwidget.muondecaycounter += 1
-                            self.tabwidget.lastdecaytime = when
-                        # cleanup
-                        del tmpdecay
-
-
-        #print "pi"
-        #print self.tabwidget.scalars_result
+                    if self.tabwidget.decaywidget.is_active():
+                        self.tabwidget.decaywidget.calculate(self.pulses)
+                continue
+            
+    def widgetUpdate(self):
+        """
+        Update the widgets
+        """
+    
+        # this fct is called every timewindow - so we have to query for scalars
+        # FIXME: decouple scalar query and plot-drawing
+        self.query_daq_for_scalars()
+        for widg in self.tabwidget.dynamic_widgets:
+            if widg.is_active():
+                widg.update()
 
     def closeEvent(self, ev):
         """

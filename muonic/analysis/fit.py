@@ -135,5 +135,77 @@ def main(bincontent=None):
         return (cut_bincenters,cut_bincontent,fitx,decay,p,covar,chisquare,nbins)
      
 
+def gaussian_fit(bincontent):
+
+    def gauss(p,x):
+        return (1/((p[0]*numpy.sqrt(2*numpy.pi))))*numpy.exp(-0.5*(((x - p[1])/p[0])**2)) 
+    
+    def error(p,x,y):
+        return gauss(p,x)-y
+    
+
+    # this is then used for the mudecaywindow
+    # in muonic
+    # we have to adjust the bins
+    # to the values of the used histogram
+
+    bins = numpy.linspace(0,2,20)
+    bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
+
+    # we cut the leading edge of the distribution away for the fit
+    #glob_max = max(bincontent)
+    #cut = 0
+    #for i in enumerate(bincontent):
+    #    if i[1] == glob_max:
+    #        cut = i[0]
+
+    cut_bincontent  = bincontent#[cut:]        
+    cut_bincenter   = bin_centers#[cut]
+    cut_bincenters  = bin_centers#[cut:]
+
+
+    # maybe something for the future..
+    #nbins = optimalbins.optbinsize(cut_bincontent,1,20)       
+    #fit_bins        = n.linspace(cut_bincenter,20,nbins)
+    #fit_bin_centers = fit_bins[:-1] + 0.5*(fit_bins[1]-fit_bins[0])
+    #fit_bincontent  = n.zeros(len(fit_bin_centers))
+
+    ## the bincontent must be redistributed to fit_bincontent
+
+    #for binindex_fit in xrange(len(fit_bincontent)):
+    #    for binindex,content in enumerate(bincontent):
+    #        if bin_centers[binindex] <= fit_bin_centers[binindex_fit]:
+    #            fit_bincontent[binindex_fit] += content
+
+    p0 = numpy.array([20,1.0,5])
+
+    #output = optimize.leastsq(error,p0,args=(fit_bin_centers,fitbincontent),full_output=1)
+
+    output = optimize.leastsq(error,p0,args=(cut_bincenters,cut_bincontent),full_output=1)
+
+    p = output[0]
+    covar = output[1]
+    
+    print "Fit parameters:",p
+    print "Covariance matrix:",covar
+    
+    chisquare=0.
+    deviations=error(p,cut_bincenters,cut_bincontent)
+    for i,d in enumerate(deviations):
+        chisquare += d*d/gauss(p,cut_bincenters[i])
+    
+    params = {'legend.fontsize': 13}
+    pylab.rcParams.update(params)
+    
+    #nbins = 84
+    nbins = len(bins)
+    xmin = cut_bincenters[0]
+    xmax = cut_bincenters[-1]
+
+    fitx=numpy.linspace(xmin,xmax,100)
+
+    #return (bin_centers,bincontent,fitx,decay,p,covar,chisquare,nbins)
+    return (cut_bincenters,cut_bincontent,fitx,gauss,p,covar,chisquare,nbins)
+
 if __name__ == '__main__':
     main()
