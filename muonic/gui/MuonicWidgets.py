@@ -151,7 +151,7 @@ class VelocityWidget(QtGui.QWidget):
         self.times = []
         self.active = False
         self.channel_distance = 100. # in cm
-        
+        self.omit_early_pulses = True
         #self.velocitycanvas = VelocityCanvas(logger)
 
         activateVelocity = QtGui.QCheckBox(self)
@@ -170,13 +170,14 @@ class VelocityWidget(QtGui.QWidget):
                                QtCore.SIGNAL("clicked()"),
                                self.activateVelocityClicked
                                )
+        
         QtCore.QObject.connect(self.velocityfit_button,
                               QtCore.SIGNAL("clicked()"),
                               self.velocityFitClicked
                               )
         
     def calculate(self,pulses):
-        flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
+        flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel,omit_early_pulses = self.omit_early_pulses)
         if (flighttime != None and flighttime > 0):
             velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             #print flighttime,velocity,self.channel_distance
@@ -219,7 +220,8 @@ class VelocityWidget(QtGui.QWidget):
                     if config_dialog.findChild(QtGui.QRadioButton,QtCore.QString("lowercheckbox_" + ch_label )).isChecked():
                         self.lower_channel = chan + 1 #
             
-            self.channel_distance = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
+            self.channel_distance  = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
+            self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
             self.active = True            
         else:
             self.active = False                

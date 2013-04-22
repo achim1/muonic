@@ -181,6 +181,12 @@ class VelocityConfigDialog(MuonicDialog):
         grid.addWidget(channel_distance,1,0)
         grid.addWidget(channel_label,1,1)
 
+        early_pulse_cut = QtGui.QCheckBox()
+        early_pulse_cut.setObjectName("early_pulse_cut")
+        early_pulse_cut.setText("omit pulses smaller than 10ns")
+        early_pulse_cut.setToolTip("pulses which are less than 10 ns wide\n might be created due to electronic noise\n and can distort the velocity measurement.\n However the usefullness of this settings\n depends on the detector properties.")
+        early_pulse_cut.setChecked(True)
+        
         self.buttonBox = self.createButtonBox(leftoffset=200)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
@@ -188,6 +194,7 @@ class VelocityConfigDialog(MuonicDialog):
         
         
         grid.addWidget(self.buttonBox,2,1)
+        grid.addWidget(early_pulse_cut,2,0)
         self.setLayout(grid)
         self.show()
 
