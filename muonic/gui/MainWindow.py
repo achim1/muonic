@@ -26,10 +26,6 @@ from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidg
 
 #from TabWidget import TabWidget
 
-# temporary, might (should?) go away in future revision..
-# GTabWidget is Gordon's version of TabWidget
-from GTabWidget import GTabWidget
-
 tr = QtCore.QCoreApplication.translate
 
 class MuonicOptions:
@@ -38,7 +34,7 @@ class MuonicOptions:
     options for the program
     """
 
-    def __init__(self,timewindow,writepulses,nostatus,user,gordon):
+    def __init__(self,timewindow,writepulses,nostatus,user):
 
         # put the file in the data directory
         # we chose a global format for naming the files -> decided on 18/01/2012
@@ -73,7 +69,6 @@ class MuonicOptions:
         # other options...
         self.timewindow  = timewindow
         self.nostatus    = nostatus
-        self.gordon      = gordon
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -98,7 +93,7 @@ class MainWindow(QtGui.QMainWindow):
         loading = QtGui.QProgressDialog(QtCore.QString("Initializing DAQ"), QtCore.QString("Wait for it!"), 0,9)
         loading.show()          
         self.logger  = logger
-        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user,opts.gordon)
+        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user)
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.outqueue.put('TL') # get the thresholds

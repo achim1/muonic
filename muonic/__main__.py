@@ -69,7 +69,6 @@ if __name__ == '__main__':
     parser.add_option("-d", "--debug", dest="loglevel", action="store_const", const=10 , help="switch to loglevel debug", default=10)
     parser.add_option("-p", "--writepulses", dest="writepulses", help="write a file with extracted pulses", action="store_true", default=False)
     parser.add_option("-n", "--nostatus", dest="nostatus", help="do not write DAQ status messages to RAW data files", action="store_true", default=False)
-    parser.add_option("--gordon", dest="gordon", help="try Gordons implementation of mu lifetime and velocity", action="store_true", default=False)
 
 
     opts, args = parser.parse_args()
