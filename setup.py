@@ -1,6 +1,11 @@
 #! /usr/bin/env python
 
-from distutils.core import setup
+#from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
 
 import os
 import shlex
@@ -17,17 +22,28 @@ import subprocess as sub
 datapath = (os.getenv('HOME') + os.sep + 'muonic_data')
 
 setup(name='muonic',
-      version='1.0',
+      version='1.1.0',
       description='Software to work with QNet DAQ cards',
       long_description='Software is able to manage DAQ comunications and shows e.g. a rate plot...',
-      author='Robert Franke',
+      author='Robert Franke,Achim Stoessl',
+      author_email="achim.stoessl@desy.de",
       url='http://code.google.com/p/muonic/',
+      download_url="http://muonic.googlecode.com/files/muonic_1.0.tar.gz",
+      # can only be used with setuptools
+      #install_requires=['numpy','scipy','pyserial','matplotlib','PyQt'],
       license="GPL",
       platforms=["Ubuntu 10.10"],
-      keywords=["QNET","QuarkNET","Fermilab","DESY"],
+      classifiers=[
+          "License :: GNU General Public License (GPL)",
+          "Programming Language :: Python",
+          "Development Status :: Beta",
+          "Intended Audience :: Developers :: Students :: Physicists :: Teachers ",
+          "Topic :: Cosmic Ray Physics",
+      ],
+      keywords=["QNET","QuarkNET","Fermilab","DESY","DAQ"],
       packages=['muonic','muonic.analysis','muonic.gui','muonic.daq'],
       scripts=['bin/muonic','bin/which_tty_daq'],
-      package_data={'muonic': ['daq/simdaq.txt']}, 
+      package_data={'muonic': ['daq/simdaq.txt'],'':['*.txt','*.rst']}, 
       #package_data={'' : ['docs/*','README'], 'muonic': ['daq/simdaq.txt','daq/which_tty_daq']}, 
       data_files=[(datapath,[]),(datapath,["docs/build/man/muonic.1"])]
       )
