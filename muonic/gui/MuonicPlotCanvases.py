@@ -93,8 +93,8 @@ class PulseCanvas(MuonicPlotCanvas):
         self.ax.clear()
 
         # set specific limits for X and Y axes
-        self.ax.set_xlim(0, 40)
-        self.ax.set_ylim(ymax=1.2)
+        self.ax.set_xlim(0, 100)
+        self.ax.set_ylim(ymax=1.5)
         self.ax.grid()
         self.ax.set_xlabel('time in ns')
         self.ax.yaxis.set_visible(False)
@@ -115,7 +115,7 @@ class PulseCanvas(MuonicPlotCanvas):
             for pulse in chan[1]:
                 self.ax.plot([pulse[0],pulse[0],pulse[1],pulse[1]],[0,self.pulseheight,self.pulseheight,0],colors[chan[0]],label=labels[chan[0]],lw=2)
         try:
-            self.ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
+            self.ax.legend(loc=1, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
         except:
             self.logger.info('An error with the legend occured!')
             self.ax.legend(loc=2)
@@ -377,7 +377,7 @@ class PulseWidthCanvas(MuonicHistCanvas):
 
     def __init__(self,parent,logger,histcolor="r"): 
         #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,500,100),histcolor=histcolor,xmin=0.,xmax=500,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,200,100),histcolor=histcolor,xmin=0.,xmax=200,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
         self.ax.set_title("Pulsewidths")
         
     def update_plot(self,data):
