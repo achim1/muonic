@@ -352,7 +352,7 @@ class DecayTriggerThorough:
             
 
             if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):
-                decaytime = ttp[single_channel][-1][1] - ttp[single_channel][0][0]
+                decaytime = ttp[single_channel][-1][0] - ttp[single_channel][0][0]
         
         # or it might have entered the second channel
         # then we do not want to have more than one
