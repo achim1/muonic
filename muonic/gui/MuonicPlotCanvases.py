@@ -34,7 +34,7 @@ class MuonicPlotCanvas(FigureCanvas):
         
         self.fig = Figure(facecolor="white",dpi=72)
         self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(left=0.1, right=0.6)
+        self.fig.subplots_adjust(left=0.1, right=0.75)
   
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)
@@ -110,17 +110,25 @@ class PulseCanvas(MuonicPlotCanvas):
 
         colors = ['b','g','r','c']
         labels = ['c0','c1','c2','c3']
-
+        _pulsemax = []
         for chan in enumerate(pulses[1:]):
             for pulse in chan[1]:
                 self.ax.plot([pulse[0],pulse[0],pulse[1],pulse[1]],[0,self.pulseheight,self.pulseheight,0],colors[chan[0]],label=labels[chan[0]],lw=2)
+                _pulsemax.append(pulse[0])
+                _pulsemax.append(pulse[1])
+
+        _pulsemax = max(_pulsemax)*1.2
+        # TODO: the trick below does not really work as expected. 
+        #if _pulsemax < self.ax.get_xlim()[1]:
+        #    _pulsemax = self.ax.get_xlim()[0]
+        self.ax.set_xlim(0, _pulsemax)
         try:
             self.ax.legend(loc=1, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
         except:
             self.logger.info('An error with the legend occured!')
             self.ax.legend(loc=2)
 
-        self.fig.canvas.draw()      
+        self.fig.canvas.draw()
         
         
 class ScalarsCanvas(MuonicPlotCanvas):
@@ -294,7 +302,8 @@ class MuonicHistCanvas(MuonicPlotCanvas):
 
         # avoid memory leak
         self.ax.clear()
-
+        
+        _max_xval = max(data)
 
         # we have to do some bad hacking here,
         # because the p histogram is rather
@@ -327,6 +336,10 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.ax.set_ylim(ymin=0)
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)
+        _max_xval = 1.2*_max_xval
+        if _max_xval < self.ax.get_xlim()[1]:
+            _max_xval = self.ax.get_xlim()[1]
+        self.ax.set_xlim(xmax=_max_xval)
         
         # always get rid of unused stuff
         del tmphist

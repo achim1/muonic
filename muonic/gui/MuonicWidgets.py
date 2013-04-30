@@ -133,7 +133,15 @@ class PulseanalyzerWidget(QtGui.QWidget): # not used yet
 
     def calculate(self,pulses):
         self.pulses = pulses
-        pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]
+        # pulsewidths changed because falling edge can be None.
+        # pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]
+        pulsewidths = []
+        for chan in pulses[1:]:
+            for le, fe in chan:
+                if fe is not None:
+                    pulsewidths.append(fe - le)
+                else:
+                    pulsewidths.append(0.)
         self.pulsewidths += pulsewidths
         
     def update(self):
