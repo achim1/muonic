@@ -258,6 +258,7 @@ class ThresholdDialog(MuonicDialog):
             thres.setMaximum(1000)
             thres.setObjectName("thr_ch_" + ch)
             thres.setValue(int(thr))
+            thres.setSuffix(' mV')
             label = QtGui.QLabel("Chan " + ch )
             self.v_box.addWidget(label)
             self.v_box.addWidget(thres)
