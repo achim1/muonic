@@ -145,6 +145,7 @@ class MainWindow(QtGui.QMainWindow):
         
         #tab widget to hold the different physics widgets
         self.tabwidget = QtGui.QTabWidget(self)
+        #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
         self.logger.info("Timewindow is %4.2f" %self.options.timewindow)
 
