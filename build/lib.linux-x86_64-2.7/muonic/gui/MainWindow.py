@@ -153,15 +153,15 @@ class MainWindow(QtGui.QMainWindow):
           
         self.tabwidget.addTab(DecayWidget(logger,parent = self),"Muon Decay")
         self.tabwidget.decaywidget = self.tabwidget.widget(1)
-      
-        self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
-        self.tabwidget.velocitywidget = self.tabwidget.widget(2)
-
+ 
         self.tabwidget.addTab(PulseanalyzerWidget(logger),"Pulse Analyzer")
-        self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(3)
-
+        self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(2)
+     
         self.tabwidget.addTab(DAQWidget(logger,parent=self),"DAQ Output")
-        self.tabwidget.daqwidget = self.tabwidget.widget(4)
+        self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
+
+        self.tabwidget.daqwidget = self.tabwidget.widget(3)
+        self.tabwidget.velocitywidget = self.tabwidget.widget(4)
         
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
