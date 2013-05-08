@@ -302,8 +302,11 @@ class MuonicHistCanvas(MuonicPlotCanvas):
 
         # avoid memory leak
         self.ax.clear()
-        
-        _max_xval = max(data)
+
+        _max_xval = self.ax.get_xlim()[1]
+        if not data is None:
+            if len(data) > 0:
+                _max_xval = 1.2*max(data)
 
         # we have to do some bad hacking here,
         # because the p histogram is rather
@@ -336,8 +339,9 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.ax.set_ylim(ymin=0)
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)
-        _max_xval = 1.2*_max_xval
-        if _max_xval < self.ax.get_xlim()[1]:
+
+        if _max_xval < self.ax.get_xlim()[1] or _max_xval*5. > self.ax.get_xlim()[1]:
+:
             _max_xval = self.ax.get_xlim()[1]
         self.ax.set_xlim(xmax=_max_xval)
         
@@ -390,7 +394,7 @@ class PulseWidthCanvas(MuonicHistCanvas):
 
     def __init__(self,parent,logger,histcolor="r"): 
         #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,200,100),histcolor=histcolor,xmin=0.,xmax=200,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,50),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
         self.ax.set_title("Pulsewidths")
         
     def update_plot(self,data):
