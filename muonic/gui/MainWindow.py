@@ -34,7 +34,7 @@ class MuonicOptions:
     options for the program
     """
 
-    def __init__(self,timewindow,writepulses,nostatus,user):
+    def __init__(self,writepulses, user):
 
         # put the file in the data directory
         # we chose a global format for naming the files -> decided on 18/01/2012
@@ -66,10 +66,6 @@ class MuonicOptions:
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
 
-        # other options...
-        self.timewindow  = timewindow
-        self.nostatus    = nostatus
-
 
 class MainWindow(QtGui.QMainWindow):
     """
@@ -93,7 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         loading = QtGui.QProgressDialog(QtCore.QString("Initializing DAQ"), QtCore.QString("Wait for it!"), 0,9)
         loading.show()          
         self.logger  = logger
-        self.options = MuonicOptions(float(opts.timewindow),opts.writepulses,opts.nostatus,opts.user)
+        self.options = MuonicOptions(opts.writepulses, opts.user)
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.outqueue.put('TL') # get the thresholds
@@ -147,7 +143,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget = QtGui.QTabWidget(self)
         #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
-        self.logger.info("Timewindow is %4.2f" %self.options.timewindow)
+        self.logger.info("Timewindow is %4.2f" %opts.timewindow)
 
         self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
         self.tabwidget.ratewidget = self.tabwidget.widget(0)
@@ -216,7 +212,7 @@ class MainWindow(QtGui.QMainWindow):
         #time.sleep(0.5)
         loading.setValue(3)
         self.processIncoming()
-        for i in xrange(4,int(self.options.timewindow) + 4):
+        for i in xrange(4,int(opts.timewindow) + 4):
             # wait a full cycle, so that the plot is finished at start
             time.sleep(1)
             loading.setValue(i)
@@ -240,7 +236,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.ratewidget.update()
         self.query_daq_for_scalars()
         self.timer.start(1000)
-        self.widgetupdater.start(self.options.timewindow*1000)
+        self.widgetupdater.start(opts.timewindow*1000)
         
     def exit_program(self,*args):
         """
@@ -525,7 +521,7 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
             if self.tabwidget.daqwidget.write_file:
                 try:
-                    if self.options.nostatus:
+                    if opts.nostatus:
                         fields = msg.rstrip("\n").split(" ")
                         if ((len(fields) == 16) and (len(fields[0]) == 8)):
                             self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')

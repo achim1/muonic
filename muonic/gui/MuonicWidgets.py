@@ -189,8 +189,7 @@ class VelocityWidget(QtGui.QWidget):
         if (flighttime != None and flighttime > 0):
             velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             #print flighttime,velocity,self.channel_distance
-            if flighttime != None:
-                self.times.append(velocity)
+            self.times.append(velocity)
                 
         
         #print self.times
