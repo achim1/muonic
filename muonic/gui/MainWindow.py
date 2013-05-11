@@ -28,45 +28,6 @@ from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidg
 
 tr = QtCore.QCoreApplication.translate
 
-class MuonicOptions:
-    """
-    A simple struct which holds the different
-    options for the program
-    """
-
-    def __init__(self,writepulses, user):
-
-        # put the file in the data directory
-        # we chose a global format for naming the files -> decided on 18/01/2012
-        # we use GMT times
-        # " Zur einheitlichen Datenbezeichnung schlage ich folgendes Format vor:
-        # JJJJ-MM-TT_y_x_vn.dateiformat (JJJJ-Jahr; MM-Monat; TT-Speichertag bzw.
-        # Beendigung der Messung; y: G oder L ausw?hlen, G steht f?r **We add R for rate P for pulses and RW for RAW **
-        # Geschwindigkeitsmessung/L f?r Lebensdauermessung; x-Messzeit in Stunden;
-        # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
-        # TODO: consistancy....        
- 
-
-        # this is hard-coded! There must be a better solution...
-        # if you change here, you have to change in setup.py!
-        datapath = os.getenv('HOME') + os.sep + 'muonic_data'
- 
-        # the time when the rate measurement is started
-        now = datetime.datetime.now()
-        #self.rate_mes_start = now     
-        date = time.gmtime()
-        self.filename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",user[0],user[1]) )
-        self.rawfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",user[0],user[1]) )
-        self.raw_mes_start = False
-        self.decayfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",user[0],user[1]) )
-        if writepulses:
-                self.pulsefilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",user[0],user[1]) )
-                self.pulse_mes_start = now
-        else:
-                self.pulsefilename = ''
-                self.pulse_mes_start = False
-
-
 class MainWindow(QtGui.QMainWindow):
     """
     The main application
@@ -87,9 +48,40 @@ class MainWindow(QtGui.QMainWindow):
         #self.ready = QtGui.QLabel(tr('MainWindow','Ready'))
         #self.statusbar.addPermanentWidget(self.ready)  
         loading = QtGui.QProgressDialog(QtCore.QString("Initializing DAQ"), QtCore.QString("Wait for it!"), 0,9)
-        loading.show()          
+        loading.show()
         self.logger  = logger
-        self.options = MuonicOptions(opts.writepulses, opts.user)
+
+        # put the file in the data directory
+        # we chose a global format for naming the files -> decided on 18/01/2012
+        # we use GMT times
+        # " Zur einheitlichen Datenbezeichnung schlage ich folgendes Format vor:
+        # JJJJ-MM-TT_y_x_vn.dateiformat (JJJJ-Jahr; MM-Monat; TT-Speichertag bzw.
+        # Beendigung der Messung; y: G oder L ausw?hlen, G steht f?r **We add R for rate P for pulses and RW for RAW **
+        # Geschwindigkeitsmessung/L f?r Lebensdauermessung; x-Messzeit in Stunden;
+        # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
+        # TODO: consistancy....        
+ 
+
+        # this is hard-coded! There must be a better solution...
+        # if you change here, you have to change in setup.py!
+        datapath = os.getenv('HOME') + os.sep + 'muonic_data'
+ 
+        # the time when the rate measurement is started
+        now = datetime.datetime.now()
+        #self.rate_mes_start = now     
+        date = time.gmtime()
+        self.filename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",opts.user[0],opts.user[1]) )
+        self.rawfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",user[0],user[1]) )
+        self.raw_mes_start = False
+
+        self.decayfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
+        if opts.writepulses:
+                self.pulsefilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",opts.user[0],opts.user[1]) )
+                self.pulse_mes_start = now
+        else:
+                self.pulsefilename = ''
+                self.pulse_mes_start = False
+
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.outqueue.put('TL') # get the thresholds
@@ -107,7 +99,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.logger.debug("Queue empty!")
                 
         # the pulseextractor for direct analysis
-        self.pulseextractor = pa.PulseExtractor(pulsefile=self.options.pulsefilename) 
+        self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename) 
         self.pulses = None
 
         # prepare fields for scalars 
@@ -259,31 +251,31 @@ class MainWindow(QtGui.QMainWindow):
             # close the RAW file (if any)
             if self.tabwidget.daqwidget.write_file:
                 self.tabwidget.daqwidget.write_file = False
-                mtime = now - self.options.raw_mes_start
+                mtime = now - self.raw_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The raw data was written for %f hours" % mtime)
-                newrawfilename = self.options.rawfilename.replace("HOURS",str(mtime))
-                shutil.move(self.options.rawfilename,newrawfilename)
+                newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
+                shutil.move(self.rawfilename,newrawfilename)
                 self.tabwidget.daqwidget.outputfile.close()
 
             if self.tabwidget.decaywidget.is_active():
 
-                #self.options.mudecaymode = False
+                #self.mudecaymode = False
                 mtime = now - self.tabwidget.decaywidget.dec_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-                newmufilename = self.options.decayfilename.replace("HOURS",str(mtime))
-                shutil.move(self.options.decayfilename,newmufilename)
+                newmufilename = self.decayfilename.replace("HOURS",str(mtime))
+                shutil.move(self.decayfilename,newmufilename)
 
-            if self.options.pulsefilename:
-                old_pulsefilename = self.options.pulsefilename
+            if self.pulsefilename:
+                old_pulsefilename = self.pulsefilename
                 # no pulses shall be extracted any more, 
                 # this means changing lots of switches
-                self.options.pulsefilename = False
-                #self.options.mudecaymode = False
-                self.options.showpulses = False
+                self.pulsefilename = False
+                #self.mudecaymode = False
+                self.showpulses = False
                 self.pulseextractor.close_file()
-                mtime = now - self.options.pulse_mes_start
+                mtime = now - self.pulse_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
                 newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
@@ -294,8 +286,8 @@ class MainWindow(QtGui.QMainWindow):
             mtime = now - self.tabwidget.ratewidget.rate_mes_start
             mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
             self.logger.info("The rate measurement was active for %f hours" % mtime)
-            newratefilename = self.options.filename.replace("HOURS",str(mtime))
-            shutil.move(self.options.filename,newratefilename)
+            newratefilename = self.filename.replace("HOURS",str(mtime))
+            shutil.move(self.filename,newratefilename)
             time.sleep(0.5)
             self.tabwidget.writefile = False
             try:
@@ -558,7 +550,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
                 continue
             
-            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.options.pulsefilename or self.tabwidget.velocitywidget.active):#self.options.showpulses or self.options.pulsefilename) :
+            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.active):#self.showpulses or self.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
                 if self.pulses != None:
                     #self.pulses_to_show = self.pulses

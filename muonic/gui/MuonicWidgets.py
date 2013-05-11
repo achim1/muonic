@@ -49,7 +49,7 @@ class RateWidget(QtGui.QWidget):
         self.lastscalarquery = 0
         self.thisscalarquery = time.time()
         #self.pulses_to_show = None
-        self.data_file = open(self.mainwindow.options.filename, 'w')
+        self.data_file = open(self.mainwindow.filename, 'w')
         self.data_file.write('time | chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
         
         # always write the rate plot data
@@ -189,7 +189,9 @@ class VelocityWidget(QtGui.QWidget):
         if (flighttime != None and flighttime > 0):
             velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             #print flighttime,velocity,self.channel_distance
-            self.times.append(velocity)
+            print 'VELOCITY', velocity
+            if flighttime != None:
+                self.times.append(velocity)
                 
         
         #print self.times
@@ -338,7 +340,7 @@ class DecayWidget(QtGui.QWidget):
         """
  
         now = datetime.datetime.now()
-        #if not self.mainwindow.options.mudecaymode:
+        #if not self.mainwindow.mudecaymode:
         if not self.active:
                 #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(True)
 
@@ -467,10 +469,10 @@ class DAQWidget(QtGui.QWidget):
         """
         save the raw daq data to a automatically named file
         """       
-        self.outputfile = open(self.mainwindow.options.rawfilename,"w")
-        self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.options.rawfilename))
+        self.outputfile = open(self.mainwindow.rawfilename,"w")
+        self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
         self.write_file = True
-        self.mainwindow.options.raw_mes_start = datetime.datetime.now()
+        self.mainwindow.raw_mes_start = datetime.datetime.now()
         self.mainwindow.statusbar.addPermanentWidget(self.file_label)
 
     def on_periodic_clicked(self):

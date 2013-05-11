@@ -234,7 +234,7 @@ class TabWidget(QtGui.QTabWidget):
         """
  
         now = datetime.datetime.now()
-        if not self.mainwindow.options.mudecaymode:
+        if not self.mainwindow.mudecaymode:
             if self.activateMuondecay.isChecked():
 
                 # launch the settings window
@@ -254,8 +254,8 @@ class TabWidget(QtGui.QTabWidget):
                     chan1_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
                     chan2_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
                     chan3_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_3")).isChecked()
-                    self.mainwindow.options.decay_selfveto  = config_window.selfveto.isChecked()
-                    self.mainwindow.options.decay_mintime   = int(config_window.mintime.text())
+                    self.mainwindow.decay_selfveto  = config_window.selfveto.isChecked()
+                    self.mainwindow.decay_mintime   = int(config_window.mintime.text())
                     if config_window.findChild(QtGui.QGroupBox,QtCore.QString("pulsewidthgroupbox")).isChecked():
                         self.minsinglepulsewidth = config_window.findChild(QtGui.QLineEdit,QtCore.QString("minsinglepulsewidth")).text()
                         self.maxsinglepulsewidth = config_window.findChild(QtGui.QLineEdit,QtCore.QString("maxsinglepulsewidth")).text()
@@ -264,43 +264,43 @@ class TabWidget(QtGui.QTabWidget):
                     
                     for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
                         if channel[1]:
-                            self.mainwindow.options.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+                            self.mainwindow.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
                 # FIXME! 
                     for channel in enumerate([chan0_double,chan1_double,chan2_double,chan3_double]):
                         if channel[1]:
-                            self.mainwindow.options.doublepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+                            self.mainwindow.doublepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
 
                     for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
                         if channel[1]:
-                            self.mainwindow.options.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+                            self.mainwindow.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
 
                 self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
 
                 self.logger.warning("Changing gate width and enabeling pulses") 
-                self.logger.info("Looking for single pulse in Channel %i" %(self.mainwindow.options.singlepulsechannel - 1))
-                self.logger.info("Looking for double pulse in Channel %i" %(self.mainwindow.options.doublepulsechannel - 1 ))
-                self.logger.info("Using veto pulses in Channel %i" %(self.mainwindow.options.vetopulsechannel - 1 ))
+                self.logger.info("Looking for single pulse in Channel %i" %(self.mainwindow.singlepulsechannel - 1))
+                self.logger.info("Looking for double pulse in Channel %i" %(self.mainwindow.doublepulsechannel - 1 ))
+                self.logger.info("Using veto pulses in Channel %i" %(self.mainwindow.vetopulsechannel - 1 ))
 
                 self.mainwindow.outqueue.put("CE") 
                 self.mainwindow.outqueue.put("WC 03 04")
                                  
-                self.mainwindow.options.mudecaymode = True
+                self.mainwindow.mudecaymode = True
                 self.mu_label = QtGui.QLabel(tr('MainWindow','We are looking for decaying muons!'))
                 self.mainwindow.statusbar.addWidget(self.mu_label)
                 self.logger.warning('Might possibly overwrite textfile with decays')
-                self.mainwindow.mu_file = open(self.mainwindow.options.decayfilename,'w')		
-                self.mainwindow.options.dec_mes_start = now
+                self.mainwindow.mu_file = open(self.mainwindow.decayfilename,'w')		
+                self.mainwindow.dec_mes_start = now
 
         else:
 
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.mainwindow.statusbar.removeWidget(self.mu_label)
-            self.mainwindow.options.mudecaymode = False
-            mtime = now - self.mainwindow.options.dec_mes_start
+            self.mainwindow.mudecaymode = False
+            mtime = now - self.options.dec_mes_start
             mtime = round(mtime.seconds/(3600.),2) + mtime.days *86400
             self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-            newmufilename = self.mainwindow.options.decayfilename.replace("HOURS",str(mtime))
-            shutil.move(self.mainwindow.options.decayfilename,newmufilename)
+            newmufilename = self.options.decayfilename.replace("HOURS",str(mtime))
+            shutil.move(self.options.decayfilename,newmufilename)
      
 
 
@@ -324,10 +324,10 @@ class TabWidget(QtGui.QTabWidget):
         """
         save the raw daq data to a automatically named file
         """       
-        self.outputfile = open(self.mainwindow.options.rawfilename,"w")
-        self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.options.rawfilename))
+        self.outputfile = open(self.mainwindow.rawfilename,"w")
+        self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.options.rawfilename))
         self.write_file = True
-        self.mainwindow.options.raw_mes_start = datetime.datetime.now()
+        self.mainwindow.raw_mes_start = datetime.datetime.now()
         self.mainwindow.statusbar.addPermanentWidget(self.file_label)
 
     def on_periodic_clicked(self):
@@ -384,7 +384,7 @@ class TabWidget(QtGui.QTabWidget):
         self.lastDecay.setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
 
         # the mu lifetime histogram 
-        if self.mainwindow.options.mudecaymode:
+        if self.mainwindow.mudecaymode:
         
             if self.mainwindow.decay:    
 
