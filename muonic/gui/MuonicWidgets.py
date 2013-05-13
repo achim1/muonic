@@ -298,7 +298,7 @@ class DecayWidget(QtGui.QWidget):
         return self.active
      
     def calculate(self,pulses):
-        #single_channel = self.options.singlepulsechannel, double_channel = self.options.doublepulsechannel, veto_channel = self.options.vetopulsechannel,selfveto = self.options.decay_selfveto,mindecaytime = self.options.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth):
+        #single_channel = self.singlepulsechannel, double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel,selfveto = self.decay_selfveto,mindecaytime = self.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth):
         decay =  self.trigger.trigger(pulses,single_channel = self.singlepulsechannel,double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel, selfveto = self.decay_selfveto, mindecaytime= self.decay_mintime,minsinglepulsewidth = self.minsinglepulsewidth,maxsinglepulsewidth = self.maxsinglepulsewidth, mindoublepulsewidth = self.mindoublepulsewidth, maxdoublepulsewidth = self.maxdoublepulsewidth )
         if decay != None:
             when = time.asctime()
@@ -393,7 +393,7 @@ class DecayWidget(QtGui.QWidget):
                 self.parentWidget().parentWidget().parentWidget().outqueue.put("CE") 
                 self.parentWidget().parentWidget().parentWidget().outqueue.put("WC 03 04")
               
-                self.mu_file = open(self.parentWidget().parentWidget().parentWidget().options.decayfilename,'w')        
+                self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
                 self.dec_mes_start = now
                 #self.decaywidget.findChild("activate_mudecay").setChecked(True)
                 self.active = True
@@ -403,12 +403,12 @@ class DecayWidget(QtGui.QWidget):
 
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.parentWidget().parentWidget().parentWidget().statusbar.removeWidget(self.mu_label)
-            #self.parentWidget().parentWidget().parentWidget().options.mudecaymode = False
+            #self.parentWidget().parentWidget().parentWidget().mudecaymode = False
             mtime = now - self.dec_mes_start
             mtime = round(mtime.seconds/(3600.),2) + mtime.days *86400
             self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-            newmufilename = self.parentWidget().parentWidget().parentWidget().options.decayfilename.replace("HOURS",str(mtime))
-            shutil.move(self.parentWidget().parentWidget().parentWidget().options.decayfilename,newmufilename)
+            newmufilename = self.parentWidget().parentWidget().parentWidget().decayfilename.replace("HOURS",str(mtime))
+            shutil.move(self.parentWidget().parentWidget().parentWidget().decayfilename,newmufilename)
             self.active = False
 
 class DAQWidget(QtGui.QWidget):

@@ -18,7 +18,7 @@ def main(bincontent=None):
     def error(p,x,y):
         return decay(p,x)-y
     
-    if bincontent == None:
+    if bincontent is None:
     
         nbins = 10
         xmin = 1.0
@@ -80,7 +80,10 @@ def main(bincontent=None):
         bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
 
         # we cut the leading edge of the distribution away for the fit
-        glob_max = max(bincontent)
+        glob_max = 0.
+        if not bincontent is None:
+            if len(bincontent) > 0:
+                glob_max = max(bincontent)
         cut = 0
         for i in enumerate(bincontent):
             if i[1] == glob_max:

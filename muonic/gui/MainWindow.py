@@ -71,7 +71,7 @@ class MainWindow(QtGui.QMainWindow):
         #self.rate_mes_start = now     
         date = time.gmtime()
         self.filename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",opts.user[0],opts.user[1]) )
-        self.rawfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",user[0],user[1]) )
+        self.rawfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
         self.raw_mes_start = False
 
         self.decayfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
@@ -81,7 +81,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
-
+        self.nostatus = opts.nostatus
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.outqueue.put('TL') # get the thresholds
@@ -260,7 +260,6 @@ class MainWindow(QtGui.QMainWindow):
 
             if self.tabwidget.decaywidget.is_active():
 
-                #self.mudecaymode = False
                 mtime = now - self.tabwidget.decaywidget.dec_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The muon decay measurement was active for %f hours" % mtime)
@@ -272,7 +271,6 @@ class MainWindow(QtGui.QMainWindow):
                 # no pulses shall be extracted any more, 
                 # this means changing lots of switches
                 self.pulsefilename = False
-                #self.mudecaymode = False
                 self.showpulses = False
                 self.pulseextractor.close_file()
                 mtime = now - self.pulse_mes_start
@@ -513,7 +511,7 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
             if self.tabwidget.daqwidget.write_file:
                 try:
-                    if opts.nostatus:
+                    if self.nostatus:
                         fields = msg.rstrip("\n").split(" ")
                         if ((len(fields) == 16) and (len(fields[0]) == 8)):
                             self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
