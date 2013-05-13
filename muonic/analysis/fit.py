@@ -28,8 +28,8 @@ def main(bincontent=None):
         times = [float(l) for l in open(sys.argv[1]).readlines() if xmin<float(l)<xmax]
         print len(times),"decay times"
 
-	#nbins = optimalbins.optbinsize(times,1,80)    
-	#print nbins, 'Optimalbins selects nbins'    
+	    #nbins = optimalbins.optbinsize(times,1,80)    
+	    #print nbins, 'Optimalbins selects nbins'    
        
 
         #nbins = optimalbins.optbinsize(times,1,30)
@@ -67,23 +67,21 @@ def main(bincontent=None):
 	pylab.grid()
         pylab.savefig("fit.png")
         
-        # vim: ai ts=4 sts=4 et sw=4
-
     else:
 
         # this is then used for the mudecaywindow
         # in muonic
         # we have to adjust the bins
         # to the values of the used histogram
+        if len(bincontent) == 0:
+            print 'WARNING: Empty bins.'
+            return None
 
         bins = numpy.linspace(0,10,21)
         bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
 
-        # we cut the leading edge of the distribution away for the fit
-        glob_max = 0.
-        if not bincontent is None:
-            if len(bincontent) > 0:
-                glob_max = max(bincontent)
+        # we cut the leading edge of the distribution away for the fit 
+        glob_max = max(bincontent)
         cut = 0
         for i in enumerate(bincontent):
             if i[1] == glob_max:
@@ -146,6 +144,9 @@ def gaussian_fit(bincontent):
     def error(p,x,y):
         return gauss(p,x)-y
     
+    if len(bincontent) == 0:
+        print 'WARNING: Empty bins.'
+        return None
 
     # this is then used for the mudecaywindow
     # in muonic

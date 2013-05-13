@@ -209,7 +209,8 @@ class VelocityWidget(QtGui.QWidget):
         fit the muon velocity histogram
         """
         fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights))
-        self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
+        if not fitresults is None:
+            self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
 
     def activateVelocityClicked(self):
@@ -314,7 +315,8 @@ class DecayWidget(QtGui.QWidget):
         fit the muon decay histogram
         """
         fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights))
-        self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
+        if not fitresults is None:
+            self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
     def update(self):
         if self.decay:
