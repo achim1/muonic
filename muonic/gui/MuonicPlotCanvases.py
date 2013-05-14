@@ -341,7 +341,6 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.ax.set_ylabel(self.ylabel)
 
         if _max_xval < self.ax.get_xlim()[1] or _max_xval*5. > self.ax.get_xlim()[1]:
-:
             _max_xval = self.ax.get_xlim()[1]
         self.ax.set_xlim(xmax=_max_xval)
         
