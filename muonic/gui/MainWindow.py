@@ -16,6 +16,8 @@ import datetime
 import os
 import shutil
 import time
+import webbrowser
+
 
 # muonic imports
 from ..analysis import PulseAnalyzer as pa
@@ -23,6 +25,12 @@ from ..analysis import PulseAnalyzer as pa
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget
+
+DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
+# this is hard-coded! There must be a better solution...
+# if you change here, you have to change in setup.py!
+DATAPATH = os.getenv('HOME') + os.sep + 'muonic_data'
+
 
 #from TabWidget import TabWidget
 
@@ -62,21 +70,18 @@ class MainWindow(QtGui.QMainWindow):
         # TODO: consistancy....        
  
 
-        # this is hard-coded! There must be a better solution...
-        # if you change here, you have to change in setup.py!
-        datapath = os.getenv('HOME') + os.sep + 'muonic_data'
  
         # the time when the rate measurement is started
         now = datetime.datetime.now()
         #self.rate_mes_start = now     
         date = time.gmtime()
-        self.filename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",opts.user[0],opts.user[1]) )
-        self.rawfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
+        self.filename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",opts.user[0],opts.user[1]) )
+        self.rawfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
         self.raw_mes_start = False
 
-        self.decayfilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
+        self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
         if opts.writepulses:
-                self.pulsefilename = os.path.join(datapath,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",opts.user[0],opts.user[1]) )
+                self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",opts.user[0],opts.user[1]) )
                 self.pulse_mes_start = now
         else:
                 self.pulsefilename = ''
@@ -188,7 +193,12 @@ class MainWindow(QtGui.QMainWindow):
         # about
         aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
         self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
+       
         
+        # sphinx-documentation
+        sphinxdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Sphinx documentation', self)
+        self.connect(sphinxdocs,QtCore.SIGNAL('triggered()'),self.sphinxdoc_menu)
+ 
         # create the menubar and fill it with the submenus
         menubar  = self.menuBar()
         filemenu = menubar.addMenu(tr('MainWindow','&File'))
@@ -200,6 +210,7 @@ class MainWindow(QtGui.QMainWindow):
         helpmenu = menubar.addMenu(tr('MainWindow','&Help'))
         helpmenu.addAction(helpdaqcommands)
         helpmenu.addAction(aboutmuonic)
+        helpmenu.addAction(sphinxdocs)
 
         #time.sleep(0.5)
         loading.setValue(3)
@@ -421,6 +432,19 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMessageBox.information(self,
                   "about muonic",
                   "for information see\n http://code.google.com/p/muonic/")
+
+    def sphinxdoc_menu(self):
+        """
+        Show the sphinx documentation that comes with muonic an a
+        browser
+        """
+        docs = (os.path.join(DOCPATH,"index.html"))
+
+        self.logger.info("opening docs from %s" %docs)
+        success = webbrowser.open(docs)
+        if not success:
+            self.logger.warning("Can not open webbrowser!")
+
 
     def query_daq_for_scalars(self):
         """

@@ -229,6 +229,13 @@ and pass the result to the corresponding widgets</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="muonic.gui.MainWindow.MainWindow.sphinxdoc_menu">
+<tt class="descname">sphinxdoc_menu</tt><big>(</big><big>)</big><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow.sphinxdoc_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the sphinx documentation that comes with muonic an a
+browser</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="muonic.gui.MainWindow.MainWindow.threshold_menu">
 <tt class="descname">threshold_menu</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MainWindow.threshold_menu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MainWindow.threshold_menu" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shows the threshold dialogue</p>
@@ -242,13 +249,6 @@ and pass the result to the corresponding widgets</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="muonic.gui.MainWindow.MuonicOptions">
-<em class="property">class </em><tt class="descclassname">muonic.gui.MainWindow.</tt><tt class="descname">MuonicOptions</tt><big>(</big><em>timewindow</em>, <em>writepulses</em>, <em>nostatus</em>, <em>user</em>, <em>gordon</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MainWindow.html#MuonicOptions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MainWindow.MuonicOptions" title="Permalink to this definition">¶</a></dt>
-<dd><p>A simple struct which holds the different
-options for the program</p>
-</dd></dl>
-
 <dl class="function">
 <dt id="muonic.gui.MainWindow.tr">
 <tt class="descclassname">muonic.gui.MainWindow.</tt><tt class="descname">tr</tt><big>(</big><big>)</big><a class="headerlink" href="#muonic.gui.MainWindow.tr" title="Permalink to this definition">¶</a></dt>
@@ -257,9 +257,158 @@ QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -&gt; 
 </dd></dl>
 
 </div>
-<div class="section" id="muonic-gui-tabwidget">
-<h3><cite>muonic.gui.TabWidget</cite><a class="headerlink" href="#muonic-gui-tabwidget" title="Permalink to this headline">¶</a></h3>
-<p>This provides the interface to the different &#8220;physics&#8221; features of muonic, like a rate plot or a pulse display.</p>
+<div class="section" id="muonic-gui-muonicwidgets">
+<h3><cite>muonic.gui.MuonicWidgets</cite><a class="headerlink" href="#muonic-gui-muonicwidgets" title="Permalink to this headline">¶</a></h3>
+<p>The functionality of the software</p>
+<span class="target" id="module-muonic.gui.MuonicWidgets"></span><p>Provide the different physics widgets</p>
+<dl class="class">
+<dt id="muonic.gui.MuonicWidgets.DAQWidget">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicWidgets.</tt><tt class="descname">DAQWidget</tt><big>(</big><em>logger</em>, <em>parent=None</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DAQWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DAQWidget" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DAQWidget.on_file_clicked">
+<tt class="descname">on_file_clicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DAQWidget.on_file_clicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DAQWidget.on_file_clicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>save the raw daq data to a automatically named file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DAQWidget.on_hello_clicked">
+<tt class="descname">on_hello_clicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DAQWidget.on_hello_clicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DAQWidget.on_hello_clicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>send a message to the daq</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DAQWidget.on_periodic_clicked">
+<tt class="descname">on_periodic_clicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DAQWidget.on_periodic_clicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DAQWidget.on_periodic_clicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>issue a command periodically</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicWidgets.DecayWidget">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicWidgets.</tt><tt class="descname">DecayWidget</tt><big>(</big><em>logger</em>, <em>parent=None</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DecayWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DecayWidget" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DecayWidget.activateMuondecayClicked">
+<tt class="descname">activateMuondecayClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DecayWidget.activateMuondecayClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DecayWidget.activateMuondecayClicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>What should be done if we are looking for mu-decays?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DecayWidget.calculate">
+<tt class="descname">calculate</tt><big>(</big><em>pulses</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DecayWidget.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DecayWidget.calculate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DecayWidget.is_active">
+<tt class="descname">is_active</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DecayWidget.is_active"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DecayWidget.is_active" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DecayWidget.mufitClicked">
+<tt class="descname">mufitClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DecayWidget.mufitClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DecayWidget.mufitClicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>fit the muon decay histogram</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.DecayWidget.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#DecayWidget.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.DecayWidget.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicWidgets.PulseanalyzerWidget">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicWidgets.</tt><tt class="descname">PulseanalyzerWidget</tt><big>(</big><em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#PulseanalyzerWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.PulseanalyzerWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a widget which is able to show a plot of triggered pulses</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.PulseanalyzerWidget.calculate">
+<tt class="descname">calculate</tt><big>(</big><em>pulses</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#PulseanalyzerWidget.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.PulseanalyzerWidget.calculate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.PulseanalyzerWidget.is_active">
+<tt class="descname">is_active</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#PulseanalyzerWidget.is_active"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.PulseanalyzerWidget.is_active" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.PulseanalyzerWidget.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#PulseanalyzerWidget.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.PulseanalyzerWidget.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicWidgets.RateWidget">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicWidgets.</tt><tt class="descname">RateWidget</tt><big>(</big><em>logger</em>, <em>parent=None</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#RateWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.RateWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display rate plot</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.RateWidget.calculate">
+<tt class="descname">calculate</tt><big>(</big><em>rates</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#RateWidget.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.RateWidget.calculate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.RateWidget.is_active">
+<tt class="descname">is_active</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#RateWidget.is_active"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.RateWidget.is_active" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.RateWidget.startClicked">
+<tt class="descname">startClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#RateWidget.startClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.RateWidget.startClicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>restart the rate measurement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.RateWidget.stopClicked">
+<tt class="descname">stopClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#RateWidget.stopClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.RateWidget.stopClicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>hold the rate measurement plot till buttion is pushed again</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.RateWidget.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#RateWidget.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.RateWidget.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicWidgets.VelocityWidget">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicWidgets.</tt><tt class="descname">VelocityWidget</tt><big>(</big><em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#VelocityWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.VelocityWidget" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.gui.MuonicWidgets.VelocityWidget.activateVelocityClicked">
+<tt class="descname">activateVelocityClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#VelocityWidget.activateVelocityClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.VelocityWidget.activateVelocityClicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform extra actions when the checkbox is clicked</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.VelocityWidget.calculate">
+<tt class="descname">calculate</tt><big>(</big><em>pulses</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#VelocityWidget.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.VelocityWidget.calculate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.VelocityWidget.is_active">
+<tt class="descname">is_active</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#VelocityWidget.is_active"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.VelocityWidget.is_active" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.VelocityWidget.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#VelocityWidget.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.VelocityWidget.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicWidgets.VelocityWidget.velocityFitClicked">
+<tt class="descname">velocityFitClicked</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicWidgets.html#VelocityWidget.velocityFitClicked"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicWidgets.VelocityWidget.velocityFitClicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>fit the muon velocity histogram</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="muonic.gui.MuonicWidgets.tr">
+<tt class="descclassname">muonic.gui.MuonicWidgets.</tt><tt class="descname">tr</tt><big>(</big><big>)</big><a class="headerlink" href="#muonic.gui.MuonicWidgets.tr" title="Permalink to this definition">¶</a></dt>
+<dd><p>QCoreApplication.translate(str, str, str disambiguation=None, QCoreApplication.Encoding encoding=QCoreApplication.CodecForTr) -&gt; QString
+QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -&gt; QString</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-muonic.gui.MuonicDialogs">
 <span id="muonic-gui-muonicdialogs"></span><h3><cite>muonic.gui.MuonicDialogs</cite><a class="headerlink" href="#module-muonic.gui.MuonicDialogs" title="Permalink to this headline">¶</a></h3>
@@ -531,7 +680,7 @@ time differences for the use with QNet</p>
 </li>
 <li><a class="reference internal" href="#pyqt4-gui-with-muonic-gui">pyqt4 gui with muonic.gui</a><ul>
 <li><a class="reference internal" href="#muonic-gui-mainwindow"><cite>muonic.gui.MainWindow</cite></a></li>
-<li><a class="reference internal" href="#muonic-gui-tabwidget"><cite>muonic.gui.TabWidget</cite></a></li>
+<li><a class="reference internal" href="#muonic-gui-muonicwidgets"><cite>muonic.gui.MuonicWidgets</cite></a></li>
 <li><a class="reference internal" href="#module-muonic.gui.MuonicDialogs"><cite>muonic.gui.MuonicDialogs</cite></a></li>
 <li><a class="reference internal" href="#module-muonic.gui.MuonicPlotCanvases"><cite>muonic.gui.MuonicPlotCanvases</cite></a></li>
 </ul>

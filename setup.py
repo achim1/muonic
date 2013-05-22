@@ -10,7 +10,7 @@ except ImportError:
 import os
 import shlex
 import subprocess as sub
-
+from glob import glob
 
 # build the documentation
 #man_make  = "make man -C docs"
@@ -45,8 +45,7 @@ setup(name='muonic',
       scripts=['bin/muonic','bin/which_tty_daq'],
       package_data={'muonic': ['daq/simdaq.txt'],'':['*.txt','*.rst']}, 
       #package_data={'' : ['docs/*','README'], 'muonic': ['daq/simdaq.txt','daq/which_tty_daq']}, 
-      data_files=[(datapath,[]),(datapath,["docs/build/man/muonic.1"])]
-      )
+      data_files=[(datapath,[]),(datapath,["docs/build/man/muonic.1"]),(os.path.join(datapath,"docs/html"),glob("docs/build/html/*html")),(os.path.join(datapath,"docs/html/_static"),glob("docs/build/html/_static/*")),(os.path.join(datapath,"docs/html/_modules"),glob("docs/build/html/_modules/*html")),(os.path.join(datapath,"docs/html/_sources"),glob("docs/build/html/_sources/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/"), glob("docs/build/html/_modules/muonic/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/gui"),glob("docs/build/html/_modules/muonic/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/daq"),glob("docs/build/html/_modules/muonic/daq/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/analysis"), glob("docs/build/html/_modules/muonic/analysis/*html"))])
 
 # setting correct permissions of created muonic_data dir
 

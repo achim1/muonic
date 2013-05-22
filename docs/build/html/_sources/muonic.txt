@@ -22,8 +22,8 @@ daq i/o with muonic.daq
    :undoc-members:
    :private-members:
 
-.. currentmodule:: muonic.daq
-   .. automethod:: __Init__ 
+.. .. currentmodule:: muonic.daq
+..   .. automethod:: __Init__ 
 
 `muonic.daq.DAQProvider`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,15 +77,19 @@ Contains the  "main" gui application. It Provides the MainWindow, which initiali
    :undoc-members:
    :private-members:
 
-`muonic.gui.TabWidget`
-~~~~~~~~~~~~~~~~~~~~~~~~~
+`muonic.gui.MuonicWidgets`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This provides the interface to the different "physics" features of muonic, like a rate plot or a pulse display.
+The functionality of the software
 
-.. automodule:: muonic.gui.TabWidget
+
+
+.. automodule:: muonic.gui.MuonicWidgets
    :members:
    :undoc-members:
    :private-members:
+
+
 
 
 `muonic.gui.MuonicDialogs`
