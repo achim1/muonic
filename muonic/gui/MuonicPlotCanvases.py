@@ -298,7 +298,7 @@ class MuonicHistCanvas(MuonicPlotCanvas):
     def update_plot(self,data):    
 
         if not data:
-            return
+            return None
 
         # avoid memory leak
         self.ax.clear()

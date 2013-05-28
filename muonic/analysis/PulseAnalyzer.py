@@ -286,7 +286,7 @@ class VelocityTrigger:
         if upperpulses and lowerpulses:
             if omit_early_pulses:
                 if (pulses[upperchannel][0][1] - pulses[upperchannel][0][0] < 10) or (pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0] < 10):
-                    return
+                    return None
             
             tdiff = pulses[upperchannel][0][0] - pulses[lowerchannel][0][0] # always use rising edge since fe might be virtual
             return tdiff

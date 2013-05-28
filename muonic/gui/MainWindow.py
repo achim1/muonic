@@ -529,7 +529,7 @@ class MainWindow(QtGui.QMainWindow):
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
-                return 
+                return None 
 
             # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))

@@ -288,9 +288,9 @@ class VelocityTrigger:
         if upperpulses and lowerpulses:
             if omit_early_pulses:
                 if pulses[upperchannel][0][1] is None or pulses[lowerchannel][0][1] is None:
-                    return
+                    return None
                 if (pulses[upperchannel][0][1] - pulses[upperchannel][0][0] < 10) or (pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0] < 10):
-                    return
+                    return None
             
             tdiff = pulses[upperchannel][0][0] - pulses[lowerchannel][0][0] # always use rising edge since fe might be virtual
             return tdiff
@@ -350,7 +350,7 @@ class DecayTriggerThorough:
             # RE2 - LE1 
             # take always the last pulse in the row
             if ttp[single_channel][-1][1] is None or ttp[single_channel][0][1] is None:
-                return
+                return None
             singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
             doublepulsewidth = ttp[single_channel][-1][1] - ttp[single_channel][-1][0]
             #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
