@@ -24,7 +24,7 @@ from ..analysis import PulseAnalyzer as pa
 
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
-from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget
+from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget
 
 DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
 # this is hard-coded! There must be a better solution...
@@ -154,8 +154,11 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.addTab(PulseanalyzerWidget(logger),"Pulse Analyzer")
         self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(3)
 
+        self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
+        self.tabwidget.gpswidget = self.tabwidget.widget(4)
+
         self.tabwidget.addTab(DAQWidget(logger,parent=self),"DAQ Output")
-        self.tabwidget.daqwidget = self.tabwidget.widget(4)
+        self.tabwidget.daqwidget = self.tabwidget.widget(5)
         
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
@@ -529,7 +532,15 @@ class MainWindow(QtGui.QMainWindow):
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
-                return None 
+                return None
+
+
+            #if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
+            #    print 'MESSAGE ', msg
+            #    if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
+            #        self.tabwidget.gpswidget.gps_dump.append(msg)
+            #    if len(self.tabwidget.gpswidget.gps_dump) == self.tabwidget.gpswidget.read_lines:
+            #        self.tabwidget.gpswidget.calculate()
 
             # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))

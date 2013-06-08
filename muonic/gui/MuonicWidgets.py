@@ -506,3 +506,149 @@ class DAQWidget(QtGui.QWidget):
                 self.mainwindow.statusbar.removeWidget(self.periodic_status_label)
             except AttributeError:
                 pass
+
+class GPSWidget(QtGui.QWidget):
+
+    def __init__(self,logger,parent=None):
+
+        QtGui.QWidget.__init__(self,parent=parent)
+        self.active = False
+        self.mainwindow = self.parentWidget()
+        self.logger = logger
+        self.gps_dump = []
+        self.read_lines = 13
+
+        self.label           = QtGui.QLabel(tr('MainWindow','GPS Display:'))
+        self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Show GPS'))
+        self.save_button     = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
+
+        QtCore.QObject.connect(self.refresh_button,
+                              QtCore.SIGNAL("clicked()"),
+                              self.on_refresh_clicked
+                              )
+        QtCore.QObject.connect(self.save_button,
+                                QtCore.SIGNAL("clicked()"),
+                                self.on_save_clicked
+                                )
+        self.text_box = QtGui.QPlainTextEdit()
+        self.text_box.setReadOnly(True)
+        # only 500 lines history
+        self.text_box.document().setMaximumBlockCount(500)
+        
+        daq_layout = QtGui.QGridLayout(self)
+        daq_layout.addWidget(self.text_box,1,0,1, 3)
+        daq_layout.addWidget(self.label,0,0)
+        daq_layout.addWidget(self.refresh_button,2,0) 
+        #daq_layout.addWidget(self.save_button,1,2) 
+
+        if self.active:
+            self.logger.info("Activated GPS display.")
+            self.on_refresh_clicked()
+
+    def on_refresh_clicked(self):
+        """
+        Display/refresh the GPS information
+        """
+        self.gps_dump = []        
+        self.logger.info('Reading GPS.')
+        self.mainwindow.processIncoming()
+        self.switch_active(True)        
+        self.mainwindow.outqueue.put('DG')
+        self.mainwindow.processIncoming()
+        #self.mainwindow.processIncoming()
+        #for count in range(self.read_lines):
+        #    msg = self.mainwindow.inqueue.get(True)
+        #    self.gps_dump.append(msg)
+        #self.calculate()
+        #self.logger.info('GPS readout done.')
+
+    def on_save_clicked(self):
+        """
+        Save the GPS data to an extra file
+        """
+        #self.outputfile = open(self.mainwindow.rawfilename,"w")
+        #self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
+        #self.write_file = True
+        #self.mainwindow.raw_mes_start = datetime.datetime.now()
+        #self.mainwindow.statusbar.addPermanentWidget(self.file_label)
+        self.text_box.appendPlainText('save to clicked - function out of order')        
+        self.logger.info("Saving GPS informations still disabled.")
+
+    def is_active(self):
+        """
+        Is the GPS readout activated? return bool
+        """
+        return self.active
+    
+    def switch_active(self, switch = False):
+        """
+        Switch the GPS activation status.
+        """
+        if switch is None:
+            if self.active:
+                self.active = False
+            else:
+                self.active = True
+        else:
+            self.active = switch
+        return self.is_active()
+    
+    def calculate(self):
+        """
+        Readout the GPS information and display it in the tab.
+        """
+        if len(self.gps_dump) < self.read_lines:
+            self.logger.warning('Error retrieving GPS information.')
+            return False
+        __satellites = 0
+        __status = False
+        __gps_time = ''
+        __latitude = ''
+        __longitude = ''
+        __altitude = ''
+        __posfix = 0
+        __chksum = False
+
+        print '**************************************', self.gps_dump
+        try:
+            __satellites = int(str(self.gps_dump[8]).strip().replace('Sats used:', '').strip())
+
+            if str(self.gps_dump[3]).strip().replace('Status:','').strip() == 'A (valid)':
+                self.logger.info('Valid GPS signal: found %i ' %(__satellites))
+                __status = True
+            else:
+                __status = False
+                self.logger.info('Invalid GPS signal.')
+
+            __posfix = int(str(self.gps_dump[4]).strip().replace('PosFix#:', '').strip())
+
+            __gps_time = str(self.gps_dump[2]).strip().replace('Date+Time:', '').strip()
+            if str(self.gps_dump[12]).strip().replace('ChkSumErr:', '').strip() == '0':
+                __chksum = True
+            else:
+                __chksum = False
+
+            __altitude = str(self.gps_dump[7]).strip().replace('Altitude:', '').strip()
+
+            __latitude = str(self.gps_dump[5]).strip().replace('Latitude:', '').strip()
+
+            __longitude = str(self.gps_dump[6]).strip().replace('Longitude:', '').strip()
+            self.gps_dump = []
+        except:
+            self.logger.warning('Error evaluating GPS information.')
+            self.gps_dump = []
+            self.switch_active(False)
+            return False
+
+        self.text_box.appendPlainText('********************')
+        self.text_box.appendPlainText('STATUS     : %s' %(str(__status)))
+        self.text_box.appendPlainText('TIME       : %s' %(str(__gps_time)))
+        self.text_box.appendPlainText('Altitude   : %s' %(str(__altitude)))
+        self.text_box.appendPlainText('Latitude   : %s' %(str(__latitude)))
+        self.text_box.appendPlainText('Longitude   : %s' %(str(__longitude)))
+        self.text_box.appendPlainText('Satellites : %s' %(str(__satellites)))
+        self.text_box.appendPlainText('Checksum   : %s' %(str(__chksum)))
+        self.text_box.appendPlainText('********************')
+
+        self.switch_active(False)
+        return True
