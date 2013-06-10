@@ -534,12 +534,44 @@ class GPSWidget(QtGui.QWidget):
         self.text_box.setReadOnly(True)
         # only 500 lines history
         self.text_box.document().setMaximumBlockCount(500)
-        
-        daq_layout = QtGui.QGridLayout(self)
-        daq_layout.addWidget(self.text_box,1,0,1, 3)
-        daq_layout.addWidget(self.label,0,0)
-        daq_layout.addWidget(self.refresh_button,2,0) 
-        #daq_layout.addWidget(self.save_button,1,2) 
+        self.status_label = QtGui.QLabel(tr('MainWindow','Status: '))
+        self.time_label = QtGui.QLabel(tr('MainWindow','GPS time: '))
+        self.satellites_label = QtGui.QLabel(tr('MainWindow','#Satellites: '))
+        self.chksum_label = QtGui.QLabel(tr('MainWindow','Checksum: '))
+        self.latitude_label = QtGui.QLabel(tr('MainWindow','Latitude: '))
+        self.longitude_label = QtGui.QLabel(tr('MainWindow','Longitude: '))
+        self.altitude_label = QtGui.QLabel(tr('MainWindow','Altitude: '))
+        self.posfix_label = QtGui.QLabel(tr('MainWindow','PosFix: '))
+        self.status_box = QtGui.QLabel(tr('MainWindow',' Not read out'))
+        self.time_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.satellites_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.chksum_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.latitude_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.longitude_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.altitude_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.posfix_box = QtGui.QLabel(tr('MainWindow','--'))
+
+        gps_layout = QtGui.QGridLayout(self)
+        gps_layout.addWidget(self.label,0,0,1,4)
+        gps_layout.addWidget(self.status_label,1,0)
+        gps_layout.addWidget(self.time_label,2,0)
+        gps_layout.addWidget(self.satellites_label,3,0)
+        gps_layout.addWidget(self.chksum_label,4,0)
+        gps_layout.addWidget(self.latitude_label,1,2)
+        gps_layout.addWidget(self.longitude_label,2,2)
+        gps_layout.addWidget(self.altitude_label,3,2)
+        gps_layout.addWidget(self.posfix_label,4,2)
+        gps_layout.addWidget(self.status_box,1,1)
+        gps_layout.addWidget(self.time_box,2,1)
+        gps_layout.addWidget(self.satellites_box,3,1)
+        gps_layout.addWidget(self.chksum_box,4,1)
+        gps_layout.addWidget(self.latitude_box,1,3)
+        gps_layout.addWidget(self.longitude_box,2,3)
+        gps_layout.addWidget(self.altitude_box,3,3)
+        gps_layout.addWidget(self.posfix_box,4,3)
+        gps_layout.addWidget(self.text_box,6,0,1,4)
+        gps_layout.addWidget(self.refresh_button,7,0,1,4) 
+        #gps_layout.addWidget(self.save_button,1,2) 
 
         if self.active:
             self.logger.info("Activated GPS display.")
@@ -555,7 +587,6 @@ class GPSWidget(QtGui.QWidget):
         self.switch_active(True)        
         self.mainwindow.outqueue.put('DG')
         self.mainwindow.processIncoming()
-        #self.mainwindow.processIncoming()
         #for count in range(self.read_lines):
         #    msg = self.mainwindow.inqueue.get(True)
         #    self.gps_dump.append(msg)
@@ -609,7 +640,6 @@ class GPSWidget(QtGui.QWidget):
         __posfix = 0
         __chksum = False
 
-        print '**************************************', self.gps_dump
         try:
             __satellites = int(str(self.gps_dump[8]).strip().replace('Sats used:', '').strip())
 
@@ -640,13 +670,31 @@ class GPSWidget(QtGui.QWidget):
             self.switch_active(False)
             return False
 
+        if __status:
+            __status = 'Valid'
+        else:
+            __status = 'Invalid'
+        if __chksum:
+            __chksum = 'No Error'
+        else:
+            __chksum = 'Error'
+                    
+        self.status_box.setText(str(__status))
+        self.time_box.setText(str(__gps_time))
+        self.satellites_box.setText(str(__satellites))
+        self.chksum_box.setText(str(__chksum))
+        self.latitude_box.setText(str(__latitude))
+        self.longitude_box.setText(str(__longitude))
+        self.altitude_box.setText(str(__altitude))
+        self.posfix_box.setText(str(__posfix))
+
         self.text_box.appendPlainText('********************')
         self.text_box.appendPlainText('STATUS     : %s' %(str(__status)))
-        self.text_box.appendPlainText('TIME       : %s' %(str(__gps_time)))
-        self.text_box.appendPlainText('Altitude   : %s' %(str(__altitude)))
-        self.text_box.appendPlainText('Latitude   : %s' %(str(__latitude)))
-        self.text_box.appendPlainText('Longitude   : %s' %(str(__longitude)))
-        self.text_box.appendPlainText('Satellites : %s' %(str(__satellites)))
+        self.text_box.appendPlainText('TIME          : %s' %(str(__gps_time)))
+        self.text_box.appendPlainText('Altitude     : %s' %(str(__altitude)))
+        self.text_box.appendPlainText('Latitude     : %s' %(str(__latitude)))
+        self.text_box.appendPlainText('Longitude  : %s' %(str(__longitude)))
+        self.text_box.appendPlainText('Satellites    : %s' %(str(__satellites)))
         self.text_box.appendPlainText('Checksum   : %s' %(str(__chksum)))
         self.text_box.appendPlainText('********************')
 

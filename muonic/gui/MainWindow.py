@@ -535,15 +535,16 @@ class MainWindow(QtGui.QMainWindow):
                 return None
 
 
-            #if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
-            #    print 'MESSAGE ', msg
-            #    if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
-            #        self.tabwidget.gpswidget.gps_dump.append(msg)
-            #    if len(self.tabwidget.gpswidget.gps_dump) == self.tabwidget.gpswidget.read_lines:
-            #        self.tabwidget.gpswidget.calculate()
-
             # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
+            if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
+                if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
+                    self.tabwidget.gpswidget.gps_dump.append(msg)
+                if len(self.tabwidget.gpswidget.gps_dump) == self.tabwidget.gpswidget.read_lines:
+                    self.tabwidget.gpswidget.calculate()
+                continue
+
+
             if self.tabwidget.daqwidget.write_file:
                 try:
                     if self.nostatus:
