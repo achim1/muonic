@@ -25,14 +25,14 @@ class MuonicDialog(QtGui.QDialog):
         buttonBox.setObjectName(objectname)
         return buttonBox
 
-    def createCheckGroupBox(self,label="Single Pulse",objectname="singlecheckbox",radio=False,leftoffset=20,setchecked=None,checkable=False,itemlabels=["Chan0","Chan1","Chan2","Chan3"]):
+    def createCheckGroupBox(self,label="Single Pulse",objectname="singlecheckbox",radio=False,leftoffset=20,setchecked=None,checkable=False, checkable_set=False,itemlabels=["Chan0","Chan1","Chan2","Chan3"]):
         """
         Create a group of choices
         """
 
         groupBox = QtGui.QGroupBox(label)
         groupBox.setCheckable(checkable)
-        groupBox.setChecked(False)
+        groupBox.setChecked(checkable_set)
         groupBox.setObjectName(objectname)
 
         checkitems = []
@@ -286,7 +286,7 @@ class ConfigDialog(MuonicDialog):
     Set Channel configuration
     """
     
-    def __init__(self, *args):
+    def __init__(self,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True,coincidencecheckbox_0 = True,coincidencecheckbox_1 = False,coincidencecheckbox_2 = False,coincidencecheckbox_3 = False,vetocheckbox = False,vetocheckbox_0 = False,vetocheckbox_1 = False,vetocheckbox_2 = False,*args):
 
         QtGui.QDialog.__init__(self,*args)
 
@@ -298,9 +298,24 @@ class ConfigDialog(MuonicDialog):
 
         # used advanced grid layout...
         grid = QtGui.QGridLayout()
-        grid.addWidget(self.createCheckGroupBox(label="Select Channel",objectname = "channelcheckbox",leftoffset=300,setchecked=[0,1,2,3]), 0, 0)
-        grid.addWidget(self.createCheckGroupBox(radio=True,label="Coincidence",objectname = "coincidencecheckbox",leftoffset=20,setchecked=[0],itemlabels=["Single","Twofold","Threefold","Fourfold"]), 0, 1)
-        grid.addWidget(self.createCheckGroupBox(radio=True,checkable=True,label="Veto",objectname = "vetocheckbox",leftoffset=180,itemlabels=["Chan1","Chan2","Chan3"]), 0, 2)
+        channels = []
+        if channelcheckbox_0: channels.append(0)
+        if channelcheckbox_1: channels.append(1)
+        if channelcheckbox_2: channels.append(2)
+        if channelcheckbox_3: channels.append(3)
+        coincidence = []
+        if coincidencecheckbox_0: coincidence.append(0)
+        if coincidencecheckbox_1: coincidence.append(1)
+        if coincidencecheckbox_2: coincidence.append(2)
+        if coincidencecheckbox_3: coincidence.append(3)
+        vetochecks = []
+        if vetocheckbox_0: vetochecks.append(0)
+        if vetocheckbox_1: vetochecks.append(1)
+        if vetocheckbox_2: vetochecks.append(2)
+        
+        grid.addWidget(self.createCheckGroupBox(label="Select Channel",objectname = "channelcheckbox",leftoffset=300,setchecked=channels), 0, 0)
+        grid.addWidget(self.createCheckGroupBox(radio=True,label="Coincidence",objectname = "coincidencecheckbox",leftoffset=20,setchecked=coincidence,itemlabels=["Single","Twofold","Threefold","Fourfold"]), 0, 1)
+        grid.addWidget(self.createCheckGroupBox(radio=True,checkable=True,checkable_set=vetocheckbox,label="Veto",objectname = "vetocheckbox",leftoffset=180,setchecked=vetochecks,itemlabels=["Chan1","Chan2","Chan3"]), 0, 2)
         
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)

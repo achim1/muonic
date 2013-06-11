@@ -95,10 +95,26 @@ class MainWindow(QtGui.QMainWindow):
         self.threshold_ch1 = 300
         self.threshold_ch2 = 300
         self.threshold_ch3 = 300
+        
+        self.channelcheckbox_0 = True
+        self.channelcheckbox_1 = True
+        self.channelcheckbox_2 = True
+        self.channelcheckbox_3 = True
+        self.coincidencecheckbox_0 = True
+        self.coincidencecheckbox_1 = False
+        self.coincidencecheckbox_2 = False
+        self.coincidencecheckbox_3 = False
+        self.vetocheckbox = False
+        self.vetocheckbox_0 = False
+        self.vetocheckbox_1 = False
+        self.vetocheckbox_2 = False
+        
         while self.daq.data_available():
             try:
                 msg = self.daq.get(0)
                 self.get_thresholds_from_queue(msg)
+                self.get_channels_from_queue(msg)
+
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
                 
@@ -345,7 +361,13 @@ class MainWindow(QtGui.QMainWindow):
         """
         Show the config dialog
         """
-        config_window = ConfigDialog()
+        # get the actual channels...
+        self.daq.put('DC')
+        # wait explicitely till the channels get loaded
+        self.logger.info("loading channel information..")
+        time.sleep(1)
+
+        config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2)
         rv = config_window.exec_()
         if rv == 1:
             
@@ -353,7 +375,6 @@ class MainWindow(QtGui.QMainWindow):
             chan1_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_1")).isChecked() 
             chan2_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_2")).isChecked() 
             chan3_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_3")).isChecked() 
-            
             singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
             if singles:
                 self.tabwidget.ratewidget.scalars_monitor.do_not_show_trigger = True
@@ -407,7 +428,7 @@ class MainWindow(QtGui.QMainWindow):
                 
             else:
                 msg += hex(int(''.join(enable),2))[-1].capitalize()
-            
+
             self.daq.put(msg)
             self.logger.info('The following message was sent to DAQ: %s' %msg)
                     
@@ -517,6 +538,39 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
         
+    def get_channels_from_queue(self,msg):
+        """
+        Explicitely scan message for channel information
+        Return True if found, else False
+        """
+        if msg.startswith('DC') and len(msg) > 25:
+            msg = msg.split('=')
+            print 'MSG ', msg
+#            DC
+#DC C0=23 C1=71 C2=0A C3=00
+            # TODO SOME WORK HERE, finish translation of channel configs from hex
+            self.channelcheckbox_0 = True
+            self.channelcheckbox_1 = True
+            self.channelcheckbox_2 = True
+            self.channelcheckbox_3 = True
+            self.coincidencecheckbox_0 = True
+            self.coincidencecheckbox_1 = False
+            self.coincidencecheckbox_2 = False
+            self.coincidencecheckbox_3 = False
+            self.vetocheckbox = False
+            self.vetocheckbox_0 = False
+            self.vetocheckbox_1 = False
+            self.vetocheckbox_2 = False
+            
+            self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3))
+            self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3))
+            self.logger.debug("Got veto configurations: %i %i %i %i" %(self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2))
+
+
+            return True
+        else:
+            return False
+
     # this functions gets everything out of the daq
     # All calculations should happen here
     def processIncoming(self):
@@ -532,7 +586,6 @@ class MainWindow(QtGui.QMainWindow):
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
                 return None
-
 
             # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
@@ -560,6 +613,9 @@ class MainWindow(QtGui.QMainWindow):
 
             # check for threshold information
             if self.get_thresholds_from_queue(msg):
+                continue
+
+            if self.get_channels_from_queue(msg):
                 continue
 
             # status messages
