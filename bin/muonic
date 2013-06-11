@@ -38,9 +38,9 @@ from muonic.gui.MainWindow import MainWindow
 def main(opts,logger):
 
     root = QtGui.QApplication(sys.argv)
-    client = DAQProvider(opts,logger,root)
+    client = DAQProvider(logger=logger,root=root,sim=opts.sim)
     # Set up the GUI part
-    gui=MainWindow(client.outqueue, client.inqueue, logger, opts,root)
+    gui=MainWindow(client, logger, opts,root)
     gui.show()
     root.exec_()
 
@@ -85,6 +85,7 @@ if __name__ == '__main__':
     formatter = logging.Formatter('%(levelname)s:%(process)d:%(module)s:%(funcName)s:%(lineno)d:%(message)s')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+
 
     # make it so!
     main(opts,logger)

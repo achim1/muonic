@@ -127,6 +127,7 @@ class SimDaqConnection(object):
             self.logger.debug("inqueue size is %d" %self.inqueue.qsize())
             while self.inqueue.qsize():
                 try:
+                    #print self.inqueue.get(0)
                     self.port.write(str(self.inqueue.get(0))+"\r")
                 except Queue.Empty:
                     self.logger.debug("Queue empty!")

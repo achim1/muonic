@@ -13,8 +13,8 @@
 
 
 \title{muonic Documentation}
-\date{December 19, 2012}
-\release{0.1}
+\date{May 24, 2013}
+\release{1.0.1}
 \author{robert.franke,achim.stoessl}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
@@ -118,7 +118,7 @@
 
 
 
-\chapter{Documentation for release 0.1, documentation built on December 19, 2012}
+\chapter{Documentation for release 1.0.1, documentation built on May 22, 2013}
 \label{index:welcome-to-muonic-documentation}\label{index:documentation-for-release-release-documentation-built-on-today}
 Contents:
 
@@ -739,7 +739,7 @@ Provides a simple DAQ card simulation, so that software can be tested
 \index{SimDaq (class in muonic.daq.SimDaqConnection)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaq}\pysiglinewithargsret{\strong{class }\code{muonic.daq.SimDaqConnection.}\bfcode{SimDaq}}{\emph{logger}}{}~\index{\_physics() (muonic.daq.SimDaqConnection.SimDaq method)}
+\phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaq}\pysiglinewithargsret{\strong{class }\code{muonic.daq.SimDaqConnection.}\bfcode{SimDaq}}{\emph{logger}, \emph{usefile='simdaq.txt'}, \emph{createfakerates=True}}{}~\index{\_physics() (muonic.daq.SimDaqConnection.SimDaq method)}
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaq._physics}\pysiglinewithargsret{\bfcode{\_physics}}{}{}
@@ -809,11 +809,11 @@ Provides the main window for the gui part of muonic
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MainWindow.}\bfcode{MainWindow}}{\emph{inqueue}, \emph{outqueue}, \emph{logger}, \emph{opts}, \emph{root}, \emph{win\_parent=None}}{}
 The main application
-\index{clear\_function() (muonic.gui.MainWindow.MainWindow method)}
+\index{about\_menu() (muonic.gui.MainWindow.MainWindow method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.clear_function}\pysiglinewithargsret{\bfcode{clear\_function}}{}{}
-Reset the rate plot by clicking the restart button
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.about_menu}\pysiglinewithargsret{\bfcode{about\_menu}}{}{}
+Show a link to the online documentation
 
 \end{fulllineitems}
 
@@ -834,14 +834,6 @@ Show the config dialog
 
 \end{fulllineitems}
 
-\index{create\_widgets() (muonic.gui.MainWindow.MainWindow method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.create_widgets}\pysiglinewithargsret{\bfcode{create\_widgets}}{}{}
-Initialize the tab widget
-
-\end{fulllineitems}
-
 \index{exit\_program() (muonic.gui.MainWindow.MainWindow method)}
 
 \begin{fulllineitems}
@@ -850,6 +842,24 @@ This function is used either with the `x' button
 (then an event has to be passed)
 Or it is used with the File-\textgreater{}Exit button, than no event
 will be passed.
+
+\end{fulllineitems}
+
+\index{get\_scalars\_from\_queue() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.get_scalars_from_queue}\pysiglinewithargsret{\bfcode{get\_scalars\_from\_queue}}{\emph{msg}}{}
+Explicitely scan a message for scalar informatioin
+Returns True if found, else False
+
+\end{fulllineitems}
+
+\index{get\_thresholds\_from\_queue() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.get_thresholds_from_queue}\pysiglinewithargsret{\bfcode{get\_thresholds\_from\_queue}}{\emph{msg}}{}
+Explicitely scan message for threshold information
+Return True if found, else False
 
 \end{fulllineitems}
 
@@ -866,7 +876,24 @@ Show a simple help menu
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.processIncoming}\pysiglinewithargsret{\bfcode{processIncoming}}{}{}
 Handle all the messages currently in the inqueue 
-and parse the result to the corresponding widgets
+and pass the result to the corresponding widgets
+
+\end{fulllineitems}
+
+\index{query\_daq\_for\_scalars() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.query_daq_for_scalars}\pysiglinewithargsret{\bfcode{query\_daq\_for\_scalars}}{}{}
+Send a ``DS'' message to DAQ and record the time when this is don
+
+\end{fulllineitems}
+
+\index{sphinxdoc\_menu() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.sphinxdoc_menu}\pysiglinewithargsret{\bfcode{sphinxdoc\_menu}}{}{}
+Show the sphinx documentation that comes with muonic an a
+browser
 
 \end{fulllineitems}
 
@@ -878,15 +905,14 @@ Shows the threshold dialogue
 
 \end{fulllineitems}
 
+\index{widgetUpdate() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.widgetUpdate}\pysiglinewithargsret{\bfcode{widgetUpdate}}{}{}
+Update the widgets
 
 \end{fulllineitems}
 
-\index{MuonicOptions (class in muonic.gui.MainWindow)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MainWindow.MuonicOptions}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MainWindow.}\bfcode{MuonicOptions}}{\emph{timewindow}, \emph{writepulses}, \emph{nostatus}, \emph{user}}{}
-A simple struct which holds the different
-options for the program
 
 \end{fulllineitems}
 
@@ -901,102 +927,193 @@ QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -\text
 
 
 
-\subsubsection{\emph{muonic.gui.TabWidget}}
-\label{muonic:muonic-gui-tabwidget}
-This provides the interface to the different ``physics'' features of muonic, like a rate plot or a pulse display.
-\phantomsection\label{muonic:module-muonic.gui.TabWidget}\index{muonic.gui.TabWidget (module)}
-Manage the different (physics) widgets
-\index{TabWidget (class in muonic.gui.TabWidget)}
+\subsubsection{\emph{muonic.gui.MuonicWidgets}}
+\label{muonic:muonic-gui-muonicwidgets}
+The functionality of the software
+\phantomsection\label{muonic:module-muonic.gui.MuonicWidgets}\index{muonic.gui.MuonicWidgets (module)}
+Provide the different physics widgets
+\index{DAQWidget (class in muonic.gui.MuonicWidgets)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.TabWidget.}\bfcode{TabWidget}}{\emph{mainwindow}, \emph{timewindow}, \emph{logger}}{}
-The TabWidget will provide a tabbed interface.
-All functionality should be represented by tabs in the TabWidget
-\index{activateMuondecayClicked() (muonic.gui.TabWidget.TabWidget method)}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DAQWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{DAQWidget}}{\emph{logger}, \emph{parent=None}}{}~\index{on\_file\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.activateMuondecayClicked}\pysiglinewithargsret{\bfcode{activateMuondecayClicked}}{}{}
-What should be done if we are looking for mu-decays?
-
-\end{fulllineitems}
-
-\index{activatePulseanalyzerClicked() (muonic.gui.TabWidget.TabWidget method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.activatePulseanalyzerClicked}\pysiglinewithargsret{\bfcode{activatePulseanalyzerClicked}}{}{}
-set-up the pulseanalyzer widget
-
-\end{fulllineitems}
-
-\index{center() (muonic.gui.TabWidget.TabWidget method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.center}\pysiglinewithargsret{\bfcode{center}}{}{}
-\end{fulllineitems}
-
-\index{mufitClicked() (muonic.gui.TabWidget.TabWidget method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.mufitClicked}\pysiglinewithargsret{\bfcode{mufitClicked}}{}{}
-fit the muon decay histogram
-
-\end{fulllineitems}
-
-\index{on\_file\_clicked() (muonic.gui.TabWidget.TabWidget method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.on_file_clicked}\pysiglinewithargsret{\bfcode{on\_file\_clicked}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DAQWidget.on_file_clicked}\pysiglinewithargsret{\bfcode{on\_file\_clicked}}{}{}
 save the raw daq data to a automatically named file
 
 \end{fulllineitems}
 
-\index{on\_hello\_clicked() (muonic.gui.TabWidget.TabWidget method)}
+\index{on\_hello\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.on_hello_clicked}\pysiglinewithargsret{\bfcode{on\_hello\_clicked}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DAQWidget.on_hello_clicked}\pysiglinewithargsret{\bfcode{on\_hello\_clicked}}{}{}
 send a message to the daq
 
 \end{fulllineitems}
 
-\index{on\_periodic\_clicked() (muonic.gui.TabWidget.TabWidget method)}
+\index{on\_periodic\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.on_periodic_clicked}\pysiglinewithargsret{\bfcode{on\_periodic\_clicked}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DAQWidget.on_periodic_clicked}\pysiglinewithargsret{\bfcode{on\_periodic\_clicked}}{}{}
 issue a command periodically
 
 \end{fulllineitems}
 
-\index{startClicked() (muonic.gui.TabWidget.TabWidget method)}
+
+\end{fulllineitems}
+
+\index{DecayWidget (class in muonic.gui.MuonicWidgets)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.startClicked}\pysiglinewithargsret{\bfcode{startClicked}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{DecayWidget}}{\emph{logger}, \emph{parent=None}}{}~\index{activateMuondecayClicked() (muonic.gui.MuonicWidgets.DecayWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.activateMuondecayClicked}\pysiglinewithargsret{\bfcode{activateMuondecayClicked}}{}{}
+What should be done if we are looking for mu-decays?
+
+\end{fulllineitems}
+
+\index{calculate() (muonic.gui.MuonicWidgets.DecayWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.calculate}\pysiglinewithargsret{\bfcode{calculate}}{\emph{pulses}}{}
+\end{fulllineitems}
+
+\index{is\_active() (muonic.gui.MuonicWidgets.DecayWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.is_active}\pysiglinewithargsret{\bfcode{is\_active}}{}{}
+\end{fulllineitems}
+
+\index{mufitClicked() (muonic.gui.MuonicWidgets.DecayWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.mufitClicked}\pysiglinewithargsret{\bfcode{mufitClicked}}{}{}
+fit the muon decay histogram
+
+\end{fulllineitems}
+
+\index{update() (muonic.gui.MuonicWidgets.DecayWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.update}\pysiglinewithargsret{\bfcode{update}}{}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{PulseanalyzerWidget (class in muonic.gui.MuonicWidgets)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{PulseanalyzerWidget}}{\emph{logger}}{}
+Provide a widget which is able to show a plot of triggered pulses
+\index{calculate() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget.calculate}\pysiglinewithargsret{\bfcode{calculate}}{\emph{pulses}}{}
+\end{fulllineitems}
+
+\index{is\_active() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget.is_active}\pysiglinewithargsret{\bfcode{is\_active}}{}{}
+\end{fulllineitems}
+
+\index{update() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget.update}\pysiglinewithargsret{\bfcode{update}}{}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{RateWidget (class in muonic.gui.MuonicWidgets)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{RateWidget}}{\emph{logger}, \emph{parent=None}}{}
+Display rate plot
+\index{calculate() (muonic.gui.MuonicWidgets.RateWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget.calculate}\pysiglinewithargsret{\bfcode{calculate}}{\emph{rates}}{}
+\end{fulllineitems}
+
+\index{is\_active() (muonic.gui.MuonicWidgets.RateWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget.is_active}\pysiglinewithargsret{\bfcode{is\_active}}{}{}
+\end{fulllineitems}
+
+\index{startClicked() (muonic.gui.MuonicWidgets.RateWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget.startClicked}\pysiglinewithargsret{\bfcode{startClicked}}{}{}
 restart the rate measurement
 
 \end{fulllineitems}
 
-\index{stopClicked() (muonic.gui.TabWidget.TabWidget method)}
+\index{stopClicked() (muonic.gui.MuonicWidgets.RateWidget method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.stopClicked}\pysiglinewithargsret{\bfcode{stopClicked}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget.stopClicked}\pysiglinewithargsret{\bfcode{stopClicked}}{}{}
 hold the rate measurement plot till buttion is pushed again
 
 \end{fulllineitems}
 
-\index{timerEvent() (muonic.gui.TabWidget.TabWidget method)}
+\index{update() (muonic.gui.MuonicWidgets.RateWidget method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.TabWidget.timerEvent}\pysiglinewithargsret{\bfcode{timerEvent}}{\emph{ev}}{}
-Update the widgets
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget.update}\pysiglinewithargsret{\bfcode{update}}{}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{VelocityWidget (class in muonic.gui.MuonicWidgets)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{VelocityWidget}}{\emph{logger}}{}~\index{activateVelocityClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.activateVelocityClicked}\pysiglinewithargsret{\bfcode{activateVelocityClicked}}{}{}
+Perform extra actions when the checkbox is clicked
+
+\end{fulllineitems}
+
+\index{calculate() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.calculate}\pysiglinewithargsret{\bfcode{calculate}}{\emph{pulses}}{}
+\end{fulllineitems}
+
+\index{is\_active() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.is_active}\pysiglinewithargsret{\bfcode{is\_active}}{}{}
+\end{fulllineitems}
+
+\index{update() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.update}\pysiglinewithargsret{\bfcode{update}}{}{}
+\end{fulllineitems}
+
+\index{velocityFitClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.velocityFitClicked}\pysiglinewithargsret{\bfcode{velocityFitClicked}}{}{}
+fit the muon velocity histogram
 
 \end{fulllineitems}
 
 
 \end{fulllineitems}
 
-\index{tr() (in module muonic.gui.TabWidget)}
+\index{tr() (in module muonic.gui.MuonicWidgets)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.TabWidget.tr}\pysiglinewithargsret{\code{muonic.gui.TabWidget.}\bfcode{tr}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.tr}\pysiglinewithargsret{\code{muonic.gui.MuonicWidgets.}\bfcode{tr}}{}{}
 QCoreApplication.translate(str, str, str disambiguation=None, QCoreApplication.Encoding encoding=QCoreApplication.CodecForTr) -\textgreater{} QString
 QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -\textgreater{} QString
 
@@ -1004,32 +1121,32 @@ QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -\text
 
 
 
-\subsubsection{\emph{muonic.gui.ConfigDialog}}
-\label{muonic:muonic-gui-configdialog}\label{muonic:module-muonic.gui.ConfigDialog}\index{muonic.gui.ConfigDialog (module)}\index{ConfigDialog (class in muonic.gui.ConfigDialog)}
+\subsubsection{\emph{muonic.gui.MuonicDialogs}}
+\label{muonic:module-muonic.gui.MuonicDialogs}\label{muonic:muonic-gui-muonicdialogs}\index{muonic.gui.MuonicDialogs (module)}
+Provide the dialog fields for user interaction
+\index{ConfigDialog (class in muonic.gui.MuonicDialogs)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.ConfigDialog.ConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.ConfigDialog.}\bfcode{ConfigDialog}}{\emph{*args}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.ConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{ConfigDialog}}{\emph{*args}}{}
+Set Channel configuration
+
 \end{fulllineitems}
 
-
-
-\subsubsection{\emph{muonic.gui.ThresholdDialog}}
-\label{muonic:module-muonic.gui.ThresholdDialog}\label{muonic:muonic-gui-thresholddialog}\index{muonic.gui.ThresholdDialog (module)}\index{ThresholdDialog (class in muonic.gui.ThresholdDialog)}
+\index{DecayConfigDialog (class in muonic.gui.MuonicDialogs)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.ThresholdDialog.ThresholdDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.ThresholdDialog.}\bfcode{ThresholdDialog}}{\emph{thr0}, \emph{thr1}, \emph{thr2}, \emph{thr3}, \emph{*args}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.DecayConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{DecayConfigDialog}}{\emph{*args}}{}
+Settings for the muondecay
+
 \end{fulllineitems}
 
-
-
-\subsubsection{\emph{muonic.gui.HelpDialog}}
-\label{muonic:muonic-gui-helpdialog}\label{muonic:module-muonic.gui.HelpDialog}\index{muonic.gui.HelpDialog (module)}\index{HelpDialog (class in muonic.gui.HelpDialog)}
+\index{HelpDialog (class in muonic.gui.MuonicDialogs)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.HelpDialog.HelpDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.HelpDialog.}\bfcode{HelpDialog}}{\emph{*args}}{}~\index{helptext() (muonic.gui.HelpDialog.HelpDialog method)}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.HelpDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{HelpDialog}}{\emph{*args}}{}~\index{helptext() (muonic.gui.MuonicDialogs.HelpDialog method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.HelpDialog.HelpDialog.helptext}\pysiglinewithargsret{\bfcode{helptext}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.HelpDialog.helptext}\pysiglinewithargsret{\bfcode{helptext}}{}{}
 Show this text in the help window
 
 \end{fulllineitems}
@@ -1037,91 +1154,161 @@ Show this text in the help window
 
 \end{fulllineitems}
 
-
-
-\subsubsection{\emph{muonic.gui.PeriodicCallDialog}}
-\label{muonic:module-muonic.gui.PeriodicCallDialog}\label{muonic:muonic-gui-periodiccalldialog}\index{muonic.gui.PeriodicCallDialog (module)}\index{PeriodicCallDialog (class in muonic.gui.PeriodicCallDialog)}
+\index{MuonicDialog (class in muonic.gui.MuonicDialogs)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.PeriodicCallDialog.PeriodicCallDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.PeriodicCallDialog.}\bfcode{PeriodicCallDialog}}{\emph{*args}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.MuonicDialog}\pysigline{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{MuonicDialog}}
+Base class of all muonic dialogs
+\index{createButtonBox() (muonic.gui.MuonicDialogs.MuonicDialog method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.MuonicDialog.createButtonBox}\pysiglinewithargsret{\bfcode{createButtonBox}}{\emph{objectname='buttonBox'}, \emph{leftoffset=80}, \emph{topoffset=900}}{}
+Create a custom button for cancel/apply
+
+\end{fulllineitems}
+
+\index{createCheckGroupBox() (muonic.gui.MuonicDialogs.MuonicDialog method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox}\pysiglinewithargsret{\bfcode{createCheckGroupBox}}{\emph{label='Single Pulse', objectname='singlecheckbox', radio=False, leftoffset=20, setchecked=None, checkable=False, itemlabels={[}'Chan0', `Chan1', `Chan2', `Chan3'{]}}}{}
+Create a group of choices
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{PeriodicCallDialog (class in muonic.gui.MuonicDialogs)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.PeriodicCallDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{PeriodicCallDialog}}{\emph{*args}}{}
+Issue a command periodically
+
+\end{fulllineitems}
+
+\index{ThresholdDialog (class in muonic.gui.MuonicDialogs)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.ThresholdDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{ThresholdDialog}}{\emph{thr0}, \emph{thr1}, \emph{thr2}, \emph{thr3}, \emph{*args}}{}
+Set the Thresholds
+
+\end{fulllineitems}
+
+\index{VelocityConfigDialog (class in muonic.gui.MuonicDialogs)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.VelocityConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{VelocityConfigDialog}}{\emph{*args}}{}
 \end{fulllineitems}
 
 
 
-\subsubsection{\emph{muonic.gui.PulseCanvas}}
-\label{muonic:muonic-gui-pulsecanvas}\label{muonic:module-muonic.gui.PulseCanvas}\index{muonic.gui.PulseCanvas (module)}\index{PulseCanvas (class in muonic.gui.PulseCanvas)}
+\subsubsection{\emph{muonic.gui.MuonicPlotCanvases}}
+\label{muonic:muonic-gui-muonicplotcanvases}\label{muonic:module-muonic.gui.MuonicPlotCanvases}\index{muonic.gui.MuonicPlotCanvases (module)}
+Provide the canvases for plots in muonic
+\index{LifetimeCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.PulseCanvas.PulseCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.PulseCanvas.}\bfcode{PulseCanvas}}{\emph{parent}, \emph{logger}}{}
-Matplotlib Figure widget to display Pulses
-\index{color() (muonic.gui.PulseCanvas.PulseCanvas method)}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.LifetimeCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{LifetimeCanvas}}{\emph{parent}, \emph{logger}}{}
+A simple histogram for the use with mu lifetime
+measurement
+
+\end{fulllineitems}
+
+\index{MuonicHistCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.PulseCanvas.PulseCanvas.color}\pysiglinewithargsret{\bfcode{color}}{\emph{string}, \emph{color='none'}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicHistCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{MuonicHistCanvas}}{\emph{parent}, \emph{logger}, \emph{binning}, \emph{histcolor='b'}, \emph{**kwargs}}{}
+A base class for all canvases with a histogram
+\index{show\_fit() (muonic.gui.MuonicPlotCanvases.MuonicHistCanvas method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicHistCanvas.show_fit}\pysiglinewithargsret{\bfcode{show\_fit}}{\emph{bin\_centers}, \emph{bincontent}, \emph{fitx}, \emph{decay}, \emph{p}, \emph{covar}, \emph{chisquare}, \emph{nbins}}{}
+\end{fulllineitems}
+
+\index{update\_plot() (muonic.gui.MuonicPlotCanvases.MuonicHistCanvas method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicHistCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{data}}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{MuonicPlotCanvas (class in muonic.gui.MuonicPlotCanvases)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{MuonicPlotCanvas}}{\emph{parent}, \emph{logger}, \emph{ymin=0}, \emph{ymax=10}, \emph{xmin=0}, \emph{xmax=10}, \emph{xlabel='xlabel'}, \emph{ylabel='ylabel'}, \emph{grid=True}}{}
+The base class of all muonic plot canvases
+\index{color() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.color}\pysiglinewithargsret{\bfcode{color}}{\emph{string}, \emph{color='none'}}{}
 output colored strings on the terminal
 
 \end{fulllineitems}
 
-\index{update\_plot() (muonic.gui.PulseCanvas.PulseCanvas method)}
+\index{update\_plot() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.PulseCanvas.PulseCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{pulses}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{}{}
+Instructions to updated this plot
+implement this individually
+
 \end{fulllineitems}
 
 
 \end{fulllineitems}
 
-
-
-\subsubsection{\emph{muonic.gui.ScalarsCanvas}}
-\label{muonic:muonic-gui-scalarscanvas}\label{muonic:module-muonic.gui.ScalarsCanvas}\index{muonic.gui.ScalarsCanvas (module)}
-Provide a canvas for a matplotlib rate plot
-\index{ScalarsCanvas (class in muonic.gui.ScalarsCanvas)}
+\index{PulseCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.ScalarsCanvas.ScalarsCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.ScalarsCanvas.}\bfcode{ScalarsCanvas}}{\emph{parent}, \emph{logger}}{}
-Matplotlib Figure widget to display Muon rates
-\index{reset() (muonic.gui.ScalarsCanvas.ScalarsCanvas method)}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.PulseCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{PulseCanvas}}{\emph{parent}, \emph{logger}}{}
+Matplotlib Figure widget to display Pulses
+\index{update\_plot() (muonic.gui.MuonicPlotCanvases.PulseCanvas method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.ScalarsCanvas.ScalarsCanvas.reset}\pysiglinewithargsret{\bfcode{reset}}{}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.PulseCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{pulses}}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{PulseWidthCanvas (class in muonic.gui.MuonicPlotCanvases)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.PulseWidthCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{PulseWidthCanvas}}{\emph{parent}, \emph{logger}, \emph{histcolor='r'}}{}~\index{update\_plot() (muonic.gui.MuonicPlotCanvases.PulseWidthCanvas method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.PulseWidthCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{data}}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{ScalarsCanvas (class in muonic.gui.MuonicPlotCanvases)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{ScalarsCanvas}}{\emph{parent}, \emph{logger}}{}~\index{reset() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas.reset}\pysiglinewithargsret{\bfcode{reset}}{}{}
 reseting all data
 
 \end{fulllineitems}
 
-\index{update\_plot() (muonic.gui.ScalarsCanvas.ScalarsCanvas method)}
+\index{update\_plot() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.ScalarsCanvas.ScalarsCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{result}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{result}}{}
 \end{fulllineitems}
 
 
 \end{fulllineitems}
 
-
-
-\subsubsection{\emph{muonic.gui.LifetimeCanvas}}
-\label{muonic:muonic-gui-lifetimecanvas}\label{muonic:module-muonic.gui.LifetimeCanvas}\index{muonic.gui.LifetimeCanvas (module)}\index{LifetimeCanvas (class in muonic.gui.LifetimeCanvas)}
+\index{VelocityCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.LifetimeCanvas.LifetimeCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.LifetimeCanvas.}\bfcode{LifetimeCanvas}}{\emph{parent}, \emph{logger}}{}
-A simple histogram for the use with mu lifetime
-measurement
-\index{show\_fit() (muonic.gui.LifetimeCanvas.LifetimeCanvas method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.LifetimeCanvas.LifetimeCanvas.show_fit}\pysiglinewithargsret{\bfcode{show\_fit}}{\emph{bin\_centers}, \emph{bincontent}, \emph{fitx}, \emph{decay}, \emph{p}, \emph{covar}, \emph{chisquare}, \emph{nbins}}{}
-\end{fulllineitems}
-
-\index{update\_plot() (muonic.gui.LifetimeCanvas.LifetimeCanvas method)}
-
-\begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.LifetimeCanvas.LifetimeCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{decaytimes}}{}
-decaytimes must be a list of the last decays
-
-\end{fulllineitems}
-
-
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.VelocityCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{VelocityCanvas}}{\emph{parent}, \emph{logger}}{}
 \end{fulllineitems}
 
 
@@ -1140,14 +1327,14 @@ leading and falling edges of the pulses
 \index{DecayTriggerThorough (class in muonic.analysis.PulseAnalyzer)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.DecayTriggerThorough}\pysigline{\strong{class }\code{muonic.analysis.PulseAnalyzer.}\bfcode{DecayTriggerThorough}}
+\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.DecayTriggerThorough}\pysiglinewithargsret{\strong{class }\code{muonic.analysis.PulseAnalyzer.}\bfcode{DecayTriggerThorough}}{\emph{logger}}{}
 We demand a second pulse in the same channel where the muon got stuck
 Should operate for a 10mu sec triggerwindow
 \index{trigger() (muonic.analysis.PulseAnalyzer.DecayTriggerThorough method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{triggerpulses}}{}
-Hardcoded use of chan 1,2,3!!
+\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{triggerpulses}, \emph{single\_channel=2}, \emph{double\_channel=3}, \emph{veto\_channel=4}, \emph{selfveto=False}, \emph{mindecaytime=0}, \emph{minsinglepulsewidth=0}, \emph{maxsinglepulsewidth=12000}, \emph{mindoublepulsewidth=0}, \emph{maxdoublepulsewidth=12000}}{}
+Trigger on a certain combination of single and doublepulses
 
 \end{fulllineitems}
 
@@ -1213,6 +1400,20 @@ otherwise return None
 
 \end{fulllineitems}
 
+\index{VelocityTrigger (class in muonic.analysis.PulseAnalyzer)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.VelocityTrigger}\pysiglinewithargsret{\strong{class }\code{muonic.analysis.PulseAnalyzer.}\bfcode{VelocityTrigger}}{\emph{logger}}{}~\index{trigger() (muonic.analysis.PulseAnalyzer.VelocityTrigger method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.VelocityTrigger.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{pulses}, \emph{upperchannel=1}, \emph{lowerchannel=2}, \emph{omit\_early\_pulses=True}}{}
+Timedifference will be calculated t(upperchannel) - t(lowerchannel)
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
 
 
 \subsubsection{\emph{muonic.analysis.fit}}
@@ -1221,6 +1422,12 @@ Provide a fitting routine
 \phantomsection\label{muonic:module-muonic.analysis.fit}\index{muonic.analysis.fit (module)}
 Script for performing a fit to a histogramm of recorded 
 time differences for the use with QNet
+\index{gaussian\_fit() (in module muonic.analysis.fit)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.analysis.fit.gaussian_fit}\pysiglinewithargsret{\code{muonic.analysis.fit.}\bfcode{gaussian\_fit}}{\emph{bincontent}}{}
+\end{fulllineitems}
+
 \index{main() (in module muonic.analysis.fit)}
 
 \begin{fulllineitems}
@@ -1256,15 +1463,10 @@ time differences for the use with QNet
 \item {\texttt{muonic.daq.DAQProvider}}, \pageref{muonic:module-muonic.daq.DAQProvider}
 \item {\texttt{muonic.daq.SimDaqConnection}}, \pageref{muonic:module-muonic.daq.SimDaqConnection}
 \item {\texttt{muonic.gui}}, \pageref{muonic:module-muonic.gui}
-\item {\texttt{muonic.gui.ConfigDialog}}, \pageref{muonic:module-muonic.gui.ConfigDialog}
-\item {\texttt{muonic.gui.HelpDialog}}, \pageref{muonic:module-muonic.gui.HelpDialog}
-\item {\texttt{muonic.gui.LifetimeCanvas}}, \pageref{muonic:module-muonic.gui.LifetimeCanvas}
 \item {\texttt{muonic.gui.MainWindow}}, \pageref{muonic:module-muonic.gui.MainWindow}
-\item {\texttt{muonic.gui.PeriodicCallDialog}}, \pageref{muonic:module-muonic.gui.PeriodicCallDialog}
-\item {\texttt{muonic.gui.PulseCanvas}}, \pageref{muonic:module-muonic.gui.PulseCanvas}
-\item {\texttt{muonic.gui.ScalarsCanvas}}, \pageref{muonic:module-muonic.gui.ScalarsCanvas}
-\item {\texttt{muonic.gui.TabWidget}}, \pageref{muonic:module-muonic.gui.TabWidget}
-\item {\texttt{muonic.gui.ThresholdDialog}}, \pageref{muonic:module-muonic.gui.ThresholdDialog}
+\item {\texttt{muonic.gui.MuonicDialogs}}, \pageref{muonic:module-muonic.gui.MuonicDialogs}
+\item {\texttt{muonic.gui.MuonicPlotCanvases}}, \pageref{muonic:module-muonic.gui.MuonicPlotCanvases}
+\item {\texttt{muonic.gui.MuonicWidgets}}, \pageref{muonic:module-muonic.gui.MuonicWidgets}
 \end{theindex}
 
 \renewcommand{\indexname}{Index}

@@ -153,6 +153,7 @@ class VelocityWidget(QtGui.QWidget):
 
     def __init__(self,logger):
         QtGui.QWidget.__init__(self)
+        self.logger = logger
         self.upper_channel = 0
         self.lower_channel = 1
         self.trigger = VelocityTrigger(logger)
@@ -189,7 +190,7 @@ class VelocityWidget(QtGui.QWidget):
         if (flighttime != None and flighttime > 0):
             velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             #print flighttime,velocity,self.channel_distance
-            print 'VELOCITY', velocity
+            self.logger.info("measured VELOCITY %s" %velocity.__repr__())
             if flighttime != None:
                 self.times.append(velocity)
                 
@@ -392,8 +393,8 @@ class DecayWidget(QtGui.QWidget):
 
                 self.mu_label = QtGui.QLabel(tr('MainWindow','Muon Decay measurement active!'))
                 self.parentWidget().parentWidget().parentWidget().statusbar.addPermanentWidget(self.mu_label)
-                self.parentWidget().parentWidget().parentWidget().outqueue.put("CE") 
-                self.parentWidget().parentWidget().parentWidget().outqueue.put("WC 03 04")
+                self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
+                self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
               
                 self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
                 self.dec_mes_start = now
@@ -463,7 +464,7 @@ class DAQWidget(QtGui.QWidget):
         """
         text = str(self.hello_edit.displayText())
         if len(text) > 0:
-            self.mainwindow.outqueue.put(str(self.hello_edit.displayText()))
+            self.mainwindow.daq.put(str(self.hello_edit.displayText()))
             self.hello_edit.add_hist_item(text)
         self.hello_edit.clear()
 
@@ -490,7 +491,7 @@ class DAQWidget(QtGui.QWidget):
             commands = command.split('+')
             def periodic_put():
                 for c in commands:
-                    self.mainwindow.outqueue.put(c)
+                    self.mainwindow.daq.put(c)
             self.periodic_put = periodic_put
             self.periodic_call_timer = QtCore.QTimer()
             QtCore.QObject.connect(self.periodic_call_timer,
@@ -585,7 +586,7 @@ class GPSWidget(QtGui.QWidget):
         self.logger.info('Reading GPS.')
         self.mainwindow.processIncoming()
         self.switch_active(True)        
-        self.mainwindow.outqueue.put('DG')
+        self.mainwindow.daq.put('DG')
         self.mainwindow.processIncoming()
         #for count in range(self.read_lines):
         #    msg = self.mainwindow.inqueue.get(True)

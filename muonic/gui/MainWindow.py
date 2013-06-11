@@ -41,15 +41,14 @@ class MainWindow(QtGui.QMainWindow):
     The main application
     """
 
-    def __init__(self, inqueue, outqueue, logger, opts, root, win_parent = None):
+    def __init__(self, daq, logger, opts, root, win_parent = None):
 
         QtGui.QMainWindow.__init__(self, win_parent)
-        self.inqueue = inqueue
-        self.outqueue = outqueue
+        self.daq = daq
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
-        self.outqueue.put('ST 0')
+        self.daq.put('ST 0')
 
         self.setWindowTitle(QtCore.QString("muonic") )
         self.statusbar = QtGui.QMainWindow.statusBar(self)
@@ -89,16 +88,16 @@ class MainWindow(QtGui.QMainWindow):
         self.nostatus = opts.nostatus
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
-        self.outqueue.put('TL') # get the thresholds
+        self.daq.put('TL') # get the thresholds
         time.sleep(0.5) #give the daq some time to ract
         loading.setValue(1)
         self.threshold_ch0 = 300
         self.threshold_ch1 = 300
         self.threshold_ch2 = 300
         self.threshold_ch3 = 300
-        while self.inqueue.qsize():
+        while self.daq.data_available():
             try:
-                msg = self.inqueue.get(0)
+                msg = self.daq.get(0)
                 self.get_thresholds_from_queue(msg)
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
@@ -120,9 +119,9 @@ class MainWindow(QtGui.QMainWindow):
         self.thisscalarquery = now
         self.lastscalarquery = now
         self.query_daq_for_scalars()
-        while self.inqueue.qsize():
+        while self.daq.data_available():
             try:
-                msg = self.inqueue.get(0)
+                msg = self.daq.get(0)
                 self.get_scalars_from_queue(msg)
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
@@ -225,9 +224,9 @@ class MainWindow(QtGui.QMainWindow):
          
         self.query_daq_for_scalars()
         time.sleep(0.5) #wait till the DAQ has responded
-        while self.inqueue.qsize():
+        while self.daq.data_available():
             try:
-                msg = self.inqueue.get(0)
+                msg = self.daq.get(0)
                 self.get_scalars_from_queue(msg)
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
@@ -323,7 +322,7 @@ class MainWindow(QtGui.QMainWindow):
         Shows the threshold dialogue
         """
         # get the actual Thresholds...
-        self.outqueue.put('TL')
+        self.daq.put('TL')
         # wait explicitely till the thresholds get loaded
         self.logger.info("loading threshold information..")
         time.sleep(1.5)
@@ -336,10 +335,10 @@ class MainWindow(QtGui.QMainWindow):
                 commands.append("TL " + ch + " " + str(val))
                 
             for cmd in commands:
-                self.outqueue.put(cmd)
+                self.daq.put(cmd)
                 self.logger.info("Set threshold of channel %s to %s" %(cmd.split()[1],cmd.split()[2]))
 
-        self.outqueue.put('TL')
+        self.daq.put('TL')
   
 
     def config_menu(self):
@@ -409,7 +408,7 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 msg += hex(int(''.join(enable),2))[-1].capitalize()
             
-            self.outqueue.put(msg)
+            self.daq.put(msg)
             self.logger.info('The following message was sent to DAQ: %s' %msg)
                     
             self.logger.debug('channel0 selected %s' %chan0_active)
@@ -454,7 +453,7 @@ class MainWindow(QtGui.QMainWindow):
         Send a "DS" message to DAQ and record the time when this is don
         """
         self.lastscalarquery = self.thisscalarquery
-        self.outqueue.put("DS")
+        self.daq.put("DS")
         self.thisscalarquery = time.time()
 
     def get_scalars_from_queue(self,msg):
@@ -518,17 +517,17 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
         
-    # this functions gets everything out of the inqueue
+    # this functions gets everything out of the daq
     # All calculations should happen here
     def processIncoming(self):
         """
-        Handle all the messages currently in the inqueue 
+        Handle all the messages currently in the daq 
         and pass the result to the corresponding widgets
         """
-        while self.inqueue.qsize():
+        while self.daq.data_available():
 
             try:
-                msg = self.inqueue.get(0)
+                msg = self.daq.get(0)
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
