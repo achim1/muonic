@@ -113,6 +113,15 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
                 self.get_thresholds_from_queue(msg)
+
+            except Queue.Empty:
+                self.logger.debug("Queue empty!")
+
+        self.daq.put('DC') # get the channelconfig
+        time.sleep(0.5) #give the daq some time to ract
+        while self.daq.data_available():
+            try:
+                msg = self.daq.get(0)
                 self.get_channels_from_queue(msg)
 
             except Queue.Empty:
@@ -440,6 +449,7 @@ class MainWindow(QtGui.QMainWindow):
             self.logger.debug('coincidence twofold %s' %twofold)
             self.logger.debug('coincidence threefold %s' %threefold)
             self.logger.debug('coincidence fourfold %s' %fourfold)
+        self.daq.put('DC')
             
     def help_menu(self):
         """
@@ -542,25 +552,87 @@ class MainWindow(QtGui.QMainWindow):
         """
         Explicitely scan message for channel information
         Return True if found, else False
+
+        DC gives :
+        DC C0=23 C1=71 C2=0A C3=00
+        
+        Which has the meaning:
+
+        MM - 00 -> 8bits for channel enable/disable, coincidence and veto
+        |7   |6   |5          |4          |3       |2       |1 |0       |
+        |veto|veto|coincidence|coincidence|channel3|channel2|channel1|channel0|
+        ---------------------------bits-------------------------------------
+        Set bits for veto:
+        ........................
+        00 - ch0 is veto
+        01 - ch1 is veto
+        10 - ch2 is veto
+        11 - ch3 is veto
+        ........................
+        Set bits for coincidence
+        ........................
+        00 - singles
+        01 - twofold
+        10 - threefold
+        11 - fourfold
         """
         if msg.startswith('DC') and len(msg) > 25:
-            msg = msg.split('=')
-            print 'MSG ', msg
-#            DC
-#DC C0=23 C1=71 C2=0A C3=00
-            # TODO SOME WORK HERE, finish translation of channel configs from hex
-            self.channelcheckbox_0 = True
-            self.channelcheckbox_1 = True
-            self.channelcheckbox_2 = True
-            self.channelcheckbox_3 = True
-            self.coincidencecheckbox_0 = True
-            self.coincidencecheckbox_1 = False
-            self.coincidencecheckbox_2 = False
-            self.coincidencecheckbox_3 = False
-            self.vetocheckbox = False
+            msg = msg.split(' ')
+            msg = bin(int(msg[1][3:], 16))[2:].zfill(8)
+            vetoconfig = msg[0:2]
+            coincidenceconfig = msg[2:4]
+            channelconfig = msg[4:8]
+            print 'MSG ', vetoconfig
+
             self.vetocheckbox_0 = False
             self.vetocheckbox_1 = False
             self.vetocheckbox_2 = False
+            self.vetocheckbox = True
+
+            if str(channelconfig[3]) == '0':
+                self.channelcheckbox_0 = False
+            else:
+                self.channelcheckbox_0 = True
+
+            if str(channelconfig[2]) == '0':
+                self.channelcheckbox_1 = False
+            else:
+                self.channelcheckbox_1 = True
+
+            if str(channelconfig[1]) == '0':
+                self.channelcheckbox_2 = False
+            else:
+                self.channelcheckbox_2 = True
+            if str(channelconfig[0]) == '0':
+                self.channelcheckbox_3 = False
+            else:
+                self.channelcheckbox_3 = True
+            if str(coincidenceconfig) == '00':
+                self.coincidencecheckbox_0 = True
+            else:
+                self.coincidencecheckbox_0 = False
+            if str(coincidenceconfig) == '01':
+                self.coincidencecheckbox_1 = True
+            else:
+                self.coincidencecheckbox_1 = False
+            if str(coincidenceconfig) == '10':
+                self.coincidencecheckbox_2 = True
+            else:
+                self.coincidencecheckbox_2 = False
+
+            if str(coincidenceconfig) == '11':
+                self.coincidencecheckbox_3 = True
+            else:
+                self.coincidencecheckbox_3 = False
+
+
+            if str(vetoconfig) == '00':
+                self.vetocheckbox = False
+            else:
+                if str(vetoconfig) == '01': self.vetocheckbox_0 = True
+                if str(vetoconfig) == '10': self.vetocheckbox_1 = True
+                if str(vetoconfig) == '11': self.vetocheckbox_2 = True
+
             
             self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3))
             self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3))
