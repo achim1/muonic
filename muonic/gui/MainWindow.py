@@ -394,21 +394,23 @@ class MainWindow(QtGui.QMainWindow):
             threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 
             fourfold  = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_3")).isChecked() 
 
-            noveto    = config_window.findChild(QtGui.QGroupBox,QtCore.QString("vetocheckbox")).isChecked()
+            veto    = config_window.findChild(QtGui.QGroupBox,QtCore.QString("vetocheckbox")).isChecked()
             vetochan1 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
             vetochan2 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
             vetochan3 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
 
             tmp_msg = ''
-    
-            for veto in [(noveto,'00'),(vetochan1,'01'),(vetochan2,'10'),(vetochan3,'11')]:
-                if veto[0]:
-                    tmp_msg += veto[1]
-            
-            if noveto:
-                # ensure that there is no veto active and reset the 
-                # temp message, just to be sure
-                tmp_msg = '00'
+            if veto:
+                if vetochan1:
+                    tmp_msg += '01'
+                elif vetochan2:
+                    tmp_msg += '10'
+                elif vetochan3:
+                    tmp_msg += '11'
+                else:
+                    tmp_msg += '00' 
+            else:
+                tmp_msg += '00'
     
             coincidence_set = False
             for coincidence in [(singles,'00'),(twofold,'01'),(threefold,'10'),(fourfold,'11')]:
@@ -582,7 +584,6 @@ class MainWindow(QtGui.QMainWindow):
             vetoconfig = msg[0:2]
             coincidenceconfig = msg[2:4]
             channelconfig = msg[4:8]
-            print 'MSG ', vetoconfig
 
             self.vetocheckbox_0 = False
             self.vetocheckbox_1 = False
@@ -637,7 +638,6 @@ class MainWindow(QtGui.QMainWindow):
             self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3))
             self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3))
             self.logger.debug("Got veto configurations: %i %i %i %i" %(self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2))
-
 
             return True
         else:

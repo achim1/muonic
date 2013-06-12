@@ -304,10 +304,6 @@ class ConfigDialog(MuonicDialog):
         if channelcheckbox_2: channels.append(2)
         if channelcheckbox_3: channels.append(3)
         coincidence = []
-        #print vetocheckbox
-        ##print vetocheckbox_0
-        #print vetocheckbox_1
-        #print vetocheckbox_2
 
         if coincidencecheckbox_0: coincidence.append(0)
         if coincidencecheckbox_1: coincidence.append(1)
