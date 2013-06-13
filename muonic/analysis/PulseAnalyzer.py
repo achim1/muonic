@@ -333,7 +333,6 @@ class DecayTriggerThorough:
             self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
             return None
 
-
         # check if the muon entered the first channel and
         # decayed there
         # use the selfveto flag to reject the event
@@ -341,44 +340,50 @@ class DecayTriggerThorough:
         # this makes sense if the muon decayed in the first
         # channel
         # ..
-
-        if (pulses1 > 1) and ((not selfveto) or (not pulses2 )):
+        if pulses1 > 1:
             # RE2 - LE1 
             # take always the last pulse in the row
-            singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
+            singlepulsewidth = ttp[single_channel][0][1] - ttp[single_channel][0][0]
             doublepulsewidth = ttp[single_channel][-1][1] - ttp[single_channel][-1][0]
             #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
             #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
-            
-
-            if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):
+            if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth) and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):
                 decaytime = ttp[single_channel][-1][0] - ttp[single_channel][0][0]
-        
+            else:
+                self.logger.debug('Rejected event.')
+                return None
+            if selfveto:
+                if not pulses2 == 0:
+                    self.logger.debug('Rejecting event. Found signal in dou')
+                    return None
         # or it might have entered the second channel
         # then we do not want to have more than one
-        # hit in the first    
+        # hit in the first
         # again: use selfveto to adjust the behavior
-        if (pulses2 == 2) and ((pulses1 == 1) or (not selfveto)):
+        if pulses2 >= 2 and pulses1 == 1:
             # check if the width of the pulses is as required
-            singlepulsewidth = ttp[single_channel][0][1]  - ttp[single_channel][0][0]
+            singlepulsewidth = ttp[single_channel][0][1] - ttp[single_channel][0][0]
             doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
             #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
             #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
-            
             if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):          
-                # subtract rising edges, falling edges might be virtual     
+                # subtract rising edges, falling edges might be virtual
                 decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
-            
-        # perform sanity checks                                                   # FIXME:
+            if selfveto:
+                if not pulses2 == 2:
+                    self.logger.debug('Rejecting event due to selfveto in doublepulsechannel.')
+                    return None 
+        # perform sanity checks
         if (decaytime > mindecaytime) and (decaytime < self.triggerwindow -1000): # there is an artefact at the end
             self.logger.debug("Decay with decaytime %d found " %decaytime)        # of the triggerwindow
             return decaytime                                                      # so -1000
-
+        else:
+        self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
+        return None
 
 
 if __name__ == '__main__':
 
-    	
     import sys 
 
     data = open(sys.argv[1])
@@ -392,6 +397,3 @@ if __name__ == '__main__':
             #print extractor.extract(line)
         except (ValueError,IndexError):
             pass 
-
-
-
