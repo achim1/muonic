@@ -377,7 +377,6 @@ class DecayTriggerThorough:
         if (decaytime > mindecaytime) and (decaytime < self.triggerwindow -1000): # there is an artefact at the end
             self.logger.debug("Decay with decaytime %d found " %decaytime)        # of the triggerwindow
             return decaytime                                                      # so -1000
-        else:
         self.logger.debug("Rejecting decay with singlepulses %s, doublepulses %s and vetopulses %s" %(pulses1.__repr__(),pulses2.__repr__(),pulses3.__repr__()))
         return None
 

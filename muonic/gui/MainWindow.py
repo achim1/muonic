@@ -578,7 +578,7 @@ class MainWindow(QtGui.QMainWindow):
         10 - threefold
         11 - fourfold
         """
-        if msg.startswith('DC') and len(msg) > 25:
+        if msg.startswith('DC ') and len(msg) > 25:
             msg = msg.split(' ')
             msg = bin(int(msg[1][3:], 16))[2:].zfill(8)
             vetoconfig = msg[0:2]
