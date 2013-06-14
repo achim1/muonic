@@ -1,9 +1,19 @@
 
 import multiprocessing as mult
 import logging
+import re
+import Queue
 
-from SimDaqConnection import SimDaqConnection
-from DaqConnection import DaqConnection
+try:
+    import zmq
+except ImportError:
+    print "no zmq installed..."
+
+from SimDaqConnection import SimDaqConnection,SimDaqServer
+from DaqConnection import DaqConnection,DaqServer
+
+class DAQIOError(IOError):
+    pass
 
 
 class DAQProvider:
@@ -20,7 +30,7 @@ class DAQProvider:
             
         self.running = 1
         self.root = root
-
+        self.good_pattern = re.compile("^[a-zA-Z0-9+-.,:()=$/#?!%_@*|~' ]*[\n\r]*$")
         # get option parser options
         if logger is None:
             logger = logging.getLogger()
@@ -49,7 +59,18 @@ class DAQProvider:
         Get something from the daq
         """
 
-        return self.outqueue.get(*args)
+        try:
+            line = self.outqueue.get(*args)
+        except Queue.Empty:
+            raise DAQIOError("Queue is empty")
+        
+        if self.good_pattern.match(line) is None:
+            # Do something more sensible here,     like stopping the DAQ
+            # then wait until service is restar    ted?
+            self.logger.warning("Got garbage from the DAQ: %s"%line.rstrip('\r\n'))
+            return None
+        
+        return line
         
 
     def put(self,*args):
@@ -64,4 +85,61 @@ class DAQProvider:
         """
 
         return self.outqueue.qsize()
+
+class DAQClient(DAQProvider):
+    
+    
+    def __init__(self,port,logger=None,root=None):
+           
+        self.running = 1
+        self.root = root
+        self.good_pattern = re.compile("^[a-zA-Z0-9+-.,:()=$/#?!%_@*|~' ]*[\n\r]*$")
+        # get option parser options
+        if logger is None:
+            logger = logging.getLogger()
+        self.logger = logger
+        self.setup_socket(port)
+
+     
+    def setup_socket(self,port):
+        #port = "5556"
+        context = zmq.Context()
+        self.socket = context.socket(zmq.PAIR)
+        self.socket.connect("tcp://127.0.0.1:%s" % port)
+        self.socket_port = port 
+        
+    def get(self,*args):
+        """
+        Get something from the daq
+        """
+        
+        try:
+            line = self.socket.recv_string()
+        except Queue.Empty:
+            raise DAQIOError("Queue is empty")
+        
+        if self.good_pattern.match(line) is None:
+            # Do something more sensible here,     like stopping the DAQ
+            # then wait until service is restar    ted?
+            self.logger.warning("Got garbage from the DAQ: %s"%line.rstrip('\r\n'))
+            return None
+            #raise DAQIOError("Queue contains garbage!")
+        
+        return line
+        
+
+    def put(self,*args):
+        """
+        Send information to the daq
+        """
+        self.socket.send_string(*args)
+
+    def data_available(self):
+        """
+        is new data from daq available
+        """
+
+        return self.socket.poll(200)
+
+
 

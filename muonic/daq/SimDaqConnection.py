@@ -7,7 +7,11 @@ import Queue
 import numpy as n
 import os
 
-
+try:
+	import zmq
+except ImportError:
+	print "no zmq installed..."
+	
 from random import choice
 	
 class SimDaq():
@@ -65,8 +69,6 @@ class SimDaq():
             self.ini = False
             return "T0=42  T1=42  T2=42  T3=42"
 
-
-
         if self._return_info:
             self._return_info = False
             return self._scalars_to_return
@@ -100,7 +102,7 @@ class SimDaq():
         simulate a busy DAQ
         """
         if self._inWaiting:
-            time.sleep(0.5)
+            time.sleep(0.1)
             self._physics()
             return True
 
@@ -136,4 +138,50 @@ class SimDaqConnection(object):
                 self.outqueue.put(self.port.readline().strip())
             time.sleep(0.02)
 
+class SimDaqServer(object):
 
+    def __init__(self, port, logger):
+
+        self.logger = logger
+        self.port = SimDaq(self.logger)
+        self.running = 1
+        self.setup_socket(port)
+        
+
+    def setup_socket(self,port,adress="127.0.0.1"):
+        #port = "5556"
+        context = zmq.Context()
+        self.socket = context.socket(zmq.PAIR)
+        self.socket.bind("tcp://%s:%s" %(adress, port))
+        self.socket_adress = adress
+        self.socket_port = port
+
+    def serve(self):
+        while True:
+            self.read()
+		
+    def read(self):
+        """
+        Simulate DAQ I/O
+        """
+        while self.running:
+            
+            #self.logger.debug("inqueue size is %d" %self.inqueue.qsize())
+            msg = self.socket.recv_string()
+            print msg
+            try:
+                    #print self.inqueue.get(0)
+                self.port.write(str(msg)+"\r")
+            except Queue.Empty:
+                self.logger.debug("Queue empty!")
+            
+            while self.port.inWaiting():
+                self.socket.send_string(self.port.readline().strip())
+            time.sleep(0.02)
+
+if __name__ == "__main__":
+    
+    import logging
+    logger = logging.getLogger()
+    x = SimDaqServer("5556",logger)
+    x.serve()

@@ -5,6 +5,12 @@ import serial
 import os
 import subprocess 
 
+try:
+    import zmq
+except ImportError:
+    print "No zmq installed..."
+
+
 import os.path as pth
 from time import sleep
 
@@ -112,5 +118,92 @@ class DaqConnection(object):
             
             sleep(0.1)
 
+
+class DaqServer(DaqConnection):
+    
+    # FIXME make constructors consistent
+    def __init__(self, port,logger):
+
+
+        self.running = 1
+        self.logger = logger
+        self.setup_socket(port)
+        try:
+            self.port = self.get_port()
+        except serial.SerialException, e:
+            self.logger.fatal("SerialException thrown! Value:" + e.message.__repr__())
+            raise SystemError, e
+
+    
+    
+    def setup_socket(self,port,adress="127.0.0.1"):
+        #port = "5556"
+        context = zmq.Context()
+        self.socket = context.socket(zmq.PAIR)
+        self.socket_port = port
+        self.socket_adress = adress
+        self.socket.bind("tcp://%s:%s" %(adress,port))
+
+    def serve(self):
+        while True:
+            self.read()
+            self.write()
+
+    def read(self):
+        """
+        Get data from the DAQ. Read it from the provided Queue.
+        """
+        min_sleeptime = 0.01 # seconds
+        max_sleeptime = 0.2 # seconds
+        sleeptime = min_sleeptime #seconds
+        while self.running:
+#            data = self.port.read(1)
+#            n = self.port.inWaiting()
+#            if n > 0:
+#                data += self.port.read(n)
+#            for line in data.split('\n'):
+#                self.outqueue.put(line)
+            try:
+                if self.port.inWaiting():
+                    while self.port.inWaiting():
+                        self.socket.send(self.port.readline().strip())
+                    sleeptime = max(sleeptime/2, min_sleeptime)
+                else:
+                    sleeptime = min(1.5 * sleeptime, max_sleeptime)
+                sleep(sleeptime)
+
+            except IOError:
+                self.logger.error("IOError")
+                self.port.close()
+                self.port = self.get_port()
+                # this has to be implemented in the future
+                # for now, we assume that the card does not forget
+                # its settings, only because the USB connection is
+                # broken
+                #self.setup_daq.setup(self.commandqueue)
+            except OSError:
+                self.logger.error("IOError")
+                self.port.close()
+                self.port = self.get_port()
+                #self.setup_daq.setup(self.commandqueue)
+
+    def write(self):
+        """
+        Put messages from the inqueue which is filled by the DAQ
+        """
+
+        while self.running:
+            msg = self.socket.recv_string()
+            self.port.write(str(msg)+"\r")
+            sleep(0.1)
+
+
+
+if __name__ == "__main__":
+    
+    import logging
+    logger = logging.getLogger()
+    x = DaqServer("5556",logger)
+    x.serve()
 # vim: ai ts=4 sts=4 et sw=4
 

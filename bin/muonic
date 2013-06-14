@@ -32,13 +32,16 @@ from optparse import OptionParser
 from PyQt4 import QtGui
 
 # muonic imports
-from muonic.daq.DAQProvider import DAQProvider
+from muonic.daq.DAQProvider import DAQProvider,DAQClient
 from muonic.gui.MainWindow import MainWindow
 
 def main(opts,logger):
 
     root = QtGui.QApplication(sys.argv)
-    client = DAQProvider(logger=logger,root=root,sim=opts.sim)
+    if opts.port is not None:
+        client = DAQClient(opts.port,logger=logger)
+    else:
+        client = DAQProvider(logger=logger,root=root,sim=opts.sim)
     # Set up the GUI part
     gui=MainWindow(client, logger, opts,root)
     gui.show()
@@ -64,6 +67,7 @@ if __name__ == '__main__':
     parser = OptionParser(usage=usage)
 
     parser.add_option("-s", "--sim", action="store_true", dest="sim", help="use simulation mode for testing without hardware", default=False)
+    parser.add_option("--port", dest="port", help="listen to daq on port ", default=None)
     parser.add_option("-t", "--timewindow", dest="timewindow", help="time window for the measurement in s (default 5 s)", default=5.0)
     parser.add_option("-d", "--debug", dest="loglevel", action="store_const", const=10 , help="switch to loglevel debug", default=20)
     parser.add_option("-p", "--writepulses", dest="writepulses", help="write a file with extracted pulses", action="store_true", default=False)

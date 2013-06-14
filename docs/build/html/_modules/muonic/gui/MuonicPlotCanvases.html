@@ -1,0 +1,465 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic.gui.MuonicPlotCanvases &mdash; muonic 1.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="muonic 1.0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 1.0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for muonic.gui.MuonicPlotCanvases</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provide the canvases for plots in muonic</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">p</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">n</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="c"># Python Qt4 bindings for GUI objects</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtGui</span>
+
+<span class="c"># Matplotlib Figure object</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
+
+<span class="c"># import the Qt4Agg FigureCanvas object, that binds Figure to</span>
+<span class="c"># Qt4Agg backend. It also inherits from QWidget</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_qt4agg</span> \
+<span class="kn">import</span> <span class="n">FigureCanvasQTAgg</span> <span class="k">as</span> <span class="n">FigureCanvas</span>
+
+<span class="c"># import the NavigationToolbar Qt4Agg widget</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_qt4agg</span> \
+<span class="kn">import</span> <span class="n">NavigationToolbar2QTAgg</span> <span class="k">as</span> <span class="n">NavigationToolbar</span>
+
+<div class="viewcode-block" id="MuonicPlotCanvas"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas">[docs]</a><span class="k">class</span> <span class="nc">MuonicPlotCanvas</span><span class="p">(</span><span class="n">FigureCanvas</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The base class of all muonic plot canvases</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ymax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">xmin</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">xmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s">&quot;xlabel&quot;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s">&quot;ylabel&quot;</span><span class="p">,</span><span class="n">grid</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+       
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">facecolor</span><span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+  
+        <span class="c"># initialization of the canvas</span>
+        <span class="n">FigureCanvas</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="c"># set specific limits for X and Y axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="n">ymin</span><span class="p">,</span><span class="n">ymax</span><span class="o">=</span><span class="n">ymax</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xmin</span><span class="o">=</span><span class="n">xmin</span><span class="p">,</span><span class="n">xmax</span><span class="o">=</span><span class="n">xmax</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_autoscale_on</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+        <span class="c"># force a redraw of the Figure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MuonicPlotCanvas.color"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.color">[docs]</a>    <span class="k">def</span> <span class="nf">color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&quot;none&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        output colored strings on the terminal</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;green&quot;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[92m&#39;</span><span class="p">,</span> <span class="s">&#39;yellow&#39;</span> <span class="p">:</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[93m&#39;</span><span class="p">,</span> <span class="s">&#39;red&#39;</span> <span class="p">:</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[91m&#39;</span><span class="p">,</span> <span class="s">&#39;blue&#39;</span> <span class="p">:</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[94m&#39;</span><span class="p">,</span> <span class="s">&#39;none&#39;</span> <span class="p">:</span> <span class="s">&#39;</span><span class="se">\033</span><span class="s">[0m&#39;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">colors</span><span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="o">+</span> <span class="n">string</span> <span class="o">+</span> <span class="n">colors</span><span class="p">[</span><span class="s">&quot;none&quot;</span><span class="p">]</span>   
+
+</div>
+<div class="viewcode-block" id="MuonicPlotCanvas.update_plot"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas.update_plot">[docs]</a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instructions to updated this plot</span>
+<span class="sd">        implement this individually</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        
+        </div></div>
+<div class="viewcode-block" id="PulseCanvas"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.PulseCanvas">[docs]</a><span class="k">class</span> <span class="nc">PulseCanvas</span><span class="p">(</span><span class="n">MuonicPlotCanvas</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Matplotlib Figure widget to display Pulses</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PulseCanvas</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ymax</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span><span class="n">xmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">xmax</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s">&quot;time in ns&quot;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s">&quot;ylabel&quot;</span><span class="p">,</span><span class="n">grid</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            
+  
+<div class="viewcode-block" id="PulseCanvas.update_plot"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.PulseCanvas.update_plot">[docs]</a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pulses</span><span class="p">):</span>
+      
+        <span class="c">#do a complete redraw of the plot to avoid memory leak!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c"># set specific limits for X and Y axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymax</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time in ns&#39;</span><span class="p">)</span>
+
+        <span class="c"># and disable figure-wide autoscale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_autoscale_on</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c"># we have only the information that the pulse is over the threshold,</span>
+        <span class="c"># besides that we do not have any information about its height</span>
+        <span class="c"># TODO: It would be nice to implement the thresholds as scaling factors</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulseheight</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;g&#39;</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">]</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;c0&#39;</span><span class="p">,</span><span class="s">&#39;c1&#39;</span><span class="p">,</span><span class="s">&#39;c2&#39;</span><span class="p">,</span><span class="s">&#39;c3&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="n">chan</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">pulse</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pulse</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">pulse</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">pulse</span><span class="p">[</span><span class="mi">1</span><span class="p">]],[</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pulseheight</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">pulseheight</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">colors</span><span class="p">[</span><span class="n">chan</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">label</span><span class="o">=</span><span class="n">labels</span><span class="p">[</span><span class="n">chan</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">.</span><span class="mi">102</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;expand&quot;</span><span class="p">,</span> <span class="n">borderaxespad</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">handlelength</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;An error with the legend occured!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>      
+        
+        </div></div>
+<div class="viewcode-block" id="ScalarsCanvas"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.ScalarsCanvas">[docs]</a><span class="k">class</span> <span class="nc">ScalarsCanvas</span><span class="p">(</span><span class="n">MuonicPlotCanvas</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScalarsCanvas</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_not_show_trigger</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="c">#max length of shown = MAXLENGTH*timewindow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MAXLENGTH</span> <span class="o">=</span> <span class="mi">40</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        
+<div class="viewcode-block" id="ScalarsCanvas.reset"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.ScalarsCanvas.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;reseting all data&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time in s&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Rate in Hz&#39;</span><span class="p">)</span>
+
+        <span class="c"># and disable figure-wide autoscale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_autoscale_on</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">highest</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span><span class="o">=</span><span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="c">#.strftime(&#39;%d.%m.%Y %H:%M:%S&#39;)</span>
+        <span class="c">#self.ax.set_xlim(0., 5.2)</span>
+        <span class="c">#self.ax.set_ylim(0., 100.2)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_time</span> <span class="o">=</span><span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan0</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch0&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan1</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch1&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan2</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch2&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan3</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch3&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_not_show_trigger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l_trigger</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;trg&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">N0</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N1</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N2</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N3</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NT</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="ScalarsCanvas.update_plot"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.ScalarsCanvas.update_plot">[docs]</a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+
+        <span class="c">#do a complete redraw of the plot to avoid memory leak!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c"># set specific limits for X and Y axes</span>
+        <span class="c">#self.ax.set_xlim(0., 5.2)</span>
+        <span class="c">#self.ax.set_ylim(0., 100.2)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time in s&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;Rate in Hz&#39;</span><span class="p">)</span>
+
+        <span class="c"># and disable figure-wide autoscale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_autoscale_on</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;result : </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="n">result</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+
+        <span class="c"># update lines data using the lists with new data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N0</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N1</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N2</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">N3</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NT</span> <span class="o">+=</span> <span class="n">result</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan0</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch0&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan1</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;m&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch1&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan2</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch2&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_chan3</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;ch3&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;v&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_not_show_trigger</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l_trigger</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;trg&#39;</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">marker</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_not_show_trigger</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">.</span><span class="mi">102</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;expand&quot;</span><span class="p">,</span> <span class="n">borderaxespad</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">handlelength</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.02</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">.</span><span class="mi">102</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&quot;expand&quot;</span><span class="p">,</span> <span class="n">borderaxespad</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">handlelength</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;An error with the legend occured!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">)</span> <span class="o">&gt;</span>  <span class="bp">self</span><span class="o">.</span><span class="n">MAXLENGTH</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+      
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;self.l_chan0: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">l_chan0</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+        <span class="n">ma2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">),</span> 
+                   <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">))</span>
+        <span class="n">mi2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">),</span> 
+                       <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="p">))</span>
+        
+        <span class="k">if</span> <span class="n">ma2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">highest</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">highest</span> <span class="o">=</span> <span class="n">ma2</span>
+        <span class="k">if</span> <span class="n">mi2</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowest</span> <span class="o">=</span> <span class="n">mi2</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Chan0 to plot: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+        
+        <span class="n">ma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan0</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan1</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan2</span><span class="p">),</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chan3</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="p">)</span>  <span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ma</span><span class="o">*</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_time</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">now2</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">now2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>  
+        <span class="n">dt1</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">seconds</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">days</span> <span class="o">*</span> <span class="mi">3600</span> <span class="o">*</span> <span class="mi">24</span>
+        <span class="n">string1</span> <span class="o">=</span> <span class="s">&#39;started:</span><span class="se">\n</span><span class="s"> </span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%d</span><span class="s">.%m.%Y %H:%M:%S&#39;</span><span class="p">)</span>
+
+        <span class="c"># we rather calculate the mean rate by dividing</span>
+        <span class="c"># total scalars by total time</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">string2</span> <span class="o">=</span> <span class="s">&#39;mean rates:</span><span class="se">\n</span><span class="s">channel0 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">channel1 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">channel2 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">channel3 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">trigger = </span><span class="si">%.3f</span><span class="s"> Hz&#39;</span> <span class="o">%</span> <span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N0</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N1</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N2</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N3</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">NT</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_not_show_trigger</span><span class="p">:</span>
+                <span class="n">string2</span> <span class="o">=</span> <span class="s">&#39;mean rates</span><span class="se">\n</span><span class="s">channel0 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">channel1 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">channel2 = </span><span class="si">%.2f</span><span class="s"> Hz </span><span class="se">\n</span><span class="s">channel3 = </span><span class="si">%.2f</span><span class="s"> Hz&#39;</span> <span class="o">%</span> <span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N0</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N1</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N2</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N3</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span> <span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Time was Zero!Passing..&#39;</span><span class="p">)</span>
+            <span class="n">string2</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            <span class="k">pass</span>
+
+        <span class="n">string3</span> <span class="o">=</span> <span class="s">&#39;total scalars:</span><span class="se">\n</span><span class="s">N0 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">N1 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">N2 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">N3 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">NT = </span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">NT</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_not_show_trigger</span><span class="p">:</span>
+            <span class="n">string3</span> <span class="o">=</span> <span class="s">&#39;total scalars:</span><span class="se">\n</span><span class="s">N0 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">N1 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">N2 = </span><span class="si">%i</span><span class="s"> </span><span class="se">\n</span><span class="s">N3 = </span><span class="si">%i</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">N0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N2</span> <span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N3</span><span class="p">)</span>
+
+        <span class="c"># reduce information for better overview</span>
+        <span class="n">string4</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">daq time = </span><span class="si">%.2f</span><span class="s"> s </span><span class="se">\n</span><span class="s">max rate = </span><span class="si">%.2f</span><span class="s"> Hz&#39;</span> <span class="o">%</span> <span class="p">(</span>  <span class="bp">self</span><span class="o">.</span><span class="n">timewindow</span><span class="p">,</span> <span class="n">ma2</span> <span class="p">)</span>
+                             
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">string1</span><span class="o">+</span><span class="n">string4</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">string3</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">0.65</span><span class="p">,</span> <span class="n">string2</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;green&#39;</span><span class="p">)</span> 
+                   
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+          </div></div>
+<div class="viewcode-block" id="LifetimeCanvas"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.LifetimeCanvas">[docs]</a><span class="k">class</span> <span class="nc">LifetimeCanvas</span><span class="p">(</span><span class="n">MuonicPlotCanvas</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A simple histogram for the use with mu lifetime</span>
+<span class="sd">    measurement</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+       
+        <span class="nb">super</span><span class="p">(</span><span class="n">LifetimeCanvas</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s">&quot;time between pulses (microseconds)&quot;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s">&quot;events&quot;</span><span class="p">)</span>
+        <span class="c"># set specific limits for X and Y axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time between pulses (microsec)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;events&#39;</span><span class="p">)</span>
+
+        <span class="c"># make a fixed binning from 0 to 20 microseconds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binning</span>      <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">84</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bincontent</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">binning</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">binning</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c"># force a redraw of the Figure</span>
+        <span class="c">#self.fig.canvas.draw()</span>
+ 
+        <span class="c">#self.setParent(parent)</span>
+
+
+
+<div class="viewcode-block" id="LifetimeCanvas.update_plot"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.LifetimeCanvas.update_plot">[docs]</a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decaytimes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        decaytimes must be a list of the last decays</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># avoid memory leak</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c"># we have to do some bad hacking here,</span>
+        <span class="c"># because the p histogram is rather</span>
+        <span class="c"># simple and it is not possible to add</span>
+        <span class="c"># two of them...</span>
+        <span class="c"># however, since we do not want to run into a memory leak</span>
+        <span class="c"># and we also be not dependent on dashi (but maybe</span>
+        <span class="c"># sometimes in the future?) we have to do it</span>
+        <span class="c"># by manipulating rectangles...</span>
+
+        <span class="c"># we want to find the non-empty bins</span>
+        <span class="c"># tmphist is compatible with the decaytime hist...</span>
+
+
+        <span class="n">tmphist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">decaytimes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">binning</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">histbin</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tmphist</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">histbin</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span><span class="p">[</span><span class="n">histbin</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">set_height</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span><span class="p">[</span><span class="n">histbin</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">+</span> <span class="n">histbin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c"># we want to get the maximum for the ylims</span>
+        <span class="c"># self.heights contains the bincontent!</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">patch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">patch</span><span class="o">.</span><span class="n">get_height</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;lifetimemonitor heights </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">)</span><span class="o">*</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time between pulses (microsec)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;events&#39;</span><span class="p">)</span>
+        
+        <span class="c"># always get rid of unused stuff</span>
+        <span class="k">del</span> <span class="n">tmphist</span>
+
+        <span class="c"># some beautification</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+ 
+        <span class="c"># we now have to pass our new patches </span>
+        <span class="c"># to the figure we created..            </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span>      
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="LifetimeCanvas.show_fit"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicPlotCanvases.LifetimeCanvas.show_fit">[docs]</a>    <span class="k">def</span> <span class="nf">show_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bin_centers</span><span class="p">,</span><span class="n">bincontent</span><span class="p">,</span><span class="n">fitx</span><span class="p">,</span><span class="n">decay</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">covar</span><span class="p">,</span><span class="n">chisquare</span><span class="p">,</span><span class="n">nbins</span><span class="p">):</span>
+
+        <span class="c">#self.ax.clear()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span><span class="n">bincontent</span><span class="p">,</span><span class="s">&quot;b^&quot;</span><span class="p">,</span><span class="n">fitx</span><span class="p">,</span><span class="n">decay</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">fitx</span><span class="p">),</span><span class="s">&quot;b-&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">max</span><span class="p">(</span><span class="n">bincontent</span><span class="p">)</span><span class="o">*</span><span class="mf">1.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Decay time in microseconds&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Events in time bin&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">((</span><span class="s">&quot;Data&quot;</span><span class="p">,</span><span class="s">&quot;Fit: (</span><span class="si">%4.2f</span><span class="s"> +- </span><span class="si">%4.2f</span><span class="s">) $\mu$s </span><span class="se">\n</span><span class="s"> chisq/ndf=</span><span class="si">%4.2f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">n</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covar</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span><span class="n">chisquare</span><span class="o">/</span><span class="p">(</span><span class="n">nbins</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)))),</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Covariance Matrix is None, could not calculate fit error!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">((</span><span class="s">&quot;Data&quot;</span><span class="p">,</span><span class="s">&quot;Fit: (</span><span class="si">%4.2f</span><span class="s">) $\mu$s </span><span class="se">\n</span><span class="s"> chisq/ndf=</span><span class="si">%4.2f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">chisquare</span><span class="o">/</span><span class="p">(</span><span class="n">nbins</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)))),</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+     
+        
+        
+        
+        
+        
+        </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 1.0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

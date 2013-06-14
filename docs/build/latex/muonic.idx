@@ -1,0 +1,113 @@
+\indexentry{muonic command line option!-s|hyperpage}{2}
+\indexentry{-s!muonic command line option|hyperpage}{2}
+\indexentry{muonic command line option!-d|hyperpage}{2}
+\indexentry{-d!muonic command line option|hyperpage}{2}
+\indexentry{muonic command line option!-t sec|hyperpage}{2}
+\indexentry{-t sec!muonic command line option|hyperpage}{2}
+\indexentry{muonic command line option!-p|hyperpage}{2}
+\indexentry{-p!muonic command line option|hyperpage}{2}
+\indexentry{muonic command line option!-n|hyperpage}{2}
+\indexentry{-n!muonic command line option|hyperpage}{2}
+\indexentry{muonic (module)|hyperpage}{7}
+\indexentry{muonic.daq (module)|hyperpage}{7}
+\indexentry{muonic.daq.DAQProvider (module)|hyperpage}{7}
+\indexentry{DAQProvider (class in muonic.daq.DAQProvider)|hyperpage}{7}
+\indexentry{muonic.daq.DaqConnection (module)|hyperpage}{7}
+\indexentry{DaqConnection (class in muonic.daq.DaqConnection)|hyperpage}{7}
+\indexentry{get\_port() (muonic.daq.DaqConnection.DaqConnection method)|hyperpage}{7}
+\indexentry{read() (muonic.daq.DaqConnection.DaqConnection method)|hyperpage}{7}
+\indexentry{write() (muonic.daq.DaqConnection.DaqConnection method)|hyperpage}{7}
+\indexentry{muonic.daq.SimDaqConnection (module)|hyperpage}{7}
+\indexentry{SimDaq (class in muonic.daq.SimDaqConnection)|hyperpage}{7}
+\indexentry{\_physics() (muonic.daq.SimDaqConnection.SimDaq method)|hyperpage}{7}
+\indexentry{inWaiting() (muonic.daq.SimDaqConnection.SimDaq method)|hyperpage}{7}
+\indexentry{readline() (muonic.daq.SimDaqConnection.SimDaq method)|hyperpage}{7}
+\indexentry{write() (muonic.daq.SimDaqConnection.SimDaq method)|hyperpage}{8}
+\indexentry{SimDaqConnection (class in muonic.daq.SimDaqConnection)|hyperpage}{8}
+\indexentry{read() (muonic.daq.SimDaqConnection.SimDaqConnection method)|hyperpage}{8}
+\indexentry{muonic.gui (module)|hyperpage}{8}
+\indexentry{muonic.gui.MainWindow (module)|hyperpage}{8}
+\indexentry{MainWindow (class in muonic.gui.MainWindow)|hyperpage}{8}
+\indexentry{about\_menu() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{closeEvent() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{config\_menu() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{exit\_program() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{get\_scalars\_from\_queue() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{get\_thresholds\_from\_queue() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{help\_menu() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{processIncoming() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{query\_daq\_for\_scalars() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{sphinxdoc\_menu() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{threshold\_menu() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{8}
+\indexentry{widgetUpdate() (muonic.gui.MainWindow.MainWindow method)|hyperpage}{9}
+\indexentry{tr() (in module muonic.gui.MainWindow)|hyperpage}{9}
+\indexentry{muonic.gui.MuonicWidgets (module)|hyperpage}{9}
+\indexentry{DAQWidget (class in muonic.gui.MuonicWidgets)|hyperpage}{9}
+\indexentry{on\_file\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method)|hyperpage}{9}
+\indexentry{on\_hello\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method)|hyperpage}{9}
+\indexentry{on\_periodic\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method)|hyperpage}{9}
+\indexentry{DecayWidget (class in muonic.gui.MuonicWidgets)|hyperpage}{9}
+\indexentry{activateMuondecayClicked() (muonic.gui.MuonicWidgets.DecayWidget method)|hyperpage}{9}
+\indexentry{calculate() (muonic.gui.MuonicWidgets.DecayWidget method)|hyperpage}{9}
+\indexentry{is\_active() (muonic.gui.MuonicWidgets.DecayWidget method)|hyperpage}{9}
+\indexentry{mufitClicked() (muonic.gui.MuonicWidgets.DecayWidget method)|hyperpage}{9}
+\indexentry{update() (muonic.gui.MuonicWidgets.DecayWidget method)|hyperpage}{9}
+\indexentry{PulseanalyzerWidget (class in muonic.gui.MuonicWidgets)|hyperpage}{9}
+\indexentry{calculate() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)|hyperpage}{9}
+\indexentry{is\_active() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)|hyperpage}{9}
+\indexentry{update() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)|hyperpage}{9}
+\indexentry{RateWidget (class in muonic.gui.MuonicWidgets)|hyperpage}{9}
+\indexentry{calculate() (muonic.gui.MuonicWidgets.RateWidget method)|hyperpage}{9}
+\indexentry{is\_active() (muonic.gui.MuonicWidgets.RateWidget method)|hyperpage}{9}
+\indexentry{startClicked() (muonic.gui.MuonicWidgets.RateWidget method)|hyperpage}{9}
+\indexentry{stopClicked() (muonic.gui.MuonicWidgets.RateWidget method)|hyperpage}{9}
+\indexentry{update() (muonic.gui.MuonicWidgets.RateWidget method)|hyperpage}{9}
+\indexentry{VelocityWidget (class in muonic.gui.MuonicWidgets)|hyperpage}{10}
+\indexentry{activateVelocityClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)|hyperpage}{10}
+\indexentry{calculate() (muonic.gui.MuonicWidgets.VelocityWidget method)|hyperpage}{10}
+\indexentry{is\_active() (muonic.gui.MuonicWidgets.VelocityWidget method)|hyperpage}{10}
+\indexentry{update() (muonic.gui.MuonicWidgets.VelocityWidget method)|hyperpage}{10}
+\indexentry{velocityFitClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)|hyperpage}{10}
+\indexentry{tr() (in module muonic.gui.MuonicWidgets)|hyperpage}{10}
+\indexentry{muonic.gui.MuonicDialogs (module)|hyperpage}{10}
+\indexentry{ConfigDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{DecayConfigDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{HelpDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{helptext() (muonic.gui.MuonicDialogs.HelpDialog method)|hyperpage}{10}
+\indexentry{MuonicDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{createButtonBox() (muonic.gui.MuonicDialogs.MuonicDialog method)|hyperpage}{10}
+\indexentry{createCheckGroupBox() (muonic.gui.MuonicDialogs.MuonicDialog method)|hyperpage}{10}
+\indexentry{PeriodicCallDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{ThresholdDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{VelocityConfigDialog (class in muonic.gui.MuonicDialogs)|hyperpage}{10}
+\indexentry{muonic.gui.MuonicPlotCanvases (module)|hyperpage}{10}
+\indexentry{LifetimeCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{10}
+\indexentry{MuonicHistCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{11}
+\indexentry{show\_fit() (muonic.gui.MuonicPlotCanvases.MuonicHistCanvas method)|hyperpage}{11}
+\indexentry{update\_plot() (muonic.gui.MuonicPlotCanvases.MuonicHistCanvas method)|hyperpage}{11}
+\indexentry{MuonicPlotCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{11}
+\indexentry{color() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method)|hyperpage}{11}
+\indexentry{update\_plot() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method)|hyperpage}{11}
+\indexentry{PulseCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{11}
+\indexentry{update\_plot() (muonic.gui.MuonicPlotCanvases.PulseCanvas method)|hyperpage}{11}
+\indexentry{PulseWidthCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{11}
+\indexentry{update\_plot() (muonic.gui.MuonicPlotCanvases.PulseWidthCanvas method)|hyperpage}{11}
+\indexentry{ScalarsCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{11}
+\indexentry{reset() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)|hyperpage}{11}
+\indexentry{update\_plot() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)|hyperpage}{11}
+\indexentry{VelocityCanvas (class in muonic.gui.MuonicPlotCanvases)|hyperpage}{11}
+\indexentry{muonic.analysis (module)|hyperpage}{11}
+\indexentry{muonic.analysis.PulseAnalyzer (module)|hyperpage}{11}
+\indexentry{DecayTriggerThorough (class in muonic.analysis.PulseAnalyzer)|hyperpage}{11}
+\indexentry{trigger() (muonic.analysis.PulseAnalyzer.DecayTriggerThorough method)|hyperpage}{11}
+\indexentry{PulseExtractor (class in muonic.analysis.PulseAnalyzer)|hyperpage}{11}
+\indexentry{\_calculate\_edges() (muonic.analysis.PulseAnalyzer.PulseExtractor method)|hyperpage}{11}
+\indexentry{\_get\_evt\_time() (muonic.analysis.PulseAnalyzer.PulseExtractor method)|hyperpage}{12}
+\indexentry{\_order\_and\_cleanpulses() (muonic.analysis.PulseAnalyzer.PulseExtractor method)|hyperpage}{12}
+\indexentry{close\_file() (muonic.analysis.PulseAnalyzer.PulseExtractor method)|hyperpage}{12}
+\indexentry{extract() (muonic.analysis.PulseAnalyzer.PulseExtractor method)|hyperpage}{12}
+\indexentry{VelocityTrigger (class in muonic.analysis.PulseAnalyzer)|hyperpage}{12}
+\indexentry{trigger() (muonic.analysis.PulseAnalyzer.VelocityTrigger method)|hyperpage}{12}
+\indexentry{muonic.analysis.fit (module)|hyperpage}{12}
+\indexentry{gaussian\_fit() (in module muonic.analysis.fit)|hyperpage}{12}
+\indexentry{main() (in module muonic.analysis.fit)|hyperpage}{12}

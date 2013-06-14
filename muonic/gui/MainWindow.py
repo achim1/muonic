@@ -10,7 +10,7 @@ from PyQt4 import QtCore
 import numpy as n
 
 # stdlib imports
-import Queue
+#import Queue
 import datetime
 
 import os
@@ -21,10 +21,12 @@ import webbrowser
 
 # muonic imports
 from ..analysis import PulseAnalyzer as pa
-
+from ..daq.DAQProvider import DAQIOError
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget
+
+
 
 DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
 # this is hard-coded! There must be a better solution...
@@ -114,7 +116,7 @@ class MainWindow(QtGui.QMainWindow):
                 msg = self.daq.get(0)
                 self.get_thresholds_from_queue(msg)
 
-            except Queue.Empty:
+            except DAQIOError:
                 self.logger.debug("Queue empty!")
 
         self.daq.put('DC') # get the channelconfig
@@ -124,7 +126,7 @@ class MainWindow(QtGui.QMainWindow):
                 msg = self.daq.get(0)
                 self.get_channels_from_queue(msg)
 
-            except Queue.Empty:
+            except DAQIOError:
                 self.logger.debug("Queue empty!")
                 
         # the pulseextractor for direct analysis
@@ -148,7 +150,7 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
                 self.get_scalars_from_queue(msg)
-            except Queue.Empty:
+            except DAQIOError:
                 self.logger.debug("Queue empty!")
         
         # an anchor to the Application
@@ -253,7 +255,7 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
                 self.get_scalars_from_queue(msg)
-            except Queue.Empty:
+            except DAQIOError:
                 self.logger.debug("Queue empty!")
            
         # FIXME: Manually initialize the ratewidget
@@ -655,10 +657,13 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
 
-            except Queue.Empty:
+            except DAQIOError:
                 self.logger.debug("Queue empty!")
                 return None
 
+            if msg is None:
+                continue
+            
             # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
             if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
