@@ -354,7 +354,7 @@ class DecayTriggerThorough:
                 return None
             if selfveto:
                 if not pulses2 == 0:
-                    self.logger.debug('Rejecting event. Found signal in dou')
+                    self.logger.debug('Rejecting event. Found signal in doublepulse channel.')
                     return None
         # or it might have entered the second channel
         # then we do not want to have more than one
