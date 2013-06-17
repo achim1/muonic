@@ -50,9 +50,15 @@ setup(name='muonic',
 # setting correct permissions of created muonic_data dir
 
 userid = os.stat(os.getenv("HOME"))[4]
-cline = "chown -R " + str(userid) + ":" + str(userid) + " " + datapath
+gid = os.stat(os.getenv("HOME"))[5]
 
-chown_success = sub.Popen(shlex.split(cline),stdout=sub.PIPE).communicate()
+# if muonic is installed with sudo, the ownership of the files
+# has to be changed to the current user.
+if os.geteuid() == 0:
+    cline = "chown -R " + str(gid) + ":" + str(userid) + " " + datapath
+    print cline
+
+    chown_success = sub.Popen(shlex.split(cline),stdout=sub.PIPE).communicate()
 
 #print man_success[0]
 #print html_success[0]
