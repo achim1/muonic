@@ -364,7 +364,8 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)
         try:
-            self.ax.legend(("Data","Fit: (%4.2f +- %4.2f) %s  \n chisq/ndf=%4.2f"%(p[1],n.sqrt(covar[1][1]),self.dimension,chisquare/(nbins-len(p)))),loc=1)
+            #self.ax.legend(("Data","Fit: (%4.2f +- %4.2f) %s  \n chisq/ndf=%4.2f"%(p[1],n.sqrt(covar[1][1]),self.dimension,chisquare/(nbins-len(p)))),loc=1)
+            self.ax.legend(("Data","Fit: (%4.2f) %s  \n chisq/ndf=%4.2f"%(p[1],self.dimension,chisquare/(nbins-len(p)))),loc=1)
         except TypeError:
             self.logger.warn('Covariance Matrix is None, could not calculate fit error!')
             self.ax.legend(("Data","Fit: (%4.2f) %s \n chisq/ndf=%4.2f"%(p[1],self.dimension,chisquare/(nbins-len(p)))),loc=1)
