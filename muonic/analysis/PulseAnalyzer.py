@@ -286,11 +286,13 @@ class VelocityTrigger:
             if omit_early_pulses:
                 if (pulses[upperchannel][0][1] - pulses[upperchannel][0][0] < 10) or (pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0] < 10):
                     return None
-            pulsewidth = []
-            pulsewidth[upperchannel] = pulses[upperchannel][0][1] - pulses[upperchannel][0][0]
-            pulsewidth[lowerchannel] = pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0]
-
-            if pulsewidth[upperchannel]-pulsewidth[lowerchannel] < -15. or pulsewidth[upperchannel]-pulsewidth[lowerchannel] > 45.:
+            if len(pulses[upperchannel][0]) > 1 and len(pulses[lowerchannel][0]) > 1:
+                pulsewidth = []
+                pulsewidth[upperchannel] = pulses[upperchannel][0][1] - pulses[upperchannel][0][0]
+                pulsewidth[lowerchannel] = pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0]
+                if pulsewidth[upperchannel]-pulsewidth[lowerchannel] < -15. or pulsewidth[upperchannel]-pulsewidth[lowerchannel] > 45.:
+                    return None
+            else:
                 return None
             
             tdiff = pulses[lowerchannel][0][0] - pulses[upperchannel][0][0] # always use rising edge since fe might be virtual
