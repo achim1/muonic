@@ -64,7 +64,7 @@ def main(bincontent=None):
         pylab.xlabel("Decay time in microseconds")
         pylab.ylabel("Events in time bin")
         # pylab.legend(("Data","Fit: (%4.2f +- %4.2f) microsec,chisq/ndf=%4.2f"%(p[1],numpy.sqrt(covar[1][1]),chisquare/(nbins-len(p)))))
-        pylab.legend(("Data","Fit: (%4.2f) microsec,chisq/ndf=%4.2f"%(p[1]),chisquare/(nbins-len(p)))))
+        pylab.legend(("Data","Fit: (%4.2f) microsec,chisq/ndf=%4.2f"%(p[1]),chisquare/(nbins-len(p))))
 
 	pylab.grid()
         pylab.savefig("fit.png")
