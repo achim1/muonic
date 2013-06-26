@@ -5,7 +5,6 @@ Calculate also a non hex representation of
 leading and falling edges of the pulses
 """
 
-#TODO: IMPORTANT -> How long is a triggerwindow? If the triggercondition is set, are also "untriggered" pulses written? Or only those which belong to the trigger? 
 
 # for the pulses 
 # 8 bits give a hex number
@@ -287,6 +286,12 @@ class VelocityTrigger:
             if omit_early_pulses:
                 if (pulses[upperchannel][0][1] - pulses[upperchannel][0][0] < 10) or (pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0] < 10):
                     return None
+            pulsewidth = []
+            pulsewidth[upperchannel] = pulses[upperchannel][0][1] - pulses[upperchannel][0][0]
+            pulsewidth[lowerchannel] = pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0]
+
+            if pulsewidth[upperchannel]-pulsewidth[lowerchannel] < -15. or pulsewidth[upperchannel]-pulsewidth[lowerchannel] > 45.:
+                return None
             
             tdiff = pulses[lowerchannel][0][0] - pulses[upperchannel][0][0] # always use rising edge since fe might be virtual
             return tdiff
