@@ -402,7 +402,7 @@ class DecayWidget(QtGui.QWidget):
 
         else:
             #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(False)
-
+            self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 00")
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.parentWidget().parentWidget().parentWidget().statusbar.removeWidget(self.mu_label)
             #self.parentWidget().parentWidget().parentWidget().mudecaymode = False
