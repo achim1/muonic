@@ -163,19 +163,19 @@ class VelocityWidget(QtGui.QWidget):
         self.omit_early_pulses = True
         #self.velocitycanvas = VelocityCanvas(logger)
 
-        activateVelocity = QtGui.QCheckBox(self)
-        activateVelocity.setText(tr("Dialog", "Measure muon velocity", None, QtGui.QApplication.UnicodeUTF8))
-        activateVelocity.setObjectName("activate_velocity")
+        self.activateVelocity = QtGui.QCheckBox(self)
+        self.activateVelocity.setText(tr("Dialog", "Measure muon velocity", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateVelocity.setObjectName("activate_velocity")
         self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
         layout = QtGui.QGridLayout(self)
-        layout.addWidget(activateVelocity,0,0,1,2)
+        layout.addWidget(self.activateVelocity,0,0,1,2)
         self.velocitycanvas = VelocityCanvas(self,logger)
         self.velocitycanvas.setObjectName("velocity_plot")
         layout.addWidget(self.velocitycanvas,1,0,1,2)
         ntb = NavigationToolbar(self.velocitycanvas, self)
         layout.addWidget(ntb,2,0)
         layout.addWidget(self.velocityfit_button,2,1)      
-        QtCore.QObject.connect(activateVelocity,
+        QtCore.QObject.connect(self.activateVelocity,
                                QtCore.SIGNAL("clicked()"),
                                self.activateVelocityClicked
                                )
@@ -190,8 +190,9 @@ class VelocityWidget(QtGui.QWidget):
         if (flighttime != None and flighttime > 0):
             velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             #print flighttime,velocity,self.channel_distance
-            self.logger.info("Measured velocity: %s" %velocity.__repr__())
-            self.times.append(velocity)
+            self.logger.info("measured VELOCITY %s" %velocity.__repr__())
+            if flighttime != None:
+                self.times.append(velocity)
                 
         
         #print self.times
@@ -218,10 +219,11 @@ class VelocityWidget(QtGui.QWidget):
         Perform extra actions when the checkbox is clicked
         """
         if not self.active:
-            
             config_dialog = VelocityConfigDialog()
             rv = config_dialog.exec_()
             if rv == 1:
+                self.activateVelocity.setChecked(True)
+
                 for chan,ch_label in enumerate(["0","1","2","3"]):
                     if config_dialog.findChild(QtGui.QRadioButton,QtCore.QString("uppercheckbox_" + ch_label )).isChecked():
                         self.upper_channel = chan + 1 # ch index is shifted
@@ -230,13 +232,21 @@ class VelocityWidget(QtGui.QWidget):
                     if config_dialog.findChild(QtGui.QRadioButton,QtCore.QString("lowercheckbox_" + ch_label )).isChecked():
                         self.lower_channel = chan + 1 #
             
+                self.logger.info("Switching off decay measurment if running!")
+                if self.parentWidget().parentWidget().decaywidget.is_active():
+                    self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
+
+            else:
+                self.activateVelocity.setChecked(False)
+
             self.channel_distance  = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
             self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
-            self.active = True            
+            self.active = True
         else:
-            self.active = False                
+            self.activateVelocity.setChecked(False)            
+            self.active = False
 
-class DecayWidget(QtGui.QWidget): 
+class DecayWidget(QtGui.QWidget):
     
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent) 
@@ -247,19 +257,20 @@ class DecayWidget(QtGui.QWidget):
         self.maxsinglepulsewidth = 100000 #inf
         self.mindoublepulsewidth = 0
         self.maxdoublepulsewidth = 100000 #inf
-        self.muondecaycounter = 0
-        self.lastdecaytime    = 'None'
+        self.muondecaycounter    = 0
+        self.lastdecaytime       = 'None'
             
-        self.singlepulsechannel = 0
-        self.doublepulsechannel = 1
-        self.vetopulsechannel   = 2 
-        self.decay_mintime      = 0
-        self.decay_selfveto     = False
-        self.active             = False
-        self.trigger = DecayTriggerThorough(logger)
-        self.decay              = []
-        self.mu_file            = open("/dev/null","w") 
-        self.dec_mes_start      = None
+        self.singlepulsechannel  = 0
+        self.doublepulsechannel  = 1
+        self.vetopulsechannel    = 2 
+        self.decay_mintime       = 0
+        self.decay_selfveto      = False
+        self.active              = False
+        self.trigger             = DecayTriggerThorough(logger)
+        self.decay               = []
+        self.mu_file             = open("/dev/null","w") 
+        self.dec_mes_start       = None
+        self.previous_coinc_time = "00"
 
 
         QtCore.QObject.connect(self.mufit_button,
@@ -271,10 +282,10 @@ class DecayWidget(QtGui.QWidget):
         ntb1 = NavigationToolbar(self.lifetime_monitor, self)
 
         # activate Muondecay mode with a checkbox
-        activateMuondecay = QtGui.QCheckBox(self)
-        activateMuondecay.setObjectName("activate_mudecay")
-        activateMuondecay.setText(tr("Dialog", "Check for decayed Muons \n- Warning! this will define your coincidence/Veto settings!", None, QtGui.QApplication.UnicodeUTF8))
-        QtCore.QObject.connect(activateMuondecay,
+        self.activateMuondecay = QtGui.QCheckBox(self)
+        self.activateMuondecay.setObjectName("activate_mudecay")
+        self.activateMuondecay.setText(tr("Dialog", "Check for decayed Muons \n- Warning! this will define your coincidence/Veto settings!", None, QtGui.QApplication.UnicodeUTF8))
+        QtCore.QObject.connect(self.activateMuondecay,
                               QtCore.SIGNAL("clicked()"),
                               self.activateMuondecayClicked
                               )
@@ -284,7 +295,7 @@ class DecayWidget(QtGui.QWidget):
         lastDecay.setObjectName("lastdecay")
  
         decay_tab = QtGui.QGridLayout(self)
-        decay_tab.addWidget(activateMuondecay,0,0)
+        decay_tab.addWidget(self.activateMuondecay,0,0)
         decay_tab.addWidget(displayMuons,1,0)
         decay_tab.addWidget(lastDecay,2,0)
         decay_tab.addWidget(self.lifetime_monitor,3,0,1,2)
@@ -344,13 +355,12 @@ class DecayWidget(QtGui.QWidget):
         now = datetime.datetime.now()
         #if not self.mainwindow.mudecaymode:
         if not self.active:
-                #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(True)
-
+                self.activateMuondecay.setChecked(False)
                 # launch the settings window
                 config_window = DecayConfigDialog()
                 rv = config_window.exec_()
                 if rv == 1:
-
+                    self.activateMuondecay.setChecked(True)
                     chan0_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_0")).isChecked()
                     chan1_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_1")).isChecked()
                     chan2_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_2")).isChecked()
@@ -382,6 +392,12 @@ class DecayWidget(QtGui.QWidget):
                     for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
                         if channel[1]:
                             self.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+                    self.logger.info("Switching off velocity measurment if running!")
+                    if self.parentWidget().parentWidget().velocitywidget.is_active():
+                        self.parentWidget().parentWidget().velocitywidget.activateVelocityClicked()
+
+                else:
+                    self.activateMuondecay.setChecked(False)
 
                 self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
 
@@ -392,6 +408,9 @@ class DecayWidget(QtGui.QWidget):
 
                 self.mu_label = QtGui.QLabel(tr('MainWindow','Muon Decay measurement active!'))
                 self.parentWidget().parentWidget().parentWidget().statusbar.addPermanentWidget(self.mu_label)
+
+                self.parentWidget().parentWidget().parentWidget().daq.put("DC")                 
+
                 self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
                 self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
               
@@ -402,7 +421,8 @@ class DecayWidget(QtGui.QWidget):
 
         else:
             #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(False)
-            self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 00")
+            reset_time = "WC 03 " + self.previous_coinc_time
+            self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.parentWidget().parentWidget().parentWidget().statusbar.removeWidget(self.mu_label)
             #self.parentWidget().parentWidget().parentWidget().mudecaymode = False
@@ -412,6 +432,7 @@ class DecayWidget(QtGui.QWidget):
             newmufilename = self.parentWidget().parentWidget().parentWidget().decayfilename.replace("HOURS",str(mtime))
             shutil.move(self.parentWidget().parentWidget().parentWidget().decayfilename,newmufilename)
             self.active = False
+            self.activateMuondecay.setChecked(False)
 
 class DAQWidget(QtGui.QWidget):
 

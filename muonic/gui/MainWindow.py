@@ -10,7 +10,7 @@ from PyQt4 import QtCore
 import numpy as n
 
 # stdlib imports
-#import Queue
+import Queue
 import datetime
 
 import os
@@ -21,12 +21,10 @@ import webbrowser
 
 # muonic imports
 from ..analysis import PulseAnalyzer as pa
-from ..daq.DAQProvider import DAQIOError
+
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget
-
-
 
 DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
 # this is hard-coded! There must be a better solution...
@@ -81,6 +79,7 @@ class MainWindow(QtGui.QMainWindow):
         self.raw_mes_start = False
 
         self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
+        self.pulse_mes_start = None
         if opts.writepulses:
                 self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",opts.user[0],opts.user[1]) )
                 self.pulse_mes_start = now
@@ -116,7 +115,7 @@ class MainWindow(QtGui.QMainWindow):
                 msg = self.daq.get(0)
                 self.get_thresholds_from_queue(msg)
 
-            except DAQIOError:
+            except Queue.Empty:
                 self.logger.debug("Queue empty!")
 
         self.daq.put('DC') # get the channelconfig
@@ -126,7 +125,7 @@ class MainWindow(QtGui.QMainWindow):
                 msg = self.daq.get(0)
                 self.get_channels_from_queue(msg)
 
-            except DAQIOError:
+            except Queue.Empty:
                 self.logger.debug("Queue empty!")
                 
         # the pulseextractor for direct analysis
@@ -150,7 +149,7 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
                 self.get_scalars_from_queue(msg)
-            except DAQIOError:
+            except Queue.Empty:
                 self.logger.debug("Queue empty!")
         
         # an anchor to the Application
@@ -255,7 +254,7 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
                 self.get_scalars_from_queue(msg)
-            except DAQIOError:
+            except Queue.Empty:
                 self.logger.debug("Queue empty!")
            
         # FIXME: Manually initialize the ratewidget
@@ -322,9 +321,12 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.ratewidget.data_file_write = False
             self.tabwidget.ratewidget.data_file.close()
             mtime = now - self.tabwidget.ratewidget.rate_mes_start
+            print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
             mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+            print 'new mtime ', mtime, str(mtime)
             self.logger.info("The rate measurement was active for %f hours" % mtime)
             newratefilename = self.filename.replace("HOURS",str(mtime))
+            print 'new raw name', newratefilename
             shutil.move(self.filename,newratefilename)
             time.sleep(0.5)
             self.tabwidget.writefile = False
@@ -657,13 +659,10 @@ class MainWindow(QtGui.QMainWindow):
             try:
                 msg = self.daq.get(0)
 
-            except DAQIOError:
+            except Queue.Empty:
                 self.logger.debug("Queue empty!")
                 return None
 
-            if msg is None:
-                continue
-            
             # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
             if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
@@ -673,6 +672,13 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.gpswidget.calculate()
                 continue
 
+            if msg.startswith('DC') and len(msg) > 2:
+                try:
+                    split_msg = msg.split(" ")
+                    split_msg = split_msg[4].split("=")
+                    self.tabwidget.decaywidget.previous_coinc_time = split_msg[1]
+                except:
+                    self.logger.debug('Wrong DC command.')
 
             if self.tabwidget.daqwidget.write_file:
                 try:
@@ -694,6 +700,7 @@ class MainWindow(QtGui.QMainWindow):
 
             if self.get_channels_from_queue(msg):
                 continue
+
 
             # status messages
             if msg.startswith('ST') or len(msg) < 50:
