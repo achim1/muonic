@@ -235,13 +235,12 @@ class VelocityWidget(QtGui.QWidget):
                 self.logger.info("Switching off decay measurment if running!")
                 if self.parentWidget().parentWidget().decaywidget.is_active():
                     self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
-
+                self.channel_distance  = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
+                self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
+                self.active = True
             else:
                 self.activateVelocity.setChecked(False)
-
-            self.channel_distance  = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
-            self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
-            self.active = True
+                self.active = False
         else:
             self.activateVelocity.setChecked(False)            
             self.active = False
@@ -396,28 +395,28 @@ class DecayWidget(QtGui.QWidget):
                     if self.parentWidget().parentWidget().velocitywidget.is_active():
                         self.parentWidget().parentWidget().velocitywidget.activateVelocityClicked()
 
+                    self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
+
+                    self.logger.warning("Changing gate width and enabeling pulses") 
+                    self.logger.info("Looking for single pulse in Channel %i" %(self.singlepulsechannel - 1))
+                    self.logger.info("Looking for double pulse in Channel %i" %(self.doublepulsechannel - 1 ))
+                    self.logger.info("Using veto pulses in Channel %i"        %(self.vetopulsechannel - 1 ))
+
+                    self.mu_label = QtGui.QLabel(tr('MainWindow','Muon Decay measurement active!'))
+                    self.parentWidget().parentWidget().parentWidget().statusbar.addPermanentWidget(self.mu_label)
+
+                    self.parentWidget().parentWidget().parentWidget().daq.put("DC")                 
+
+                    self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
+                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
+                  
+                    self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
+                    self.dec_mes_start = now
+                    #self.decaywidget.findChild("activate_mudecay").setChecked(True)
+                    self.active = True
                 else:
                     self.activateMuondecay.setChecked(False)
-
-                self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
-
-                self.logger.warning("Changing gate width and enabeling pulses") 
-                self.logger.info("Looking for single pulse in Channel %i" %(self.singlepulsechannel - 1))
-                self.logger.info("Looking for double pulse in Channel %i" %(self.doublepulsechannel - 1 ))
-                self.logger.info("Using veto pulses in Channel %i"        %(self.vetopulsechannel - 1 ))
-
-                self.mu_label = QtGui.QLabel(tr('MainWindow','Muon Decay measurement active!'))
-                self.parentWidget().parentWidget().parentWidget().statusbar.addPermanentWidget(self.mu_label)
-
-                self.parentWidget().parentWidget().parentWidget().daq.put("DC")                 
-
-                self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
-                self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
-              
-                self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
-                self.dec_mes_start = now
-                #self.decaywidget.findChild("activate_mudecay").setChecked(True)
-                self.active = True
+                    self.active = False
 
         else:
             #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(False)
