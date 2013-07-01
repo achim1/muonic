@@ -283,7 +283,7 @@ class DecayWidget(QtGui.QWidget):
         # activate Muondecay mode with a checkbox
         self.activateMuondecay = QtGui.QCheckBox(self)
         self.activateMuondecay.setObjectName("activate_mudecay")
-        self.activateMuondecay.setText(tr("Dialog", "Check for decayed Muons \n- Warning! this will define your coincidence/Veto settings!", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateMuondecay.setText(tr("Dialog", "Check for decayed muons.", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QObject.connect(self.activateMuondecay,
                               QtCore.SIGNAL("clicked()"),
                               self.activateMuondecayClicked
@@ -443,7 +443,7 @@ class DAQWidget(QtGui.QWidget):
         self.label           = QtGui.QLabel(tr('MainWindow','Command'))
         self.hello_edit      = LineEdit()
         self.hello_button    = QtGui.QPushButton(tr('MainWindow','Send'))
-        self.file_button     = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
+        self.file_button     = QtGui.QPushButton(tr('MainWindow', 'Save RAW-File'))
         self.periodic_button = QtGui.QPushButton(tr('MainWindow', 'Periodic Call'))
         QtCore.QObject.connect(self.hello_button,
                               QtCore.SIGNAL("clicked()"),
