@@ -85,13 +85,6 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Veto Pulse",objectname = "vetocheckbox",leftoffset=300,    setchecked=[3]), 0, 2)
         
         
-        self.selfveto = QtGui.QCheckBox(self)
-        self.selfveto.setChecked(False)
-        self.selfveto.setGeometry(QtCore.QRect(20, 300, 119, 28))
-        self.selfveto.setText("Use Selfveto")
-        self.selfveto.setToolTip(QtCore.QString("Reject events which have more than\n one pulse in the single pulse channel or\n pulses in the doublepulse channel if double pulses are already detected in the first channel\n WARNING: This option is dedicated for 3 channel scintilator setup!"))
-        grid.addWidget(self.selfveto,2,2)
-
         # add line edits to perform cuts on the events
         self.mintime = QtGui.QSpinBox()
         self.mintime_label = QtGui.QLabel("Minimum time between\n two pulses (in ns)")
