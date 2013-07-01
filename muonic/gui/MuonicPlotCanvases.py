@@ -256,12 +256,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
         # we rather calculate the mean rate by dividing
         # total scalars by total time
         try:
-            string2 = 'mean rates:\n'
-            string2_ch0 = 'channel0 = %.2f Hz' % ( (self.N0)/self.timewindow )
-            string2_ch1 = 'channel1 = %.2f Hz' % ( (self.N1)/self.timewindow )
-            string2_ch2 = 'channel2 = %.2f Hz' % ( (self.N2)/self.timewindow )
-            string2_ch3 = 'channel3 = %.2f Hz' % ( (self.N3)/self.timewindow )
-            string2_tr = 'trigger = %.3f Hz' % ( (self.NT)/self.timewindow )
+            string2 = 'mean rates:\nchannel0 = %.2f Hz \nchannel1 = %.2f Hz \nchannel2 = %.2f Hz \nchannel3 = %.2f Hz \ntrigger = %.3f Hz' % ( (self.N0)/self.timewindow, (self.N1)/self.timewindow , (self.N2)/self.timewindow, (self.N3)/self.timewindow, (self.NT)/self.timewindow )
 
             if self.do_not_show_trigger:
                 string2 = 'mean rates\nchannel0 = %.2f Hz \nchannel1 = %.2f Hz \nchannel2 = %.2f Hz \nchannel3 = %.2f Hz' % ( (self.N0)/self.timewindow, (self.N1)/self.timewindow , (self.N2)/self.timewindow, (self.N3)/self.timewindow )
@@ -279,15 +274,9 @@ class ScalarsCanvas(MuonicPlotCanvas):
         string4 = '\ndaq time = %.2f s \nmax rate = %.2f Hz' % (  self.timewindow, ma2 )
                              
         self.ax.text(1.1, -0.1, string1+string4, transform=self.ax.transAxes) 
-        self.ax.text(1.1, 0.15, string3, transform=self.ax.transAxes, color='blue') 
-        self.ax.text(1.1, 0.95, string2, transform=self.ax.transAxes, color='black')
-        self.ax.text(1.1, 0.9, string2_ch0, transform=self.ax.transAxes, color='yellow')
-        self.ax.text(1.1, 0.85, string2_ch1, transform=self.ax.transAxes, color='magenta')
-        self.ax.text(1.1, 0.80, string2_ch2, transform=self.ax.transAxes, color='cyan')
-        self.ax.text(1.1, 0.75, string2_ch3, transform=self.ax.transAxes, color='blue')
-        self.ax.text(1.1, 0.70, string2_tr, transform=self.ax.transAxes, color='green')
-         
-                   
+        self.ax.text(1.1, 0.15, string3, transform=self.ax.transAxes, color='black') 
+        self.ax.text(1.1, 0.65, string2, transform=self.ax.transAxes, color='black')
+                    
         self.fig.canvas.draw()
 
 class MuonicHistCanvas(MuonicPlotCanvas):
