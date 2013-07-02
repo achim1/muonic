@@ -111,24 +111,27 @@ class PulseCanvas(MuonicPlotCanvas):
         colors = ['b','g','r','c']
         labels = ['c0','c1','c2','c3']
         _pulsemax = []
-        for chan in enumerate(pulses[1:]):
-            for pulse in chan[1]:
-                self.ax.plot([pulse[0],pulse[0],pulse[1],pulse[1]],[0,self.pulseheight,self.pulseheight,0],colors[chan[0]],label=labels[chan[0]],lw=2)
-                _pulsemax.append(pulse[0])
-                _pulsemax.append(pulse[1])
+        if pulses is None:
+            self.logger.warning('Pulses have no value - channels not connected?')
+        else:
+            for chan in enumerate(pulses[1:]):
+                for pulse in chan[1]:
+                    self.ax.plot([pulse[0],pulse[0],pulse[1],pulse[1]],[0,self.pulseheight,self.pulseheight,0],colors[chan[0]],label=labels[chan[0]],lw=2)
+                    _pulsemax.append(pulse[0])
+                    _pulsemax.append(pulse[1])
 
-        _pulsemax = max(_pulsemax)*1.2
-        # TODO: the trick below does not really work as expected. 
-        #if _pulsemax < self.ax.get_xlim()[1]:
-        #    _pulsemax = self.ax.get_xlim()[0]
-        self.ax.set_xlim(0, _pulsemax)
-        try:
-            self.ax.legend(loc=1, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
-        except:
-            self.logger.info('An error with the legend occured!')
-            self.ax.legend(loc=2)
+            _pulsemax = max(_pulsemax)*1.2
+            # TODO: the trick below does not really work as expected. 
+            #if _pulsemax < self.ax.get_xlim()[1]:
+            #    _pulsemax = self.ax.get_xlim()[0]
+            self.ax.set_xlim(0, _pulsemax)
+            try:
+                self.ax.legend(loc=1, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
+            except:
+                self.logger.info('An error with the legend occured!')
+                self.ax.legend(loc=2)
 
-        self.fig.canvas.draw()
+            self.fig.canvas.draw()
         
         
 class ScalarsCanvas(MuonicPlotCanvas):

@@ -106,10 +106,11 @@ class PulseanalyzerWidget(QtGui.QWidget): # not used yet
     """        
     def __init__(self,logger):
         QtGui.QWidget.__init__(self)
-        activatePulseanalyzer = QtGui.QCheckBox(self)
-        activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths", None, QtGui.QApplication.UnicodeUTF8))
-        activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
-        activatePulseanalyzer.setObjectName("activate_pulseanalyzer")
+        self.logger = logger
+        self.activatePulseanalyzer = QtGui.QCheckBox(self)
+        self.activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths", None, QtGui.QApplication.UnicodeUTF8))
+        self.activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
+        self.activatePulseanalyzer.setObjectName("activate_pulseanalyzer")
         grid = QtGui.QGridLayout(self)
         self.pulsecanvas = PulseCanvas(self,logger)
         self.pulsecanvas.setObjectName("pulse_canvas")
@@ -117,18 +118,23 @@ class PulseanalyzerWidget(QtGui.QWidget): # not used yet
         self.pulsewidthcanvas.setObjectName("pulse_width_canvas")
         ntb = NavigationToolbar(self.pulsecanvas, self)
         ntb2 = NavigationToolbar(self.pulsewidthcanvas, self)
-        
-        grid.addWidget(activatePulseanalyzer,0,0,1,2)
+        QtCore.QObject.connect(self.activatePulseanalyzer,
+                               QtCore.SIGNAL("clicked()"),
+                               self.activatePulseanalyzerClicked
+                               )
+
+        grid.addWidget(self.activatePulseanalyzer,0,0,1,2)
         grid.addWidget(self.pulsecanvas,1,0)
         grid.addWidget(ntb,2,0) 
         grid.addWidget(self.pulsewidthcanvas,1,1)
         grid.addWidget(ntb2,2,1)
         self.pulses      = None
         self.pulsewidths = []
+        self.active = False
         # more functional objects        
 
     def is_active(self):
-        return self.findChild(QtGui.QCheckBox,QtCore.QString("activate_pulseanalyzer")).isChecked()
+        return self.active
 
 
     def calculate(self,pulses):
@@ -148,6 +154,21 @@ class PulseanalyzerWidget(QtGui.QWidget): # not used yet
         self.pulsecanvas.update_plot(self.pulses)
         self.pulsewidthcanvas.update_plot(self.pulsewidths)
         self.pulsewidths = []
+
+    def activatePulseanalyzerClicked(self):
+        """
+        Perform extra actions when the checkbox is clicked
+        """
+        if not self.active:
+            self.activatePulseanalyzer.setChecked(True)
+            self.active = True
+            self.logger.debug("Switching on Pulseanalyzer.")
+            self.parentWidget().parentWidget().parentWidget().daq.put("DC")
+        else:
+            self.logger.debug("Switching off Pulseanalyzer.")
+            self.activatePulseanalyzer.setChecked(False)            
+            self.active = False
+
 
 class VelocityWidget(QtGui.QWidget):
 
@@ -403,7 +424,7 @@ class DecayWidget(QtGui.QWidget):
                     self.mu_label = QtGui.QLabel(tr('MainWindow','Muon Decay measurement active!'))
                     self.parentWidget().parentWidget().parentWidget().statusbar.addPermanentWidget(self.mu_label)
 
-                    self.parentWidget().parentWidget().parentWidget().daq.put("DC")                 
+                    self.parentWidget().parentWidget().parentWidget().daq.put("DC")
 
                     self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
                     self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
