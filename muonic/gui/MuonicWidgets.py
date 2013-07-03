@@ -100,7 +100,7 @@ class RateWidget(QtGui.QWidget):
         self.holdplot = True
 
 
-class PulseanalyzerWidget(QtGui.QWidget): # not used yet
+class PulseanalyzerWidget(QtGui.QWidget):
     """
     Provide a widget which is able to show a plot of triggered pulses
     """        
@@ -131,7 +131,6 @@ class PulseanalyzerWidget(QtGui.QWidget): # not used yet
         self.pulses      = None
         self.pulsewidths = []
         self.active = False
-        # more functional objects        
 
     def is_active(self):
         return self.active
@@ -170,10 +169,62 @@ class PulseanalyzerWidget(QtGui.QWidget): # not used yet
             self.active = False
 
 
-class VelocityWidget(QtGui.QWidget):
-
+class StatusWidget(QtGui.QWidget): # not used yet
+    """
+    Provide a widget which shows the status informations of the DAQ and the muonic software
+    """        
     def __init__(self,logger):
         QtGui.QWidget.__init__(self)
+        self.logger = logger
+
+        self.active = False
+        # more functional objects        
+        self.label           = QtGui.QLabel(tr('MainWindow','Status of the DAQ card:'))
+        self.label           = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))        
+        self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Refresh'))
+
+        QtCore.QObject.connect(self.refresh_button,
+                              QtCore.SIGNAL("clicked()"),
+                              self.on_refresh_clicked
+                              )
+
+        self.text_box = QtGui.QPlainTextEdit()
+        self.text_box.setReadOnly(True)
+
+        gps_layout.addWidget(self.refresh_button,1,0,1,1) 
+
+    def on_refresh_clicked(self):
+        """
+        Refresh the status information
+        """
+        self.logger.debug("Refreshing status information.")
+        self.active = True
+
+        self.mainwindow.processIncoming()
+ #       self.mainwindow.daq.put('DG')
+ #       self.mainwindow.processIncoming()
+        self.active = False
+
+    def is_active(self):
+        return self.active
+        
+    def update(self):
+        """
+        Fill the status information in the widget.
+        """
+        self.logger.warning("Refreshing status infos")
+
+        if self.active:
+            print ''
+#fill me
+        else:
+            self.logger.debug("Status informations widget not active - ignoring update call.")
+
+
+class VelocityWidget(QtGui.QWidget):
+
+    def __init__(self,logger,parent=None):
+        QtGui.QWidget.__init__(self,parent=parent)
         self.logger = logger
         self.upper_channel = 0
         self.lower_channel = 1
@@ -289,8 +340,8 @@ class DecayWidget(QtGui.QWidget):
         self.decay               = []
         self.mu_file             = open("/dev/null","w") 
         self.dec_mes_start       = None
-        self.previous_coinc_time = "00"
-
+        self.previous_coinc_time_03 = "00"
+        self.previous_coinc_time_02 = "0A"
 
         QtCore.QObject.connect(self.mufit_button,
                               QtCore.SIGNAL("clicked()"),
@@ -427,6 +478,7 @@ class DecayWidget(QtGui.QWidget):
                     self.parentWidget().parentWidget().parentWidget().daq.put("DC")
 
                     self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
+                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 02 0A")                    
                     self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
                   
                     self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
@@ -439,7 +491,9 @@ class DecayWidget(QtGui.QWidget):
 
         else:
             #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(False)
-            reset_time = "WC 03 " + self.previous_coinc_time
+            reset_time = "WC 03 " + self.previous_coinc_time_03
+            self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
+            reset_time = "WC 02 " + self.previous_coinc_time_02            
             self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.parentWidget().parentWidget().parentWidget().statusbar.removeWidget(self.mu_label)

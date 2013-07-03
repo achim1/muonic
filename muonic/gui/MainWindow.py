@@ -24,7 +24,7 @@ from ..analysis import PulseAnalyzer as pa
 
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
-from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget
+from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
 
 DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
 # this is hard-coded! There must be a better solution...
@@ -182,8 +182,11 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
         self.tabwidget.gpswidget = self.tabwidget.widget(4)
 
+        self.tabwidget.addTab(StatusWidget(logger,parent=self),"Status")
+        self.tabwidget.statuswidget = self.tabwidget.widget(5)
+
         self.tabwidget.addTab(DAQWidget(logger,parent=self),"DAQ Output")
-        self.tabwidget.daqwidget = self.tabwidget.widget(5)
+        self.tabwidget.daqwidget = self.tabwidget.widget(6)
         
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
@@ -321,12 +324,12 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.ratewidget.data_file_write = False
             self.tabwidget.ratewidget.data_file.close()
             mtime = now - self.tabwidget.ratewidget.rate_mes_start
-            print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
+            #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
             mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-            print 'new mtime ', mtime, str(mtime)
+            #print 'new mtime ', mtime, str(mtime)
             self.logger.info("The rate measurement was active for %f hours" % mtime)
             newratefilename = self.filename.replace("HOURS",str(mtime))
-            print 'new raw name', newratefilename
+            #print 'new raw name', newratefilename
             shutil.move(self.filename,newratefilename)
             time.sleep(0.5)
             self.tabwidget.writefile = False
@@ -675,8 +678,8 @@ class MainWindow(QtGui.QMainWindow):
             if msg.startswith('DC') and len(msg) > 2:
                 try:
                     split_msg = msg.split(" ")
-                    split_msg = split_msg[4].split("=")
-                    self.tabwidget.decaywidget.previous_coinc_time = split_msg[1]
+                    self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]
+                    self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
                 except:
                     self.logger.debug('Wrong DC command.')
 
