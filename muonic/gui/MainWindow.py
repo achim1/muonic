@@ -550,7 +550,6 @@ class MainWindow(QtGui.QMainWindow):
         """
         if msg.startswith('TL') and len(msg) > 9:
             msg = msg.split('=')
-            #print msg
             self.threshold_ch0 = int(msg[1][:-2])
             self.threshold_ch1 = int(msg[2][:-2])
             self.threshold_ch2 = int(msg[3][:-2])
@@ -681,7 +680,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.gpswidget.calculate()
                 continue
 
-            if (self.tabwidget.statuswidget.is_active() and self.tabwidget.statuswidget.isVisible()):
+            if (self.tabwidget.statuswidget.isVisible()):
                 self.tabwidget.statuswidget.update()
 
             if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():

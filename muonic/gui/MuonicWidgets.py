@@ -262,12 +262,13 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.open_files.setReadOnly(True)
         self.open_files.setDisabled(True)
         self.open_files.setText(self.muonic_stats['open_files'])
-        self.last_path = QtGui.QLineEdit(self)
-        self.last_path.setReadOnly(True)
-        self.last_path.setDisabled(True)
-        self.last_path.setText(self.muonic_stats['last_path'])
+        #self.last_path = QtGui.QLineEdit(self)
+        #self.last_path.setReadOnly(True)
+        #self.last_path.setDisabled(True)
+        #self.last_path.setText(self.muonic_stats['last_path'])
 
         self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Refresh'))
+        self.refresh_button.setDisabled(True)
         QtCore.QObject.connect(self.refresh_button,
                               QtCore.SIGNAL("clicked()"),
                               self.on_refresh_clicked
@@ -312,23 +313,23 @@ class StatusWidget(QtGui.QWidget): # not used yet
         status_layout.addWidget(self.refreshtime,9,2,1,8)
         status_layout.addWidget(self.label_open_files,10,1)
         status_layout.addWidget(self.open_files,10,2,1,8)
-        status_layout.addWidget(self.label_last_path,11,1)
-        status_layout.addWidget(self.last_path,11,2,1,8)
+        #status_layout.addWidget(self.label_last_path,11,1)
+        #status_layout.addWidget(self.last_path,11,2,1,8)
 
-        status_layout.addWidget(self.refresh_button,12,0,1,6)
+        status_layout.addWidget(self.refresh_button,11,0,1,6)
         #status_layout.addWidget(self.save_button,11,2,1,2)
 
     def on_refresh_clicked(self):
         """
         Refresh the status information
         """
+        self.refresh_button.setDisabled(True)        
         self.logger.debug("Refreshing status information.")
         self.mainwindow.daq.put('TL')
         time.sleep(0.5)
         self.mainwindow.daq.put('DC')
         time.sleep(0.5)
         self.active = True
-        print 'GOOOOOOOOOOOO'
         self.mainwindow.processIncoming()
 
     def on_save_clicked(self):
@@ -345,12 +346,10 @@ class StatusWidget(QtGui.QWidget): # not used yet
         """
         Fill the status information in the widget.
         """
-        self.logger.info("Refreshing status infos")
-
-        if (self.active and self.mainwindow.tabwidget.statuswidget.isVisible()):
+        self.logger.debug("Refreshing status infos")
+        if (self.mainwindow.tabwidget.statuswidget.isVisible()):
             self.muonic_stats['start_params'] = str(self.mainwindow.opts).replace('{', '').replace('}','')
             self.muonic_stats['refreshtime'] = str(self.mainwindow.opts.timewindow)+ ' s'
-            self.muonic_stats['open_files'] = 'something'
             self.muonic_stats['last_path'] = 'too'
             
             self.daq_stats['thresholds'][0] = str(self.mainwindow.threshold_ch0)+ ' mV'
@@ -373,7 +372,6 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.daq_stats['active_channel_1'] = self.mainwindow.channelcheckbox_1
             self.daq_stats['active_channel_2'] = self.mainwindow.channelcheckbox_2
             self.daq_stats['active_channel_3'] = self.mainwindow.channelcheckbox_3
-            print 'hwefiwhefihewfihewfewf', self.mainwindow.channelcheckbox_0, self.daq_stats['active_channel_0']
             if self.mainwindow.coincidencecheckbox_0:
                 self.daq_stats['coincidences'] = 'Single coincidence condition set.'
             elif self.mainwindow.coincidencecheckbox_1:
@@ -410,24 +408,28 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.coincidence_timewindow.setEnabled(True)
             self.veto.setText(self.daq_stats['veto'])
             self.veto.setEnabled(True)
-
+            
+            self.muonic_stats['open_files'] = str(self.mainwindow.filename)
+            self.muonic_stats['open_files'] += ', ' + self.mainwindow.rawfilename
+            self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
+            if self.mainwindow.opts.writepulses:
+                self.muonic_stats['open_files'] += ', ' + self.mainwindow.pulsefilename
             self.start_params.setText(self.muonic_stats['start_params'])
             self.start_params.setEnabled(True)
             self.refreshtime.setText(self.muonic_stats['refreshtime'])
             self.refreshtime.setEnabled(True)
             self.open_files.setText(self.muonic_stats['open_files'])
             self.open_files.setEnabled(True)
-            self.last_path.setText(self.muonic_stats['last_path'])
-            self.last_path.setEnabled(True)
+            #self.last_path.setText(self.muonic_stats['last_path'])
+            #self.last_path.setEnabled(True)
             
             self.start_params.setEnabled(True)
 
             self.active = False
         else:
-            print 'is deactivated'
             self.logger.debug("Status informations widget not active - ignoring update call.")
+        self.refresh_button.setDisabled(False)
         self.active = False
-        print 'AND NOW OFF'
 
 
 class VelocityWidget(QtGui.QWidget):
@@ -476,7 +478,6 @@ class VelocityWidget(QtGui.QWidget):
                 self.times.append(velocity)
                 
         
-        #print self.times
     #FIXME: we should not name this update
     #since update is already a member
     def update(self):
