@@ -45,6 +45,7 @@ class MainWindow(QtGui.QMainWindow):
 
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
+        self.opts = opts
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
@@ -96,7 +97,7 @@ class MainWindow(QtGui.QMainWindow):
         self.threshold_ch1 = 300
         self.threshold_ch2 = 300
         self.threshold_ch3 = 300
-        
+
         self.channelcheckbox_0 = True
         self.channelcheckbox_1 = True
         self.channelcheckbox_2 = True
@@ -117,6 +118,8 @@ class MainWindow(QtGui.QMainWindow):
 
             except Queue.Empty:
                 self.logger.debug("Queue empty!")
+
+        self.coincidence_time = 0.
 
         self.daq.put('DC') # get the channelconfig
         time.sleep(0.5) #give the daq some time to ract
@@ -380,7 +383,7 @@ class MainWindow(QtGui.QMainWindow):
         # get the actual channels...
         self.daq.put('DC')
         # wait explicitely till the channels get loaded
-        self.logger.info("loading channel information..")
+        self.logger.info("loading channel information...")
         time.sleep(1)
 
         config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2)
@@ -587,11 +590,14 @@ class MainWindow(QtGui.QMainWindow):
         """
         if msg.startswith('DC ') and len(msg) > 25:
             msg = msg.split(' ')
+            self.coincidence_time = msg[4].split('=')[1]+ msg[3].split('=')[1]
             msg = bin(int(msg[1][3:], 16))[2:].zfill(8)
             vetoconfig = msg[0:2]
             coincidenceconfig = msg[2:4]
             channelconfig = msg[4:8]
 
+            self.coincidence_time = int(self.coincidence_time, 16)*10
+            
             self.vetocheckbox_0 = False
             self.vetocheckbox_1 = False
             self.vetocheckbox_2 = False
@@ -640,8 +646,8 @@ class MainWindow(QtGui.QMainWindow):
                 if str(vetoconfig) == '01': self.vetocheckbox_0 = True
                 if str(vetoconfig) == '10': self.vetocheckbox_1 = True
                 if str(vetoconfig) == '11': self.vetocheckbox_2 = True
-
             
+            self.logger.debug('coinci time %s ns' %(str(self.coincidence_time)))
             self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3))
             self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3))
             self.logger.debug("Got veto configurations: %i %i %i %i" %(self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2))
@@ -675,7 +681,10 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.gpswidget.calculate()
                 continue
 
-            if msg.startswith('DC') and len(msg) > 2:
+            if (self.tabwidget.statuswidget.is_active() and self.tabwidget.statuswidget.isVisible()):
+                self.tabwidget.statuswidget.update()
+
+            if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
                 try:
                     split_msg = msg.split(" ")
                     self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]

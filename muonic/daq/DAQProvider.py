@@ -140,6 +140,3 @@ class DAQClient(DAQProvider):
         """
 
         return self.socket.poll(200)
-
-
-

@@ -89,5 +89,3 @@ if __name__ == '__main__':
 
     # make it so!
     main(opts,logger)
-
-# vim: ai ts=4 sts=4 et sw=4

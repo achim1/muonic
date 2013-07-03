@@ -172,38 +172,171 @@ class PulseanalyzerWidget(QtGui.QWidget):
 class StatusWidget(QtGui.QWidget): # not used yet
     """
     Provide a widget which shows the status informations of the DAQ and the muonic software
-    """        
-    def __init__(self,logger):
-        QtGui.QWidget.__init__(self)
+    """
+    def __init__(self,logger,parent=None):
+        QtGui.QWidget.__init__(self,parent=parent)
+        self.mainwindow = self.parentWidget()
         self.logger = logger
 
-        self.active = False
-        # more functional objects        
-        self.label           = QtGui.QLabel(tr('MainWindow','Status of the DAQ card:'))
-        self.label           = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))        
-        self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Refresh'))
+        self.active = True
 
+        # more functional objects
+
+        self.muonic_stats = dict()
+        self.daq_stats = dict()
+
+        self.daq_stats['thresholds'] = list()
+        for cnt in range(4):
+            self.daq_stats['thresholds'].append('not set yet - click on Refresh.')
+        self.daq_stats['active_channel_0'] = None
+        self.daq_stats['active_channel_1'] = None
+        self.daq_stats['active_channel_2'] = None
+        self.daq_stats['active_channel_3'] = None
+        self.daq_stats['coincidences'] = 'not set yet - click on Refresh.'
+        self.daq_stats['coincidence_timewindow'] = 'not set yet - click on Refresh.'
+        self.daq_stats['veto'] = 'not set yet - click on Refresh.'
+
+        self.muonic_stats['start_params'] = 'not set yet - click on Refresh.'
+        self.muonic_stats['refreshtime'] = 'not set yet - click on Refresh.'
+        self.muonic_stats['open_files'] = 'not set yet - click on Refresh.'
+        self.muonic_stats['last_path'] = 'not set yet - click on Refresh.'
+
+        self.label_daq = QtGui.QLabel(tr('MainWindow','Status of the DAQ card:'))
+        self.label_thresholds_0 = QtGui.QLabel(tr('MainWindow','Threshold channel 0:'))
+        self.label_thresholds_1 = QtGui.QLabel(tr('MainWindow','Threshold channel 1:'))        
+        self.label_thresholds_2 = QtGui.QLabel(tr('MainWindow','Threshold channel 2:'))        
+        self.label_thresholds_3 = QtGui.QLabel(tr('MainWindow','Threshold channel 3:'))        
+        self.label_active_channels = QtGui.QLabel(tr('MainWindow','Active channels:'))
+        self.label_active_channels_0 = QtGui.QLabel(tr('MainWindow','0:'))
+        self.label_active_channels_1 = QtGui.QLabel(tr('MainWindow',', 1:'))
+        self.label_active_channels_2 = QtGui.QLabel(tr('MainWindow',', 2:'))
+        self.label_active_channels_3 = QtGui.QLabel(tr('MainWindow',', 3:'))
+        self.label_coincidences = QtGui.QLabel(tr('MainWindow','Coincidences:'))
+        self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Coincidence time window:'))
+        self.label_veto = QtGui.QLabel(tr('MainWindow','Veto:'))
+        self.thresholds = []
+        for cnt in range(4):
+            self.thresholds.append(QtGui.QLineEdit(self))
+            self.thresholds[cnt].setReadOnly(True)
+            self.thresholds[cnt].setText(self.daq_stats['thresholds'][cnt])
+            self.thresholds[cnt].setDisabled(True)
+        self.active_channel_0 = QtGui.QCheckBox(self)
+        self.active_channel_1 = QtGui.QCheckBox(self)
+        self.active_channel_2 = QtGui.QCheckBox(self)
+        self.active_channel_3 = QtGui.QCheckBox(self)
+        self.active_channel_0.setCheckable(False)
+        self.active_channel_0.setEnabled(False)
+        self.active_channel_1.setCheckable(False)
+        self.active_channel_1.setEnabled(False)
+        self.active_channel_2.setCheckable(False)
+        self.active_channel_2.setEnabled(False)
+        self.active_channel_3.setCheckable(False)
+        self.active_channel_3.setEnabled(False)
+        self.coincidences = QtGui.QLineEdit(self)
+        self.coincidences.setReadOnly(True)
+        self.coincidences.setDisabled(True)
+        self.coincidences.setText(self.daq_stats['coincidences'])
+        self.coincidence_timewindow = QtGui.QLineEdit(self)
+        self.coincidence_timewindow.setReadOnly(True)
+        self.coincidence_timewindow.setDisabled(True)
+        self.coincidence_timewindow.setText(self.daq_stats['coincidence_timewindow'])
+        self.veto = QtGui.QLineEdit(self)
+        self.veto.setReadOnly(True)
+        self.veto.setDisabled(True)
+        self.veto.setText(self.daq_stats['veto'])
+
+        self.label_muonic = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))
+        self.label_start_params = QtGui.QLabel(tr('MainWindow','Start parameter:'))
+        self.label_refreshtime = QtGui.QLabel(tr('MainWindow','Measurement intervals:'))
+        self.label_open_files = QtGui.QLabel(tr('MainWindow','Currently opend files:'))
+        self.label_last_path = QtGui.QLabel(tr('MainWindow','Last saved files:'))
+        self.start_params = QtGui.QLineEdit(self)
+        self.start_params.setReadOnly(True)
+        self.start_params.setDisabled(True)
+        self.start_params.setText(self.muonic_stats['start_params'])
+        self.refreshtime = QtGui.QLineEdit(self)
+        self.refreshtime.setReadOnly(True)
+        self.refreshtime.setDisabled(True)
+        self.refreshtime.setText(self.muonic_stats['refreshtime'])
+        self.open_files = QtGui.QLineEdit(self)
+        self.open_files.setReadOnly(True)
+        self.open_files.setDisabled(True)
+        self.open_files.setText(self.muonic_stats['open_files'])
+        self.last_path = QtGui.QLineEdit(self)
+        self.last_path.setReadOnly(True)
+        self.last_path.setDisabled(True)
+        self.last_path.setText(self.muonic_stats['last_path'])
+
+        self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Refresh'))
         QtCore.QObject.connect(self.refresh_button,
                               QtCore.SIGNAL("clicked()"),
                               self.on_refresh_clicked
                               )
 
-        self.text_box = QtGui.QPlainTextEdit()
-        self.text_box.setReadOnly(True)
+        self.save_button  = QtGui.QPushButton(tr('MainWindow','Save to file'))
+        QtCore.QObject.connect(self.save_button,
+                              QtCore.SIGNAL("clicked()"),
+                              self.on_save_clicked
+                              )
 
-        gps_layout.addWidget(self.refresh_button,1,0,1,1) 
+        status_layout = QtGui.QGridLayout(self)
+        status_layout.addWidget(self.label_daq,0,0)
+        status_layout.addWidget(self.label_thresholds_0,0,1,1,8)
+        status_layout.addWidget(self.thresholds[0],0,2,1,8)
+        status_layout.addWidget(self.label_thresholds_1,1,1,1,8)
+        status_layout.addWidget(self.thresholds[1],1,2,1,8)
+        status_layout.addWidget(self.label_thresholds_2,2,1,1,8)
+        status_layout.addWidget(self.thresholds[2],2,2,1,8)
+        status_layout.addWidget(self.label_thresholds_3,3,1,1,8)
+        status_layout.addWidget(self.thresholds[3],3,2,1,8)
+        status_layout.addWidget(self.label_active_channels,4,1)
+        status_layout.addWidget(self.label_active_channels_0,4,2)
+        status_layout.addWidget(self.active_channel_0,4,3)
+        status_layout.addWidget(self.label_active_channels_1,4,4)
+        status_layout.addWidget(self.active_channel_1,4,5)
+        status_layout.addWidget(self.label_active_channels_2,4,6)
+        status_layout.addWidget(self.active_channel_2,4,7)
+        status_layout.addWidget(self.label_active_channels_3,4,8)
+        status_layout.addWidget(self.active_channel_3,4,9)
+        status_layout.addWidget(self.label_coincidences,5,1)
+        status_layout.addWidget(self.coincidences,5,2,1,8)
+        status_layout.addWidget(self.label_coincidence_timewindow,6,1)
+        status_layout.addWidget(self.coincidence_timewindow,6,2,1,8)        
+        status_layout.addWidget(self.label_veto,7,1)
+        status_layout.addWidget(self.veto,7,2,1,8)
+
+        status_layout.addWidget(self.label_muonic,8,0)
+        status_layout.addWidget(self.label_start_params,8,1)
+        status_layout.addWidget(self.start_params,8,2,1,8)
+        status_layout.addWidget(self.label_refreshtime,9,1)
+        status_layout.addWidget(self.refreshtime,9,2,1,8)
+        status_layout.addWidget(self.label_open_files,10,1)
+        status_layout.addWidget(self.open_files,10,2,1,8)
+        status_layout.addWidget(self.label_last_path,11,1)
+        status_layout.addWidget(self.last_path,11,2,1,8)
+
+        status_layout.addWidget(self.refresh_button,12,0,1,6)
+        #status_layout.addWidget(self.save_button,11,2,1,2)
 
     def on_refresh_clicked(self):
         """
         Refresh the status information
         """
         self.logger.debug("Refreshing status information.")
+        self.mainwindow.daq.put('TL')
+        time.sleep(0.5)
+        self.mainwindow.daq.put('DC')
+        time.sleep(0.5)
         self.active = True
-
+        print 'GOOOOOOOOOOOO'
         self.mainwindow.processIncoming()
- #       self.mainwindow.daq.put('DG')
- #       self.mainwindow.processIncoming()
-        self.active = False
+
+    def on_save_clicked(self):
+        """
+        Refresh the status information
+        """
+        self.logger.debug("Saving status information to file.")
+        self.logger.warning('Currently not available!')
 
     def is_active(self):
         return self.active
@@ -212,13 +345,89 @@ class StatusWidget(QtGui.QWidget): # not used yet
         """
         Fill the status information in the widget.
         """
-        self.logger.warning("Refreshing status infos")
+        self.logger.info("Refreshing status infos")
 
-        if self.active:
-            print ''
-#fill me
+        if (self.active and self.mainwindow.tabwidget.statuswidget.isVisible()):
+            self.muonic_stats['start_params'] = str(self.mainwindow.opts).replace('{', '').replace('}','')
+            self.muonic_stats['refreshtime'] = str(self.mainwindow.opts.timewindow)+ ' s'
+            self.muonic_stats['open_files'] = 'something'
+            self.muonic_stats['last_path'] = 'too'
+            
+            self.daq_stats['thresholds'][0] = str(self.mainwindow.threshold_ch0)+ ' mV'
+            self.daq_stats['thresholds'][1] = str(self.mainwindow.threshold_ch1)+ ' mV'
+            self.daq_stats['thresholds'][2] = str(self.mainwindow.threshold_ch2)+ ' mV'
+            self.daq_stats['thresholds'][3] = str(self.mainwindow.threshold_ch3)+ ' mV'
+            if not self.mainwindow.vetocheckbox:
+                self.daq_stats['veto'] = 'no veto set'
+            else:
+                if self.mainwindow.vetocheckbox_0:
+                    self.daq_stats['veto'] = 'veto with channel 0'
+                if self.mainwindow.vetocheckbox_1:
+                    self.daq_stats['veto'] = 'veto with channel 1'
+                if self.mainwindow.vetocheckbox_2:
+                    self.daq_stats['veto'] = 'veto with channel 2'
+
+            self.daq_stats['coincidence_timewindow'] = str(self.mainwindow.coincidence_time) + ' ns'
+
+            self.daq_stats['active_channel_0'] = self.mainwindow.channelcheckbox_0
+            self.daq_stats['active_channel_1'] = self.mainwindow.channelcheckbox_1
+            self.daq_stats['active_channel_2'] = self.mainwindow.channelcheckbox_2
+            self.daq_stats['active_channel_3'] = self.mainwindow.channelcheckbox_3
+            print 'hwefiwhefihewfihewfewf', self.mainwindow.channelcheckbox_0, self.daq_stats['active_channel_0']
+            if self.mainwindow.coincidencecheckbox_0:
+                self.daq_stats['coincidences'] = 'Single coincidence condition set.'
+            elif self.mainwindow.coincidencecheckbox_1:
+                self.daq_stats['coincidences'] = 'Twofold coincidence condition set.'
+            elif self.mainwindow.coincidencecheckbox_2:
+                self.daq_stats['coincidences'] = 'Threefold coincidence condition set.'
+            elif self.mainwindow.coincidencecheckbox_3:
+                self.daq_stats['coincidences'] = 'Fourfold coincidence condition set.'
+
+            for cnt in range(4):
+                self.thresholds[cnt].setDisabled(False)                
+                self.thresholds[cnt].setText(self.daq_stats['thresholds'][cnt])
+                self.thresholds[cnt].setEnabled(True)
+
+            self.active_channel_0.setCheckable(True)
+            self.active_channel_0.setEnabled(True)
+            self.active_channel_0.setChecked(self.daq_stats['active_channel_0'])
+            self.active_channel_0.setEnabled(False)
+            self.active_channel_1.setEnabled(True)            
+            self.active_channel_1.setCheckable(True)
+            self.active_channel_1.setChecked(self.daq_stats['active_channel_1'])
+            self.active_channel_1.setEnabled(False)
+            self.active_channel_2.setEnabled(True)            
+            self.active_channel_2.setCheckable(True)
+            self.active_channel_2.setChecked(self.daq_stats['active_channel_2'])
+            self.active_channel_2.setEnabled(False)
+            self.active_channel_3.setEnabled(True)            
+            self.active_channel_3.setCheckable(True)
+            self.active_channel_3.setChecked(self.daq_stats['active_channel_3'])
+            self.active_channel_3.setEnabled(False)
+            self.coincidences.setText(self.daq_stats['coincidences'])
+            self.coincidences.setEnabled(True)
+            self.coincidence_timewindow.setText(self.daq_stats['coincidence_timewindow'])
+            self.coincidence_timewindow.setEnabled(True)
+            self.veto.setText(self.daq_stats['veto'])
+            self.veto.setEnabled(True)
+
+            self.start_params.setText(self.muonic_stats['start_params'])
+            self.start_params.setEnabled(True)
+            self.refreshtime.setText(self.muonic_stats['refreshtime'])
+            self.refreshtime.setEnabled(True)
+            self.open_files.setText(self.muonic_stats['open_files'])
+            self.open_files.setEnabled(True)
+            self.last_path.setText(self.muonic_stats['last_path'])
+            self.last_path.setEnabled(True)
+            
+            self.start_params.setEnabled(True)
+
+            self.active = False
         else:
+            print 'is deactivated'
             self.logger.debug("Status informations widget not active - ignoring update call.")
+        self.active = False
+        print 'AND NOW OFF'
 
 
 class VelocityWidget(QtGui.QWidget):
@@ -478,8 +687,8 @@ class DecayWidget(QtGui.QWidget):
                     self.parentWidget().parentWidget().parentWidget().daq.put("DC")
 
                     self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
-                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 02 0A")                    
                     self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
+                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 02 0A")
                   
                     self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
                     self.dec_mes_start = now
@@ -493,7 +702,7 @@ class DecayWidget(QtGui.QWidget):
             #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(False)
             reset_time = "WC 03 " + self.previous_coinc_time_03
             self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
-            reset_time = "WC 02 " + self.previous_coinc_time_02            
+            reset_time = "WC 02 " + self.previous_coinc_time_02
             self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.parentWidget().parentWidget().parentWidget().statusbar.removeWidget(self.mu_label)
@@ -503,6 +712,7 @@ class DecayWidget(QtGui.QWidget):
             self.logger.info("The muon decay measurement was active for %f hours" % mtime)
             newmufilename = self.parentWidget().parentWidget().parentWidget().decayfilename.replace("HOURS",str(mtime))
             shutil.move(self.parentWidget().parentWidget().parentWidget().decayfilename,newmufilename)
+            self.parentWidget().parentWidget().parentWidget().daq.put("DC")
             self.active = False
             self.activateMuondecay.setChecked(False)
 
@@ -512,7 +722,7 @@ class DAQWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self,parent=parent)
         self.mainwindow = self.parentWidget()
         
-        self.write_file       = False
+        self.write_file      = False
         self.label           = QtGui.QLabel(tr('MainWindow','Command'))
         self.hello_edit      = LineEdit()
         self.hello_button    = QtGui.QPushButton(tr('MainWindow','Send'))

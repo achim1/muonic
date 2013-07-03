@@ -205,5 +205,3 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     x = DaqServer("5556",logger)
     x.serve()
-# vim: ai ts=4 sts=4 et sw=4
-
