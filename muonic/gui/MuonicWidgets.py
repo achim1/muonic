@@ -36,7 +36,7 @@ class RateWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self,parent = parent)
         self.mainwindow = self.parentWidget()
         self.logger           = logger
-        self.holdplot         = False
+        self.run              = False
         self.scalars_result   = False 
         self.scalars_monitor  = ScalarsCanvas(self, logger)
         self.rates            = None
@@ -44,16 +44,16 @@ class RateWidget(QtGui.QWidget):
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         # buttons for restart/clear the plot rate plot   
-        self.start_button = QtGui.QPushButton(tr('MainWindow', 'Restart'))
-        self.stop_button  = QtGui.QPushButton(tr('MainWindow', 'Stop'))
+        self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
+        self.stop_button  = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
         self.lastscalarquery = 0
         self.thisscalarquery = time.time()
         #self.pulses_to_show = None
         self.data_file = open(self.mainwindow.filename, 'w')
         self.data_file.write('time | chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
-        
+#        self.data_file.close()
         # always write the rate plot data
-        self.data_file_write = True
+        self.data_file_write = False
 
         QtCore.QObject.connect(self.start_button,
                               QtCore.SIGNAL("clicked()"),
@@ -71,6 +71,7 @@ class RateWidget(QtGui.QWidget):
         rate_widget.addWidget(ntb,1,0)
         rate_widget.addWidget(self.start_button,1,1)
         rate_widget.addWidget(self.stop_button,1,2)
+        self.stop_button.setEnabled(False)
 
     def calculate(self,rates):
         #now = time.time()
@@ -79,7 +80,7 @@ class RateWidget(QtGui.QWidget):
         self.rates = rates
 
     def update(self):
-        if not self.holdplot:
+        if self.run:
             self.scalars_monitor.update_plot(self.rates)
       
     def is_active(self):
@@ -87,17 +88,31 @@ class RateWidget(QtGui.QWidget):
 
     def startClicked(self):
         """
-        restart the rate measurement
+        start the rate measurement and write a file
         """ 
-        self.logger.debug("Restart Button Clicked")
-        self.holdplot = False
+        self.start_button.setEnabled(False)
+        self.stop_button.setEnabled(True)
+
+        self.logger.debug("Start Button Clicked")
+        date = time.gmtime()
+        comment_file = '# new run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        self.data_file = open(self.mainwindow.filename, 'a')        
+        self.data_file.write(comment_file)
+        self.run = True
+        self.data_file_write = True
         self.scalars_monitor.reset()
+        #time.sleep(3)
+        #self.start_button.setEnabled(True)
         
     def stopClicked(self):
         """
         hold the rate measurement plot till buttion is pushed again
         """
-        self.holdplot = True
+        self.start_button.setEnabled(True)
+        self.stop_button.setEnabled(False)        
+        self.run = False
+        self.data_file_write = False
+        self.data_file.close()
 
 
 class PulseanalyzerWidget(QtGui.QWidget):
