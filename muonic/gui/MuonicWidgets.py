@@ -43,9 +43,38 @@ class RateWidget(QtGui.QWidget):
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
-        # buttons for restart/clear the plot rate plot   
+        
         self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
         self.stop_button  = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
+        self.label_mean_rates = QtGui.QLabel(self,'mean rates:'))
+        self.label_total_scalars = QtGui.QLabel(self,'total scalars:'))
+        self.label_started = QtGui.QLabel(tr('MainWindow','started:'))
+        self.rates = dict()
+        self.rates['label_ch0'] = QtGui.QLabel(tr('MainWindow','channel 0:'))
+        self.rates['edit_ch0'] = QtGui.QLineEdit(self)
+        self.rates['label_ch1'] = QtGui.QLabel(tr('MainWindow','channel 1:'))
+        self.rates['edit_ch1'] = QtGui.QLineEdit(self)
+        self.rates['label_ch2'] = QtGui.QLabel(tr('MainWindow','channel 2:'))
+        self.rates['edit_ch2'] = QtGui.QLineEdit(self)
+        self.rates['label_ch3'] = QtGui.QLabel(tr('MainWindow','channel 3:'))
+        self.rates['edit_ch3'] = QtGui.QLineEdit(self)
+        self.scalars = dict()
+        self.scalars['label_ch0'] = QtGui.QLabel(tr('MainWindow','N 0:'))
+        self.rates['edit_ch0'] = QtGui.QLineEdit(self)
+        self.scalars['label_ch1'] = QtGui.QLabel(tr('MainWindow','N 1:'))
+        self.rates['edit_ch1'] = QtGui.QLineEdit(self)
+        self.scalars['label_ch2'] = QtGui.QLabel(tr('MainWindow','N 2:'))
+        self.rates['edit_ch2'] = QtGui.QLineEdit(self)
+        self.scalars['label_ch3'] = QtGui.QLabel(tr('MainWindow','N 3:'))
+        self.rates['edit_ch3'] = QtGui.QLineEdit(self)
+        self.general_info = dict()
+        self.general_info['label_date'] = QtGui.QLabel(tr('MainWindow',''))
+        self.rates['edit_date'] = QtGui.QLineEdit(self)
+        self.general_info['label_daq_time'] = QtGui.QLabel(tr('MainWindow','daq time:'))
+        self.rates['edit_daq_time'] = QtGui.QLineEdit(self)
+        self.general_info['label_max_rate'] = QtGui.QLabel(tr('MainWindow','max rate:'))
+        self.rates['edit_max_rate'] = QtGui.QLineEdit(self)
+
         self.lastscalarquery = 0
         self.thisscalarquery = time.time()
         #self.pulses_to_show = None
