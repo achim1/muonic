@@ -65,7 +65,7 @@ if __name__ == '__main__':
     parser = OptionParser(usage=usage)
 
     parser.add_option("-s", "--sim", action="store_true", dest="sim", help="use simulation mode for testing without hardware", default=False)
-    parser.add_option("-t", "--timewindow", dest="timewindow", help="time window for the measurement in s (default 5 s)", default=5.0)
+    parser.add_option("-t", "--timewindow", dest="timewindow", help="time window for the measurement in s (default 5 s)", default=5.0, type="float")
     parser.add_option("-d", "--debug", dest="loglevel", action="store_const", const=10 , help="switch to loglevel debug", default=10)
     parser.add_option("-p", "--writepulses", dest="writepulses", help="write a file with extracted pulses", action="store_true", default=False)
     parser.add_option("-n", "--nostatus", dest="nostatus", help="do not write DAQ status messages to RAW data files", action="store_true", default=False)
@@ -86,6 +86,9 @@ if __name__ == '__main__':
     formatter = logging.Formatter('%(levelname)s:%(process)d:%(module)s:%(funcName)s:%(lineno)d:%(message)s')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-
+    try:
+        opts.timewindow = float(opts.timewindow)
+    except:
+        logger.error("Timewindow not given as float value!")
     # make it so!
     main(opts,logger)

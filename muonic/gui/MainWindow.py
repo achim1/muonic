@@ -168,6 +168,11 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget = QtGui.QTabWidget(self)
         #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
+        try:
+            opts.timewindow = float(opts.timewindow)
+        except:
+            self.logger.error("Timewindow not given as float value! Reseting to default value.")
+            opts.timewindow = 5.
         self.logger.info("Timewindow is %4.2f" %opts.timewindow)
 
         self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
@@ -396,9 +401,9 @@ class MainWindow(QtGui.QMainWindow):
             chan3_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_3")).isChecked() 
             singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
             if singles:
-                self.tabwidget.ratewidget.scalars_monitor.do_not_show_trigger = True
+                self.tabwidget.ratewidget.do_not_show_trigger = True
             else:             
-                self.tabwidget.ratewidget.scalars_monitor.do_not_show_trigger = False
+                self.tabwidget.ratewidget.do_not_show_trigger = False
             
             twofold   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_1")).isChecked() 
             threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 

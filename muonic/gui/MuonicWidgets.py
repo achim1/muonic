@@ -37,19 +37,28 @@ class RateWidget(QtGui.QWidget):
         self.mainwindow = self.parentWidget()
         self.logger           = logger
         self.run              = False
-        self.scalars_result   = False 
-        self.scalars_monitor  = ScalarsCanvas(self, logger)
-        self.rates            = None
+        self.scalars_result   = False
+        self.MAXLENGTH = 40        
+        self.scalars_monitor  = ScalarsCanvas(self, logger, self.MAXLENGTH)
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
-        
+        self.timewindow = 0
+        self.now = datetime.datetime.now()
+        self.lastscalarquery = 0
+        self.thisscalarquery = time.time()
+        self.do_not_show_trigger = False
+
         self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
         self.stop_button = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
         self.label_mean_rates = QtGui.QLabel(tr('MainWindow','mean rates:'))
         self.label_total_scalars = QtGui.QLabel(tr('MainWindow','total scalars:'))
         self.label_started = QtGui.QLabel(tr('MainWindow','started:'))
         self.rates = dict()
+        self.rates['rates']= None
+        self.rates['rates_buffer'] = dict()
+        for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
+            self.rates['rates_buffer'][ch] = []
         self.rates['label_ch0'] = QtGui.QLabel(tr('MainWindow','channel 0:'))
         self.rates['edit_ch0'] = QtGui.QLineEdit(self)
         self.rates['edit_ch0'].setReadOnly(True)
@@ -66,7 +75,14 @@ class RateWidget(QtGui.QWidget):
         self.rates['edit_ch3'] = QtGui.QLineEdit(self)
         self.rates['edit_ch3'].setReadOnly(True)
         self.rates['edit_ch3'].setDisabled(True)
+        self.rates['label_trigger'] = QtGui.QLabel(tr('MainWindow','trigger:'))
+        self.rates['edit_trigger'] = QtGui.QLineEdit(self)
+        self.rates['edit_trigger'].setReadOnly(True)
+        self.rates['edit_trigger'].setDisabled(True)
         self.scalars = dict()
+        self.scalars['scalars_buffer'] = dict()
+        for ch in ['ch0','ch1','ch2','ch3','trigger']:
+            self.scalars['scalars_buffer'][ch] = 0
         self.scalars['label_ch0'] = QtGui.QLabel(tr('MainWindow','N 0:'))
         self.scalars['edit_ch0'] = QtGui.QLineEdit(self)
         self.scalars['edit_ch0'].setReadOnly(True)
@@ -83,6 +99,11 @@ class RateWidget(QtGui.QWidget):
         self.scalars['edit_ch3'] = QtGui.QLineEdit(self)
         self.scalars['edit_ch3'].setReadOnly(True)
         self.scalars['edit_ch3'].setDisabled(True)
+        self.scalars['label_trigger'] = QtGui.QLabel(tr('MainWindow','N T:'))
+        self.scalars['edit_trigger'] = QtGui.QLineEdit(self)
+        self.scalars['edit_trigger'].setReadOnly(True)
+        self.scalars['edit_trigger'].setDisabled(True)
+
         self.general_info = dict()
         self.general_info['label_date'] = QtGui.QLabel(tr('MainWindow',''))
         self.general_info['edit_date'] = QtGui.QLineEdit(self)
@@ -96,10 +117,9 @@ class RateWidget(QtGui.QWidget):
         self.general_info['edit_max_rate'] = QtGui.QLineEdit(self)
         self.general_info['edit_max_rate'].setReadOnly(True)
         self.general_info['edit_max_rate'].setDisabled(True)
+        self.general_info['max_rate'] = 0
+        self.general_info['min_rate'] = 0
 
-
-        self.lastscalarquery = 0
-        self.thisscalarquery = time.time()
         #self.pulses_to_show = None
         self.data_file = open(self.mainwindow.filename, 'w')
         self.data_file.write('time | chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
@@ -130,37 +150,89 @@ class RateWidget(QtGui.QWidget):
         rate_widget.addWidget(self.rates['edit_ch2'],3,4)
         rate_widget.addWidget(self.rates['label_ch3'],4,3)
         rate_widget.addWidget(self.rates['edit_ch3'],4,4)
-        rate_widget.addWidget(self.label_total_scalars,5,2)
-        rate_widget.addWidget(self.scalars['label_ch0'],5,3)
-        rate_widget.addWidget(self.scalars['edit_ch0'],5,4)
-        rate_widget.addWidget(self.scalars['label_ch1'],6,3)
-        rate_widget.addWidget(self.scalars['edit_ch1'],6,4)
-        rate_widget.addWidget(self.scalars['label_ch2'],7,3)
-        rate_widget.addWidget(self.scalars['edit_ch2'],7,4)
-        rate_widget.addWidget(self.scalars['label_ch3'],8,3)
-        rate_widget.addWidget(self.scalars['edit_ch3'],8,4)
-        rate_widget.addWidget(self.label_started,9,2)
-        #rate_widget.addWidget(self.general_info['label_date'],9,3)
-        rate_widget.addWidget(self.general_info['edit_date'],9,3,1,2)
-        rate_widget.addWidget(self.general_info['label_daq_time'],10,3)
-        rate_widget.addWidget(self.general_info['edit_daq_time'],10,4)
-        rate_widget.addWidget(self.general_info['label_max_rate'],11,3)
-        rate_widget.addWidget(self.general_info['edit_max_rate'],11,4)
+        rate_widget.addWidget(self.rates['label_trigger'],5,3)
+        rate_widget.addWidget(self.rates['edit_trigger'],5,4)
+        rate_widget.addWidget(self.label_total_scalars,6,2)
+        rate_widget.addWidget(self.scalars['label_ch0'],6,3)
+        rate_widget.addWidget(self.scalars['edit_ch0'],6,4)
+        rate_widget.addWidget(self.scalars['label_ch1'],7,3)
+        rate_widget.addWidget(self.scalars['edit_ch1'],7,4)
+        rate_widget.addWidget(self.scalars['label_ch2'],8,3)
+        rate_widget.addWidget(self.scalars['edit_ch2'],8,4)
+        rate_widget.addWidget(self.scalars['label_ch3'],9,3)
+        rate_widget.addWidget(self.scalars['edit_ch3'],9,4)
+        rate_widget.addWidget(self.scalars['label_trigger'],10,3)
+        rate_widget.addWidget(self.scalars['edit_trigger'],10,4)
+        rate_widget.addWidget(self.label_started,11,2)
+        #rate_widget.addWidget(self.general_info['label_date'],11,3)
+        rate_widget.addWidget(self.general_info['edit_date'],11,3,1,2)
+        rate_widget.addWidget(self.general_info['label_daq_time'],12,3)
+        rate_widget.addWidget(self.general_info['edit_daq_time'],12,4)
+        rate_widget.addWidget(self.general_info['label_max_rate'],13,3)
+        rate_widget.addWidget(self.general_info['edit_max_rate'],13,4)
 
-        rate_widget.addWidget(ntb,12,0,1,2)
-        rate_widget.addWidget(self.start_button,12,3)
-        rate_widget.addWidget(self.stop_button,12,4)
+        rate_widget.addWidget(ntb,14,0,1,2)
+        rate_widget.addWidget(self.start_button,14,3)
+        rate_widget.addWidget(self.stop_button,14,4)
 
 
     def calculate(self,rates):
         #now = time.time()
         #self.thisscalarquery = now - self.lastscalarquery
         #self.lastscalarquery = now
-        self.rates = rates
+        self.rates['rates'] = rates
+        self.timewindow += rates[5]
+        self.rates['rates_buffer']['ch0'].append(rates[0])
+        self.rates['rates_buffer']['ch1'].append(rates[1])
+        self.rates['rates_buffer']['ch2'].append(rates[2])
+        self.rates['rates_buffer']['ch3'].append(rates[3])
+        self.rates['rates_buffer']['trigger'].append(rates[4])
+        self.rates['rates_buffer']['l_time'].append(self.timewindow)
+        for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
+            if len(self.rates['rates_buffer'][ch]) > self.MAXLENGTH:
+                self.rates['rates_buffer'][ch].remove(self.rates['rates_buffer'][ch][0])
+
+        self.scalars['scalars_buffer']['ch0'] += rates[6]
+        self.scalars['scalars_buffer']['ch1'] += rates[7]
+        self.scalars['scalars_buffer']['ch2'] += rates[8]
+        self.scalars['scalars_buffer']['ch3'] += rates[9]
+        self.scalars['scalars_buffer']['trigger'] += rates[10]
+
+        max_rate = max( max(self.rates['rates_buffer']['ch0']), max(self.rates['rates_buffer']['ch1']), max(self.rates['rates_buffer']['ch2']), 
+                   max(self.rates['rates_buffer']['ch3']))
+        min_rate = min( min(self.rates['rates_buffer']['ch0']), min(self.rates['rates_buffer']['ch1']), min(self.rates['rates_buffer']['ch2']), 
+                       min(self.rates['rates_buffer']['ch3']))
+        
+        if max_rate > self.general_info['max_rate']:
+            self.general_info['max_rate'] = max_rate
+        if min_rate < self.general_info['min_rate']:
+            self.general_info['max_rate'] = min_rate
 
     def update(self):
         if self.run:
-            self.scalars_monitor.update_plot(self.rates)
+            self.general_info['edit_daq_time'].setText('%.2f' %(self.timewindow))
+            self.general_info['edit_max_rate'].setText('%.2f' %(self.general_info['max_rate']))
+            self.rates['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']/self.timewindow))
+            self.rates['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']/self.timewindow))
+            self.rates['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']/self.timewindow))
+            self.rates['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']/self.timewindow))
+            self.scalars['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']))
+            self.scalars['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']))
+            self.scalars['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']))
+            self.scalars['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']))
+
+            if self.do_not_show_trigger:
+                self.rates['edit_trigger'].setDisabled(True)
+                self.scalars['edit_trigger'].setDisabled(True)
+                self.rates['edit_trigger'].setText('')
+                self.scalars['edit_trigger'].setText('')
+            else:
+                self.rates['edit_trigger'].setDisabled(False)
+                self.scalars['edit_trigger'].setDisabled(False)
+                self.rates['edit_trigger'].setText('%.2f' %(self.scalars['scalars_buffer']['trigger']/self.timewindow))
+                self.scalars['edit_trigger'].setText('%.2f' %(self.scalars['scalars_buffer']['trigger']))
+
+            self.scalars_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger)
       
     def is_active(self):
         return True # rate widget is always active    
@@ -179,6 +251,30 @@ class RateWidget(QtGui.QWidget):
         self.data_file.write(comment_file)
         self.run = True
         self.data_file_write = True
+        self.now = datetime.datetime.now()
+
+        self.rates['edit_ch0'].setEnabled(True)
+        self.rates['edit_ch1'].setDisabled(False)
+        self.rates['edit_ch2'].setDisabled(False)
+        self.rates['edit_ch3'].setDisabled(False)
+        self.scalars['edit_ch0'].setDisabled(False)
+        self.scalars['edit_ch1'].setDisabled(False)
+        self.scalars['edit_ch2'].setDisabled(False)
+        self.scalars['edit_ch3'].setDisabled(False)
+        self.general_info['edit_date'].setDisabled(False)
+        self.general_info['edit_daq_time'].setDisabled(False)
+        self.general_info['edit_max_rate'].setDisabled(False)
+
+        self.general_info['edit_date'].setText(self.now.strftime('%d.%m.%Y %H:%M:%S'))
+        self.general_info['edit_daq_time'].setText('%.2f' %(self.timewindow))
+        self.general_info['edit_max_rate'].setText('%.2f' %(self.general_info['max_rate']))
+        if self.do_not_show_trigger:
+            self.rates['edit_trigger'].setDisabled(True)
+            self.scalars['edit_trigger'].setDisabled(True)
+        else:
+            self.rates['edit_trigger'].setDisabled(False)
+            self.scalars['edit_trigger'].setDisabled(False)
+
         self.scalars_monitor.reset()
         #time.sleep(3)
         #self.start_button.setEnabled(True)
@@ -188,7 +284,21 @@ class RateWidget(QtGui.QWidget):
         hold the rate measurement plot till buttion is pushed again
         """
         self.start_button.setEnabled(True)
-        self.stop_button.setEnabled(False)        
+        self.stop_button.setEnabled(False)
+        self.rates['edit_ch0'].setDisabled(True)
+        self.rates['edit_ch1'].setDisabled(True)
+        self.rates['edit_ch2'].setDisabled(True)
+        self.rates['edit_ch3'].setDisabled(True)
+        self.rates['edit_trigger'].setDisabled(True)
+        self.scalars['edit_ch0'].setDisabled(True)
+        self.scalars['edit_ch1'].setDisabled(True)
+        self.scalars['edit_ch2'].setDisabled(True)
+        self.scalars['edit_ch3'].setDisabled(True)
+        self.scalars['edit_trigger'].setDisabled(True)
+        self.general_info['edit_date'].setDisabled(True)
+        self.general_info['edit_daq_time'].setDisabled(True)
+        self.general_info['edit_max_rate'].setDisabled(True)
+
         self.run = False
         self.data_file_write = False
         self.data_file.close()

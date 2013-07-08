@@ -34,7 +34,7 @@ class MuonicPlotCanvas(FigureCanvas):
         
         self.fig = Figure(facecolor="white",dpi=72)
         self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(left=0.1, right=0.75)
+        self.fig.subplots_adjust(left=0.1, right=1)
   
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)
@@ -136,12 +136,12 @@ class PulseCanvas(MuonicPlotCanvas):
         
 class ScalarsCanvas(MuonicPlotCanvas):
     
-    def __init__(self,parent,logger):
+    def __init__(self,parent,logger, MAXLENGTH = 40):
         
         MuonicPlotCanvas.__init__(self,parent,logger,xlabel="Time in s",ylabel="Rate in Hz")
         self.do_not_show_trigger = False
         #max length of shown = MAXLENGTH*timewindow
-        self.MAXLENGTH = 40
+        self.MAXLENGTH = MAXLENGTH
         self.reset()
         
     def reset(self):
@@ -177,11 +177,11 @@ class ScalarsCanvas(MuonicPlotCanvas):
         
         self.fig.canvas.draw()
 
-    def update_plot(self, result):
+    def update_plot(self, result, trigger = False):
 
         #do a complete redraw of the plot to avoid memory leak!
         self.ax.clear()
-
+        self.do_not_show_trigger = trigger
         # set specific limits for X and Y axes
         #self.ax.set_xlim(0., 5.2)
         #self.ax.set_ylim(0., 100.2)
@@ -234,15 +234,6 @@ class ScalarsCanvas(MuonicPlotCanvas):
 
       
         self.logger.debug("self.l_chan0: %s" %self.l_chan0.__repr__())
-        ma2 = max( max(self.chan0), max(self.chan1), max(self.chan2), 
-                   max(self.chan3))
-        mi2 = min( min(self.chan0), min(self.chan1), min(self.chan2), 
-                       min(self.chan3), min(self.trigger))
-        
-        if ma2 > self.highest:
-            self.highest = ma2
-        if mi2 < self.lowest:
-            self.lowest = mi2
         
         self.logger.debug("Chan0 to plot: %s", self.chan0.__repr__())
         
@@ -254,32 +245,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
         now2 = datetime.now()
         dt = (now2 - self.now)  
         dt1 = dt.seconds + dt.days * 3600 * 24
-        string1 = 'started:\n %s ' % self.now.strftime('%d.%m.%Y %H:%M:%S')
 
-        # we rather calculate the mean rate by dividing
-        # total scalars by total time
-        try:
-            string2 = 'mean rates:\nchannel0 = %.2f Hz \nchannel1 = %.2f Hz \nchannel2 = %.2f Hz \nchannel3 = %.2f Hz \ntrigger = %.3f Hz' % ( (self.N0)/self.timewindow, (self.N1)/self.timewindow , (self.N2)/self.timewindow, (self.N3)/self.timewindow, (self.NT)/self.timewindow )
-
-            if self.do_not_show_trigger:
-                string2 = 'mean rates\nchannel0 = %.2f Hz \nchannel1 = %.2f Hz \nchannel2 = %.2f Hz \nchannel3 = %.2f Hz' % ( (self.N0)/self.timewindow, (self.N1)/self.timewindow , (self.N2)/self.timewindow, (self.N3)/self.timewindow )
-
-        except ZeroDivisionError:
-            self.logger.debug('Time was Zero!Passing..')
-            string2 = ''
-            pass
-
-        string3 = 'total scalars:\nN0 = %i \nN1 = %i \nN2 = %i \nN3 = %i \nNT = %i' % (self.N0, self.N1, self.N2, self.N3, self.NT)
-        if self.do_not_show_trigger:
-            string3 = 'total scalars:\nN0 = %i \nN1 = %i \nN2 = %i \nN3 = %i' % (self.N0, self.N1, self.N2 , self.N3)
-
-        # reduce information for better overview
-        string4 = '\ndaq time = %.2f s \nmax rate = %.2f Hz' % (  self.timewindow, ma2 )
-                             
-        self.ax.text(1.1, -0.1, string1+string4, transform=self.ax.transAxes) 
-        self.ax.text(1.1, 0.15, string3, transform=self.ax.transAxes, color='black') 
-        self.ax.text(1.1, 0.65, string2, transform=self.ax.transAxes, color='black')
-                    
         self.fig.canvas.draw()
 
 class MuonicHistCanvas(MuonicPlotCanvas):
