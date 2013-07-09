@@ -28,13 +28,13 @@ class MuonicPlotCanvas(FigureCanvas):
     The base class of all muonic plot canvases
     """
     
-    def __init__(self,parent,logger,ymin=0,ymax=10,xmin=0,xmax=10,xlabel="xlabel",ylabel="ylabel",grid=True):
+    def __init__(self,parent,logger,ymin=0,ymax=10,xmin=0,xmax=10,xlabel="xlabel",ylabel="ylabel",grid=True, spacing=(0.1,0.9)):
        
         self.logger = logger
         
         self.fig = Figure(facecolor="white",dpi=72)
         self.ax = self.fig.add_subplot(111)
-        self.fig.subplots_adjust(left=0.1, right=1)
+        self.fig.subplots_adjust(left=spacing[0], right=spacing[1])
   
         # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)

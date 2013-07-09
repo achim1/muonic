@@ -385,6 +385,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         Show the config dialog
         """
+        gatewidth = 0.
         # get the actual channels...
         self.daq.put('DC')
         # wait explicitely till the channels get loaded
@@ -454,10 +455,14 @@ class MainWindow(QtGui.QMainWindow):
                 
             else:
                 msg += hex(int(''.join(enable),2))[-1].capitalize()
-
+            
             self.daq.put(msg)
             self.logger.info('The following message was sent to DAQ: %s' %msg)
-                    
+            
+            if config_window.findChild(QtGui.QGroupBox,QtCore.QString("advancedgroupbox")).isChecked():
+                gatewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())
+                print 'gatewidth', gatewidth
+
             self.logger.debug('channel0 selected %s' %chan0_active)
             self.logger.debug('channel1 selected %s' %chan1_active)
             self.logger.debug('channel2 selected %s' %chan2_active)
@@ -733,7 +738,7 @@ class MainWindow(QtGui.QMainWindow):
                 # exited
                 if self.tabwidget.ratewidget.data_file_write:
                     try:
-                        self.tabwidget.ratewidget.data_file.write('%f %f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_time, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
+                        self.tabwidget.ratewidget.data_file.write('%f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
                         self.logger.debug("Rate plot data was written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
                     except ValueError:
                         self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
