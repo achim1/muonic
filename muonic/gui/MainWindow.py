@@ -392,7 +392,7 @@ class MainWindow(QtGui.QMainWindow):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2)
+        config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2, True, self.coincidence_time)
         rv = config_window.exec_()
         if rv == 1:
             
@@ -414,7 +414,16 @@ class MainWindow(QtGui.QMainWindow):
             vetochan1 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
             vetochan2 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
             vetochan3 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
-
+            
+            if config_window.findChild(QtGui.QGroupBox,QtCore.QString("advancedgroupbox")).isChecked():
+                gatewidth = bin(int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())/10).replace('0b','').zfill(16)
+                _03 = format(int(gatewidth[0:8],2),'x').zfill(2)
+                _02 = format(int(gatewidth[8:16],2),'x').zfill(2)
+                tmp_msg = 'WC 03 '+str(_03)
+                self.daq.put(tmp_msg)
+                tmp_msg = 'WC 02 '+str(_02)
+                self.daq.put(tmp_msg)
+            
             tmp_msg = ''
             if veto:
                 if vetochan1:
@@ -458,10 +467,6 @@ class MainWindow(QtGui.QMainWindow):
             
             self.daq.put(msg)
             self.logger.info('The following message was sent to DAQ: %s' %msg)
-            
-            if config_window.findChild(QtGui.QGroupBox,QtCore.QString("advancedgroupbox")).isChecked():
-                gatewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())
-                print 'gatewidth', gatewidth
 
             self.logger.debug('channel0 selected %s' %chan0_active)
             self.logger.debug('channel1 selected %s' %chan1_active)
@@ -656,7 +661,7 @@ class MainWindow(QtGui.QMainWindow):
                 if str(vetoconfig) == '10': self.vetocheckbox_1 = True
                 if str(vetoconfig) == '11': self.vetocheckbox_2 = True
             
-            self.logger.debug('coinci time %s ns' %(str(self.coincidence_time)))
+            self.logger.debug('Coincidence timewindow %s ns' %(str(self.coincidence_time)))
             self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3))
             self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3))
             self.logger.debug("Got veto configurations: %i %i %i %i" %(self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2))

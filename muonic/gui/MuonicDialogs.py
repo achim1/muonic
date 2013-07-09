@@ -279,14 +279,14 @@ class ConfigDialog(MuonicDialog):
     Set Channel configuration
     """
     
-    def __init__(self,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True,coincidencecheckbox_0 = True,coincidencecheckbox_1 = False,coincidencecheckbox_2 = False,coincidencecheckbox_3 = False,vetocheckbox = False,vetocheckbox_0 = False,vetocheckbox_1 = False,vetocheckbox_2 = False,*args):
+    def __init__(self,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True,coincidencecheckbox_0 = True,coincidencecheckbox_1 = False,coincidencecheckbox_2 = False,coincidencecheckbox_3 = False,vetocheckbox = False,vetocheckbox_0 = False,vetocheckbox_1 = False,vetocheckbox_2 = False, advanced_opts = False, gatewidth = 100, *args):
 
         QtGui.QDialog.__init__(self,*args)
 
         self.setObjectName("Configure")
         self.setModal(True)
         self.setWindowTitle("Channel Configuration")  
-
+        self.advanced_opts = advanced_opts
         self.buttonBox = self.createButtonBox(leftoffset=30, topoffset=300)
 
         # used advanced grid layout...
@@ -311,10 +311,29 @@ class ConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Coincidence",objectname = "coincidencecheckbox",leftoffset=20,setchecked=coincidence,itemlabels=["Single","Twofold","Threefold","Fourfold"]), 0, 1)
         grid.addWidget(self.createCheckGroupBox(radio=True,checkable=True,checkable_set=vetocheckbox,label="Veto",objectname = "vetocheckbox",leftoffset=180,setchecked=vetochecks,itemlabels=["Chan1","Chan2","Chan3"]), 0, 2)
         
+        advancedgroupBox = QtGui.QGroupBox("Advanced options")
+        advancedgroupBox.setCheckable(True)
+        advancedgroupBox.setChecked(False)
+        advancedgroupBox.setObjectName("advancedgroupbox")      
+        advancedgrouplayout = QtGui.QGridLayout(advancedgroupBox)
+        self.gatewidth = QtGui.QSpinBox()
+        self.gatewidth.setSuffix(' ns')
+        self.gatewidth.setObjectName("gatewidth")
+        self.gatewidth_label = QtGui.QLabel("Coincidence timewindow (default: 100 ns)")
+        self.gatewidth.setMaximum(159990)
+        self.gatewidth.setMinimum(10)
+        self.gatewidth.setValue(gatewidth)
+        self.gatewidth.setToolTip(QtCore.QString("Define a gatewidth, which is the coincidence timewindow"))
+        advancedgrouplayout.addWidget(self.gatewidth,0,0)
+        advancedgrouplayout.addWidget(self.gatewidth_label,0,1)
+
+        grid.addWidget(advancedgroupBox,1,0)        
+        
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
-        grid.addWidget(self.buttonBox,1,2)
+        grid.addWidget(self.buttonBox,2,2,1,2)
+
         self.setLayout(grid)
         
         self.show()
