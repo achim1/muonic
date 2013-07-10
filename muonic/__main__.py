@@ -88,7 +88,16 @@ if __name__ == '__main__':
     logger.addHandler(ch)
     try:
         opts.timewindow = float(opts.timewindow)
-    except:
-        logger.error("Timewindow not given as float value!")
+
+    except ValueError:
+            logger.error("Timewindow not given as float value! Reseting to default value.")
+            opts.timewindow = 5.
+    if opts.timewindow <= 0.01:
+        logger.error("Timewindow too small, can produce extremely high CPU load! Reseting to default value.")
+        opts.timewindow = 5.
+    if opts.timewindow <= 0.1:
+        logger.warning("Timewindow small, can produce extremely high CPU load! Make sure you know what you are doing.")
+
+
     # make it so!
     main(opts,logger)
