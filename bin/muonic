@@ -38,12 +38,13 @@ from muonic.gui.MainWindow import MainWindow
 def main(opts,logger):
 
     root = QtGui.QApplication(sys.argv)
+    root.setQuitOnLastWindowClosed(True)
     if opts.port is not None:
         client = DAQClient(opts.port,logger=logger)
     else:
-        client = DAQProvider(logger=logger,root=root,sim=opts.sim)
+        client = DAQProvider(logger=logger,sim=opts.sim)
     # Set up the GUI part
-    gui=MainWindow(client, logger, opts,root)
+    gui=MainWindow(client, logger, opts)
     gui.show()
     root.exec_()
 

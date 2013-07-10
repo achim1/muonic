@@ -23,13 +23,12 @@ class DAQProvider:
     means that you have all the thread controls in a single place.
     """
 
-    def __init__(self,logger=None,root=None,sim=False):
+    def __init__(self,logger=None,sim=False):
 
         self.outqueue = mult.Queue()
         self.inqueue  = mult.Queue()
             
         self.running = 1
-        self.root = root
         self.good_pattern = re.compile("^[a-zA-Z0-9+-.,:()=$/#?!%_@*|~' ]*[\n\r]*$")
         # get option parser options
         if logger is None:

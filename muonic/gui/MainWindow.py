@@ -41,7 +41,7 @@ class MainWindow(QtGui.QMainWindow):
     The main application
     """
 
-    def __init__(self, daq, logger, opts, root, win_parent = None):
+    def __init__(self, daq, logger, opts,  win_parent = None):
 
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
@@ -156,7 +156,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.logger.debug("Queue empty!")
         
         # an anchor to the Application
-        self.root = root
+        #self.root = root
 
         # A timer to periodically call processIncoming and check what is in the queue
         self.timer = QtCore.QTimer()
@@ -218,8 +218,9 @@ class MainWindow(QtGui.QMainWindow):
         exit.setShortcut('Ctrl+Q')
         exit.setStatusTip('Exit application')
 
-        self.connect(exit, QtCore.SIGNAL('triggered()'), self.exit_program)
-        self.connect(self, QtCore.SIGNAL('closeEmitApp()'), QtCore.SLOT('close()') )
+        #self.connect(exit, QtCore.SIGNAL('triggered()'), self.exit_program)
+        #self.connect(exit, QtCore.SIGNAL('closeEmitApp()'), QtCore.SLOT('close()') )
+        self.connect(exit, QtCore.SIGNAL('triggered()'), QtCore.SLOT('close()') )
 
         # prepare the config menu
         config = QtGui.QAction(QtGui.QIcon(''),'Channel Configuration', self)
@@ -286,81 +287,84 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.start(1000)
         self.widgetupdater.start(opts.timewindow*1000)
         
-    def exit_program(self,*args):
-        """
-        This function is used either with the 'x' button
-        (then an event has to be passed)
-        Or it is used with the File->Exit button, than no event
-        will be passed.
-        """
+    #def exit_program(self,*args):
+    #    """
+    #    This function is used either with the 'x' button
+    #    (then an event has to be passed)
+    #    Or it is used with the File->Exit button, than no event
+    #    will be passed.
+    #    """
 
-        ev = False
-        if args:
-            ev = args[0]
-        # ask kindly if the user is really sure if she/he wants to exit
-        reply = QtGui.QMessageBox.question(self, 'Attention!',
-                'Do you really want to exit?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+    #    ev = False
+    #    if args:
+    #        ev = args[0]
+    #    # ask kindly if the user is really sure if she/he wants to exit
+    #    reply = QtGui.QMessageBox.question(self, 'Attention!',
+    #            'Do you really want to exit?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.Yes:
-            now = datetime.datetime.now()
+    #    if reply == QtGui.QMessageBox.Yes:
+    #        now = datetime.datetime.now()
 
-            # close the RAW file (if any)
-            if self.tabwidget.daqwidget.write_file:
-                self.tabwidget.daqwidget.write_file = False
-                mtime = now - self.raw_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-                self.logger.info("The raw data was written for %f hours" % mtime)
-                newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
-                shutil.move(self.rawfilename,newrawfilename)
-                self.tabwidget.daqwidget.outputfile.close()
+    #        # close the RAW file (if any)
+    #        if self.tabwidget.daqwidget.write_file:
+    #            self.tabwidget.daqwidget.write_file = False
+    #            mtime = now - self.raw_mes_start
+    #            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+    #            self.logger.info("The raw data was written for %f hours" % mtime)
+    #            newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
+    #            shutil.move(self.rawfilename,newrawfilename)
+    #            self.tabwidget.daqwidget.outputfile.close()
 
-            if self.tabwidget.decaywidget.is_active():
+    #        if self.tabwidget.decaywidget.is_active():
 
-                mtime = now - self.tabwidget.decaywidget.dec_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-                self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-                newmufilename = self.decayfilename.replace("HOURS",str(mtime))
-                shutil.move(self.decayfilename,newmufilename)
+    #            mtime = now - self.tabwidget.decaywidget.dec_mes_start
+    #            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+    #            self.logger.info("The muon decay measurement was active for %f hours" % mtime)
+    #            newmufilename = self.decayfilename.replace("HOURS",str(mtime))
+    #            shutil.move(self.decayfilename,newmufilename)
 
-            if self.pulsefilename:
-                old_pulsefilename = self.pulsefilename
-                # no pulses shall be extracted any more, 
-                # this means changing lots of switches
-                self.pulsefilename = False
-                self.showpulses = False
-                self.pulseextractor.close_file()
-                mtime = now - self.pulse_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-                self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
-                newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
-                shutil.move(old_pulsefilename,newpulsefilename)
-              
-            self.tabwidget.ratewidget.data_file_write = False
-            self.tabwidget.ratewidget.data_file.close()
-            mtime = now - self.tabwidget.ratewidget.rate_mes_start
-            #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
-            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-            #print 'new mtime ', mtime, str(mtime)
-            self.logger.info("The rate measurement was active for %f hours" % mtime)
-            newratefilename = self.filename.replace("HOURS",str(mtime))
-            #print 'new raw name', newratefilename
-            shutil.move(self.filename,newratefilename)
-            time.sleep(0.5)
-            self.tabwidget.writefile = False
-            try:
-                self.tabwidget.decaywidget.mu_file.close()
+    #        if self.pulsefilename:
+    #            old_pulsefilename = self.pulsefilename
+    #            # no pulses shall be extracted any more, 
+    #            # this means changing lots of switches
+    #            self.pulsefilename = False
+    #            self.showpulses = False
+    #            self.pulseextractor.close_file()
+    #            mtime = now - self.pulse_mes_start
+    #            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+    #            self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
+    #            newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
+    #            shutil.move(old_pulsefilename,newpulsefilename)
+    #          
+    #        self.tabwidget.ratewidget.data_file_write = False
+    #        self.tabwidget.ratewidget.data_file.close()
+    #        mtime = now - self.tabwidget.ratewidget.rate_mes_start
+    #        #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
+    #        mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+    #        #print 'new mtime ', mtime, str(mtime)
+    #        self.logger.info("The rate measurement was active for %f hours" % mtime)
+    #        newratefilename = self.filename.replace("HOURS",str(mtime))
+    #        #print 'new raw name', newratefilename
+    #        shutil.move(self.filename,newratefilename)
+    #        time.sleep(0.5)
+    #        self.tabwidget.writefile = False
+    #        try:
+    #            self.tabwidget.decaywidget.mu_file.close()
  
-            except AttributeError:
-                pass
+    #        except AttributeError:
+    #            pass
 
-            self.root.quit()           
-            self.emit(QtCore.SIGNAL('closeEmitApp()'))
+    #        #self.root.quit()           
+    #        #self.connect(self, QtCore.SIGNAL('closeEmitApp()'), QtCore.SLOT('close()') )
+    #        #self.emit(QtCore.SIGNAL('closeEmitApp()'))
+    #        self.emit(QtCore.SIGNAL('lastWindowClosed()'))
+    #        self.close()
 
-        else: # don't close the mainwindow
-            if ev:
-                ev.ignore()
-            else:
-                pass
+    #    else: # don't close the mainwindow
+    #        if ev:
+    #            ev.ignore()
+    #        else:
+    #            pass
     
     #the individual menus
     def threshold_menu(self):
@@ -795,5 +799,66 @@ class MainWindow(QtGui.QMainWindow):
         """
 
         self.logger.info('Attempting to close Window!')
-        self.exit_program(ev)
+        # ask kindly if the user is really sure if she/he wants to exit
+        reply = QtGui.QMessageBox.question(self, 'Attention!',
+                'Do you really want to exit?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+        if reply == QtGui.QMessageBox.Yes:
+            now = datetime.datetime.now()
+
+            # close the RAW file (if any)
+            if self.tabwidget.daqwidget.write_file:
+                self.tabwidget.daqwidget.write_file = False
+                mtime = now - self.raw_mes_start
+                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+                self.logger.info("The raw data was written for %f hours" % mtime)
+                newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
+                shutil.move(self.rawfilename,newrawfilename)
+                self.tabwidget.daqwidget.outputfile.close()
+
+            if self.tabwidget.decaywidget.is_active():
+
+                mtime = now - self.tabwidget.decaywidget.dec_mes_start
+                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+                self.logger.info("The muon decay measurement was active for %f hours" % mtime)
+                newmufilename = self.decayfilename.replace("HOURS",str(mtime))
+                shutil.move(self.decayfilename,newmufilename)
+
+            if self.pulsefilename:
+                old_pulsefilename = self.pulsefilename
+                # no pulses shall be extracted any more, 
+                # this means changing lots of switches
+                self.pulsefilename = False
+                self.showpulses = False
+                self.pulseextractor.close_file()
+                mtime = now - self.pulse_mes_start
+                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+                self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
+                newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
+                shutil.move(old_pulsefilename,newpulsefilename)
+              
+            self.tabwidget.ratewidget.data_file_write = False
+            self.tabwidget.ratewidget.data_file.close()
+            mtime = now - self.tabwidget.ratewidget.rate_mes_start
+            #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
+            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+            #print 'new mtime ', mtime, str(mtime)
+            self.logger.info("The rate measurement was active for %f hours" % mtime)
+            newratefilename = self.filename.replace("HOURS",str(mtime))
+            #print 'new raw name', newratefilename
+            shutil.move(self.filename,newratefilename)
+            time.sleep(0.5)
+            self.tabwidget.writefile = False
+            try:
+                self.tabwidget.decaywidget.mu_file.close()
+ 
+            except AttributeError:
+                pass
+
+            self.emit(QtCore.SIGNAL('lastWindowClosed()'))
+            self.close()
+
+        else: # don't close the mainwindow
+            ev.ignore()
+
 
