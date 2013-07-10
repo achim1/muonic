@@ -170,9 +170,15 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.mainwindow = self.parentWidget()
         try:
             opts.timewindow = float(opts.timewindow)
-        except:
+        except ValueError:
             self.logger.error("Timewindow not given as float value! Reseting to default value.")
             opts.timewindow = 5.
+        if opts.timewindow <= 0.01:
+            self.logger.error("Timewindow too small, can produce extremely high CPU load! Reseting to default value.")
+            opts.timewindow = 5.
+        if opts.timewindow <= 0.1:
+            self.logger.warning("Timewindow small, can produce extremely high CPU load! Make sure you know what you are doing.")
+
         self.logger.info("Timewindow is %4.2f" %opts.timewindow)
 
         self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
