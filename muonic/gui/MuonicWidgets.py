@@ -140,14 +140,14 @@ class RateWidget(QtGui.QWidget):
 
         ntb = NavigationToolbar(self.scalars_monitor, self)
         rate_widget = QtGui.QGridLayout(self)
-        plotBox = QtGui.QGroupBox("Box for the plot")
+        plotBox = QtGui.QGroupBox("")
         plotBox.setObjectName("plotbox")
         plotlayout = QtGui.QGridLayout(plotBox)
-        valueBox = QtGui.QGroupBox("Box for the value display")
+        valueBox = QtGui.QGroupBox("")
         valueBox.setObjectName("valuebox")
         valueBox.setMaximumWidth(500)
         valuelayout = QtGui.QGridLayout(valueBox)
-        buttomlineBox = QtGui.QGroupBox("Box for the buttom line")
+        buttomlineBox = QtGui.QGroupBox("")
         buttomlineBox.setObjectName("valuebox")
         blinelayout = QtGui.QGridLayout(buttomlineBox)
         plotlayout.addWidget(self.scalars_monitor,0,0,1,1)
@@ -226,14 +226,38 @@ class RateWidget(QtGui.QWidget):
         if self.run:
             self.general_info['edit_daq_time'].setText('%.2f' %(self.timewindow))
             self.general_info['edit_max_rate'].setText('%.2f' %(self.general_info['max_rate']))
-            self.rates['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']/self.timewindow))
-            self.rates['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']/self.timewindow))
-            self.rates['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']/self.timewindow))
-            self.rates['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']/self.timewindow))
-            self.scalars['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']))
-            self.scalars['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']))
-            self.scalars['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']))
-            self.scalars['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']))
+            if self.mainwindow.channelcheckbox_0:
+                self.rates['edit_ch0'].setEnabled(True)
+                self.scalars['edit_ch0'].setDisabled(False)
+                self.rates['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']/self.timewindow))
+                self.scalars['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']))
+            else:
+                self.rates['edit_ch0'].setEnabled(False)
+                self.scalars['edit_ch0'].setDisabled(True)
+            if self.mainwindow.channelcheckbox_1:
+                self.rates['edit_ch1'].setDisabled(False)
+                self.scalars['edit_ch1'].setDisabled(False)
+                self.rates['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']/self.timewindow))
+                self.scalars['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']))
+            else:
+                self.rates['edit_ch1'].setDisabled(True)
+                self.scalars['edit_ch1'].setDisabled(True)
+            if self.mainwindow.channelcheckbox_2:
+                self.rates['edit_ch2'].setDisabled(False)
+                self.scalars['edit_ch2'].setDisabled(False)
+                self.rates['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']/self.timewindow))
+                self.scalars['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']))
+            else:
+                self.rates['edit_ch2'].setDisabled(True)
+                self.scalars['edit_ch2'].setDisabled(True)
+            if self.mainwindow.channelcheckbox_3:
+                self.rates['edit_ch3'].setDisabled(False)
+                self.scalars['edit_ch3'].setDisabled(False)
+                self.rates['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']/self.timewindow))
+                self.scalars['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']))
+            else:
+                self.rates['edit_ch3'].setDisabled(True)
+                self.scalars['edit_ch3'].setDisabled(True)
 
             if self.do_not_show_trigger:
                 self.rates['edit_trigger'].setDisabled(True)
@@ -246,7 +270,7 @@ class RateWidget(QtGui.QWidget):
                 self.rates['edit_trigger'].setText('%.2f' %(self.scalars['scalars_buffer']['trigger']/self.timewindow))
                 self.scalars['edit_trigger'].setText('%.2f' %(self.scalars['scalars_buffer']['trigger']))
 
-            self.scalars_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger)
+            self.scalars_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
       
     def is_active(self):
         return True # rate widget is always active    
@@ -254,9 +278,11 @@ class RateWidget(QtGui.QWidget):
     def startClicked(self):
         """
         start the rate measurement and write a file
-        """ 
+        """
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
+        self.mainwindow.daq.put('DC')
+        time.sleep(0.2)
 
         self.logger.debug("Start Button Clicked")
         date = time.gmtime()
@@ -266,15 +292,19 @@ class RateWidget(QtGui.QWidget):
         self.run = True
         self.data_file_write = True
         self.now = datetime.datetime.now()
-
-        self.rates['edit_ch0'].setEnabled(True)
-        self.rates['edit_ch1'].setDisabled(False)
-        self.rates['edit_ch2'].setDisabled(False)
-        self.rates['edit_ch3'].setDisabled(False)
-        self.scalars['edit_ch0'].setDisabled(False)
-        self.scalars['edit_ch1'].setDisabled(False)
-        self.scalars['edit_ch2'].setDisabled(False)
-        self.scalars['edit_ch3'].setDisabled(False)
+        
+        if self.mainwindow.channelcheckbox_0:
+            self.rates['edit_ch0'].setEnabled(True)
+            self.scalars['edit_ch0'].setDisabled(False)
+        if self.mainwindow.channelcheckbox_1:
+            self.rates['edit_ch1'].setDisabled(False)
+            self.scalars['edit_ch1'].setDisabled(False)
+        if self.mainwindow.channelcheckbox_2:
+            self.rates['edit_ch2'].setDisabled(False)
+            self.scalars['edit_ch2'].setDisabled(False)
+        if self.mainwindow.channelcheckbox_3:
+            self.rates['edit_ch3'].setDisabled(False)
+            self.scalars['edit_ch3'].setDisabled(False)
         self.general_info['edit_date'].setDisabled(False)
         self.general_info['edit_daq_time'].setDisabled(False)
         self.general_info['edit_max_rate'].setDisabled(False)

@@ -177,7 +177,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
         
         self.fig.canvas.draw()
 
-    def update_plot(self, result, trigger = False):
+    def update_plot(self, result, trigger = False,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True):
 
         #do a complete redraw of the plot to avoid memory leak!
         self.ax.clear()
@@ -206,25 +206,33 @@ class ScalarsCanvas(MuonicPlotCanvas):
         self.N2 += result[8]
         self.N3 += result[9]
         self.NT += result[10]
-
-        self.l_chan0, = self.ax.plot(self.l_time,self.chan0, c='y', label='ch0',lw=2,marker='v')
-        self.l_chan1, = self.ax.plot(self.l_time,self.chan1, c='m', label='ch1',lw=2,marker='v')
-        self.l_chan2, = self.ax.plot(self.l_time,self.chan2, c='c', label='ch2',lw=2,marker='v')
-        self.l_chan3, = self.ax.plot(self.l_time,self.chan3, c='b', label='ch3',lw=2,marker='v')
+        if channelcheckbox_0:
+            self.l_chan0, = self.ax.plot(self.l_time,self.chan0, c='y', label='ch0',lw=2,marker='v')
+        if channelcheckbox_1:
+            self.l_chan1, = self.ax.plot(self.l_time,self.chan1, c='m', label='ch1',lw=2,marker='v')
+        if channelcheckbox_2:
+            self.l_chan2, = self.ax.plot(self.l_time,self.chan2, c='c', label='ch2',lw=2,marker='v')
+        if channelcheckbox_3:
+            self.l_chan3, = self.ax.plot(self.l_time,self.chan3, c='b', label='ch3',lw=2,marker='v')
         if not self.do_not_show_trigger:
             self.l_trigger, = self.ax.plot(self.l_time,self.trigger, c='g', label='trg',lw=2,marker='x')
 
         try:
-            if self.do_not_show_trigger:
-                self.ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=4, mode="expand", borderaxespad=0., handlelength=2)
-            else:
-                self.ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=5, mode="expand", borderaxespad=0., handlelength=2)
+            _ncol_cnt = 0
+            for ch_chk_bx in [channelcheckbox_0,channelcheckbox_1,channelcheckbox_2,channelcheckbox_3]:
+                if ch_chk_bx:
+                    _ncol_cnt += 1
+
+            if not self.do_not_show_trigger:
+                _ncol_cnt += 1
+            
+            self.ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=_ncol_cnt, mode="expand", borderaxespad=0., handlelength=2)
             
         except:
             self.logger.info('An error with the legend occured!')
             self.ax.legend(loc=2)
 
-        if len(self.chan0) >  self.MAXLENGTH:
+        if len(self.chan0) > self.MAXLENGTH:
             self.chan0.remove(self.chan0[0])
             self.chan1.remove(self.chan1[0])
             self.chan2.remove(self.chan2[0])
