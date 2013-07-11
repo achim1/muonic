@@ -138,7 +138,7 @@ def main(bincontent=None):
         return (cut_bincenters,cut_bincontent,fitx,decay,p,covar,chisquare,nbins)
      
 
-def gaussian_fit(bincontent):
+def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
 
     def gauss(p,x):
         return (1/((p[0]*numpy.sqrt(2*numpy.pi))))*numpy.exp(-0.5*(((x - p[1])/p[0])**2)) 
@@ -149,14 +149,25 @@ def gaussian_fit(bincontent):
     if len(bincontent) == 0:
         print 'WARNING: Empty bins.'
         return None
-
+    
     # this is then used for the mudecaywindow
     # in muonic
     # we have to adjust the bins
     # to the values of the used histogram
 
-    bins = numpy.linspace(0,2,20)
+    bins = numpy.linspace(binning[0],binning[1],binning[2])
     bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
+
+    if fitrange is not None:
+
+        if fitrange[0] < binning[0]:
+            fitrange[0] = binning[0]
+        if fitrange[1] > binning[1]:
+            fitrange[1] = binning[1]
+        bin_mask = [(bin_centers <= fitrange[1]) & (bin_centers >= fitrange[0])]
+        bin_centers = numpy.asarray([x for x in bin_centers if (x <= fitrange[1] and x >= fitrange[0])])
+        bincontent = bincontent[bin_mask]
+
 
     # we cut the leading edge of the distribution away for the fit
     #glob_max = max(bincontent)
@@ -164,6 +175,7 @@ def gaussian_fit(bincontent):
     #for i in enumerate(bincontent):
     #    if i[1] == glob_max:
     #        cut = i[0]
+
 
     cut_bincontent  = bincontent#[cut:]        
     cut_bincenter   = bin_centers#[cut]

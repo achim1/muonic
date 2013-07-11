@@ -692,7 +692,8 @@ class VelocityWidget(QtGui.QWidget):
         self.active = False
         self.channel_distance = 100. # in cm
         self.omit_early_pulses = True
-        #self.velocitycanvas = VelocityCanvas(logger)
+        self.binning = (0.,2,10)
+        self.fitrange = None
 
         self.activateVelocity = QtGui.QCheckBox(self)
         self.activateVelocity.setText(tr("Dialog", "Measure muon velocity", None, QtGui.QApplication.UnicodeUTF8))
@@ -700,7 +701,7 @@ class VelocityWidget(QtGui.QWidget):
         self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
         layout = QtGui.QGridLayout(self)
         layout.addWidget(self.activateVelocity,0,0,1,2)
-        self.velocitycanvas = VelocityCanvas(self,logger)
+        self.velocitycanvas = VelocityCanvas(self,logger,binning = self.binning)
         self.velocitycanvas.setObjectName("velocity_plot")
         layout.addWidget(self.velocitycanvas,1,0,1,2)
         ntb = NavigationToolbar(self.velocitycanvas, self)
@@ -739,7 +740,8 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon velocity histogram
         """
-        fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights))
+        self.fitrange = None#(0.,0.24)
+        fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
