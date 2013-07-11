@@ -37,22 +37,22 @@ class RateWidget(QtGui.QWidget):
         self.mainwindow = self.parentWidget()
         self.logger           = logger
         self.run              = False
-        self.scalars_result   = False
+        self.scalers_result   = False
         self.MAXLENGTH = 40        
-        self.scalars_monitor  = ScalarsCanvas(self, logger, self.MAXLENGTH)
+        self.scalers_monitor  = scalersCanvas(self, logger, self.MAXLENGTH)
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.timewindow = 0
         self.now = datetime.datetime.now()
-        self.lastscalarquery = 0
-        self.thisscalarquery = time.time()
+        self.lastscalerquery = 0
+        self.thisscalerquery = time.time()
         self.do_not_show_trigger = False
 
         self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
         self.stop_button = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
         self.label_mean_rates = QtGui.QLabel(tr('MainWindow','mean rates:'))
-        self.label_total_scalars = QtGui.QLabel(tr('MainWindow','total scalars:'))
+        self.label_total_scalers = QtGui.QLabel(tr('MainWindow','total scalers:'))
         self.label_started = QtGui.QLabel(tr('MainWindow','started:'))
         self.rates = dict()
         self.rates['rates']= None
@@ -79,30 +79,30 @@ class RateWidget(QtGui.QWidget):
         self.rates['edit_trigger'] = QtGui.QLineEdit(self)
         self.rates['edit_trigger'].setReadOnly(True)
         self.rates['edit_trigger'].setDisabled(True)
-        self.scalars = dict()
-        self.scalars['scalars_buffer'] = dict()
+        self.scalers = dict()
+        self.scalers['scalers_buffer'] = dict()
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
-            self.scalars['scalars_buffer'][ch] = 0
-        self.scalars['label_ch0'] = QtGui.QLabel(tr('MainWindow','N 0:'))
-        self.scalars['edit_ch0'] = QtGui.QLineEdit(self)
-        self.scalars['edit_ch0'].setReadOnly(True)
-        self.scalars['edit_ch0'].setDisabled(True)
-        self.scalars['label_ch1'] = QtGui.QLabel(tr('MainWindow','N 1:'))
-        self.scalars['edit_ch1'] = QtGui.QLineEdit(self)
-        self.scalars['edit_ch1'].setReadOnly(True)
-        self.scalars['edit_ch1'].setDisabled(True)
-        self.scalars['label_ch2'] = QtGui.QLabel(tr('MainWindow','N 2:'))
-        self.scalars['edit_ch2'] = QtGui.QLineEdit(self)
-        self.scalars['edit_ch2'].setReadOnly(True)
-        self.scalars['edit_ch2'].setDisabled(True)
-        self.scalars['label_ch3'] = QtGui.QLabel(tr('MainWindow','N 3:'))
-        self.scalars['edit_ch3'] = QtGui.QLineEdit(self)
-        self.scalars['edit_ch3'].setReadOnly(True)
-        self.scalars['edit_ch3'].setDisabled(True)
-        self.scalars['label_trigger'] = QtGui.QLabel(tr('MainWindow','N T:'))
-        self.scalars['edit_trigger'] = QtGui.QLineEdit(self)
-        self.scalars['edit_trigger'].setReadOnly(True)
-        self.scalars['edit_trigger'].setDisabled(True)
+            self.scalers['scalers_buffer'][ch] = 0
+        self.scalers['label_ch0'] = QtGui.QLabel(tr('MainWindow','N 0:'))
+        self.scalers['edit_ch0'] = QtGui.QLineEdit(self)
+        self.scalers['edit_ch0'].setReadOnly(True)
+        self.scalers['edit_ch0'].setDisabled(True)
+        self.scalers['label_ch1'] = QtGui.QLabel(tr('MainWindow','N 1:'))
+        self.scalers['edit_ch1'] = QtGui.QLineEdit(self)
+        self.scalers['edit_ch1'].setReadOnly(True)
+        self.scalers['edit_ch1'].setDisabled(True)
+        self.scalers['label_ch2'] = QtGui.QLabel(tr('MainWindow','N 2:'))
+        self.scalers['edit_ch2'] = QtGui.QLineEdit(self)
+        self.scalers['edit_ch2'].setReadOnly(True)
+        self.scalers['edit_ch2'].setDisabled(True)
+        self.scalers['label_ch3'] = QtGui.QLabel(tr('MainWindow','N 3:'))
+        self.scalers['edit_ch3'] = QtGui.QLineEdit(self)
+        self.scalers['edit_ch3'].setReadOnly(True)
+        self.scalers['edit_ch3'].setDisabled(True)
+        self.scalers['label_trigger'] = QtGui.QLabel(tr('MainWindow','N trigger:'))
+        self.scalers['edit_trigger'] = QtGui.QLineEdit(self)
+        self.scalers['edit_trigger'].setReadOnly(True)
+        self.scalers['edit_trigger'].setDisabled(True)
 
         self.general_info = dict()
         self.general_info['label_date'] = QtGui.QLabel(tr('MainWindow',''))
@@ -138,7 +138,7 @@ class RateWidget(QtGui.QWidget):
                               )
         self.stop_button.setEnabled(False)
 
-        ntb = NavigationToolbar(self.scalars_monitor, self)
+        ntb = NavigationToolbar(self.scalers_monitor, self)
         rate_widget = QtGui.QGridLayout(self)
         plotBox = QtGui.QGroupBox("")
         plotBox.setObjectName("plotbox")
@@ -150,7 +150,7 @@ class RateWidget(QtGui.QWidget):
         buttomlineBox = QtGui.QGroupBox("")
         buttomlineBox.setObjectName("valuebox")
         blinelayout = QtGui.QGridLayout(buttomlineBox)
-        plotlayout.addWidget(self.scalars_monitor,0,0,1,1)
+        plotlayout.addWidget(self.scalers_monitor,0,0,1,1)
         valuelayout.addWidget(self.label_mean_rates,1,2)
         valuelayout.addWidget(self.rates['label_ch0'],1,3)
         valuelayout.addWidget(self.rates['edit_ch0'],1,4)
@@ -162,17 +162,17 @@ class RateWidget(QtGui.QWidget):
         valuelayout.addWidget(self.rates['edit_ch3'],4,4)
         valuelayout.addWidget(self.rates['label_trigger'],5,3)
         valuelayout.addWidget(self.rates['edit_trigger'],5,4)
-        valuelayout.addWidget(self.label_total_scalars,6,2)
-        valuelayout.addWidget(self.scalars['label_ch0'],6,3)
-        valuelayout.addWidget(self.scalars['edit_ch0'],6,4)
-        valuelayout.addWidget(self.scalars['label_ch1'],7,3)
-        valuelayout.addWidget(self.scalars['edit_ch1'],7,4)
-        valuelayout.addWidget(self.scalars['label_ch2'],8,3)
-        valuelayout.addWidget(self.scalars['edit_ch2'],8,4)
-        valuelayout.addWidget(self.scalars['label_ch3'],9,3)
-        valuelayout.addWidget(self.scalars['edit_ch3'],9,4)
-        valuelayout.addWidget(self.scalars['label_trigger'],10,3)
-        valuelayout.addWidget(self.scalars['edit_trigger'],10,4)
+        valuelayout.addWidget(self.label_total_scalers,6,2)
+        valuelayout.addWidget(self.scalers['label_ch0'],6,3)
+        valuelayout.addWidget(self.scalers['edit_ch0'],6,4)
+        valuelayout.addWidget(self.scalers['label_ch1'],7,3)
+        valuelayout.addWidget(self.scalers['edit_ch1'],7,4)
+        valuelayout.addWidget(self.scalers['label_ch2'],8,3)
+        valuelayout.addWidget(self.scalers['edit_ch2'],8,4)
+        valuelayout.addWidget(self.scalers['label_ch3'],9,3)
+        valuelayout.addWidget(self.scalers['edit_ch3'],9,4)
+        valuelayout.addWidget(self.scalers['label_trigger'],10,3)
+        valuelayout.addWidget(self.scalers['edit_trigger'],10,4)
         valuelayout.addWidget(self.label_started,11,2)
         #valuelayout.addWidget(self.general_info['label_date'],11,3)
         valuelayout.addWidget(self.general_info['edit_date'],11,3,1,2)
@@ -192,8 +192,8 @@ class RateWidget(QtGui.QWidget):
 
     def calculate(self,rates):
         #now = time.time()
-        #self.thisscalarquery = now - self.lastscalarquery
-        #self.lastscalarquery = now
+        #self.thisscalerquery = now - self.lastscalerquery
+        #self.lastscalerquery = now
         self.rates['rates'] = rates
         self.timewindow += rates[5]
         self.rates['rates_buffer']['ch0'].append(rates[0])
@@ -206,11 +206,11 @@ class RateWidget(QtGui.QWidget):
             if len(self.rates['rates_buffer'][ch]) > self.MAXLENGTH:
                 self.rates['rates_buffer'][ch].remove(self.rates['rates_buffer'][ch][0])
 
-        self.scalars['scalars_buffer']['ch0'] += rates[6]
-        self.scalars['scalars_buffer']['ch1'] += rates[7]
-        self.scalars['scalars_buffer']['ch2'] += rates[8]
-        self.scalars['scalars_buffer']['ch3'] += rates[9]
-        self.scalars['scalars_buffer']['trigger'] += rates[10]
+        self.scalers['scalers_buffer']['ch0'] += rates[6]
+        self.scalers['scalers_buffer']['ch1'] += rates[7]
+        self.scalers['scalers_buffer']['ch2'] += rates[8]
+        self.scalers['scalers_buffer']['ch3'] += rates[9]
+        self.scalers['scalers_buffer']['trigger'] += rates[10]
 
         max_rate = max( max(self.rates['rates_buffer']['ch0']), max(self.rates['rates_buffer']['ch1']), max(self.rates['rates_buffer']['ch2']), 
                    max(self.rates['rates_buffer']['ch3']))
@@ -228,49 +228,49 @@ class RateWidget(QtGui.QWidget):
             self.general_info['edit_max_rate'].setText('%.2f' %(self.general_info['max_rate']))
             if self.mainwindow.channelcheckbox_0:
                 self.rates['edit_ch0'].setEnabled(True)
-                self.scalars['edit_ch0'].setDisabled(False)
-                self.rates['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']/self.timewindow))
-                self.scalars['edit_ch0'].setText('%.2f' %(self.scalars['scalars_buffer']['ch0']))
+                self.scalers['edit_ch0'].setDisabled(False)
+                self.rates['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']/self.timewindow))
+                self.scalers['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']))
             else:
                 self.rates['edit_ch0'].setEnabled(False)
-                self.scalars['edit_ch0'].setDisabled(True)
+                self.scalers['edit_ch0'].setDisabled(True)
             if self.mainwindow.channelcheckbox_1:
                 self.rates['edit_ch1'].setDisabled(False)
-                self.scalars['edit_ch1'].setDisabled(False)
-                self.rates['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']/self.timewindow))
-                self.scalars['edit_ch1'].setText('%.2f' %(self.scalars['scalars_buffer']['ch1']))
+                self.scalers['edit_ch1'].setDisabled(False)
+                self.rates['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']/self.timewindow))
+                self.scalers['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']))
             else:
                 self.rates['edit_ch1'].setDisabled(True)
-                self.scalars['edit_ch1'].setDisabled(True)
+                self.scalers['edit_ch1'].setDisabled(True)
             if self.mainwindow.channelcheckbox_2:
                 self.rates['edit_ch2'].setDisabled(False)
-                self.scalars['edit_ch2'].setDisabled(False)
-                self.rates['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']/self.timewindow))
-                self.scalars['edit_ch2'].setText('%.2f' %(self.scalars['scalars_buffer']['ch2']))
+                self.scalers['edit_ch2'].setDisabled(False)
+                self.rates['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']/self.timewindow))
+                self.scalers['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']))
             else:
                 self.rates['edit_ch2'].setDisabled(True)
-                self.scalars['edit_ch2'].setDisabled(True)
+                self.scalers['edit_ch2'].setDisabled(True)
             if self.mainwindow.channelcheckbox_3:
                 self.rates['edit_ch3'].setDisabled(False)
-                self.scalars['edit_ch3'].setDisabled(False)
-                self.rates['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']/self.timewindow))
-                self.scalars['edit_ch3'].setText('%.2f' %(self.scalars['scalars_buffer']['ch3']))
+                self.scalers['edit_ch3'].setDisabled(False)
+                self.rates['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']/self.timewindow))
+                self.scalers['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']))
             else:
                 self.rates['edit_ch3'].setDisabled(True)
-                self.scalars['edit_ch3'].setDisabled(True)
+                self.scalers['edit_ch3'].setDisabled(True)
 
             if self.do_not_show_trigger:
                 self.rates['edit_trigger'].setDisabled(True)
-                self.scalars['edit_trigger'].setDisabled(True)
+                self.scalers['edit_trigger'].setDisabled(True)
                 self.rates['edit_trigger'].setText('')
-                self.scalars['edit_trigger'].setText('')
+                self.scalers['edit_trigger'].setText('')
             else:
                 self.rates['edit_trigger'].setDisabled(False)
-                self.scalars['edit_trigger'].setDisabled(False)
-                self.rates['edit_trigger'].setText('%.2f' %(self.scalars['scalars_buffer']['trigger']/self.timewindow))
-                self.scalars['edit_trigger'].setText('%.2f' %(self.scalars['scalars_buffer']['trigger']))
+                self.scalers['edit_trigger'].setDisabled(False)
+                self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
+                self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
 
-            self.scalars_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
+            self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
       
     def is_active(self):
         return True # rate widget is always active    
@@ -295,16 +295,16 @@ class RateWidget(QtGui.QWidget):
         
         if self.mainwindow.channelcheckbox_0:
             self.rates['edit_ch0'].setEnabled(True)
-            self.scalars['edit_ch0'].setDisabled(False)
+            self.scalers['edit_ch0'].setDisabled(False)
         if self.mainwindow.channelcheckbox_1:
             self.rates['edit_ch1'].setDisabled(False)
-            self.scalars['edit_ch1'].setDisabled(False)
+            self.scalers['edit_ch1'].setDisabled(False)
         if self.mainwindow.channelcheckbox_2:
             self.rates['edit_ch2'].setDisabled(False)
-            self.scalars['edit_ch2'].setDisabled(False)
+            self.scalers['edit_ch2'].setDisabled(False)
         if self.mainwindow.channelcheckbox_3:
             self.rates['edit_ch3'].setDisabled(False)
-            self.scalars['edit_ch3'].setDisabled(False)
+            self.scalers['edit_ch3'].setDisabled(False)
         self.general_info['edit_date'].setDisabled(False)
         self.general_info['edit_daq_time'].setDisabled(False)
         self.general_info['edit_max_rate'].setDisabled(False)
@@ -314,12 +314,12 @@ class RateWidget(QtGui.QWidget):
         self.general_info['edit_max_rate'].setText('%.2f' %(self.general_info['max_rate']))
         if self.do_not_show_trigger:
             self.rates['edit_trigger'].setDisabled(True)
-            self.scalars['edit_trigger'].setDisabled(True)
+            self.scalers['edit_trigger'].setDisabled(True)
         else:
             self.rates['edit_trigger'].setDisabled(False)
-            self.scalars['edit_trigger'].setDisabled(False)
+            self.scalers['edit_trigger'].setDisabled(False)
 
-        self.scalars_monitor.reset()
+        self.scalers_monitor.reset()
         #time.sleep(3)
         #self.start_button.setEnabled(True)
         
@@ -334,11 +334,11 @@ class RateWidget(QtGui.QWidget):
         self.rates['edit_ch2'].setDisabled(True)
         self.rates['edit_ch3'].setDisabled(True)
         self.rates['edit_trigger'].setDisabled(True)
-        self.scalars['edit_ch0'].setDisabled(True)
-        self.scalars['edit_ch1'].setDisabled(True)
-        self.scalars['edit_ch2'].setDisabled(True)
-        self.scalars['edit_ch3'].setDisabled(True)
-        self.scalars['edit_trigger'].setDisabled(True)
+        self.scalers['edit_ch0'].setDisabled(True)
+        self.scalers['edit_ch1'].setDisabled(True)
+        self.scalers['edit_ch2'].setDisabled(True)
+        self.scalers['edit_ch3'].setDisabled(True)
+        self.scalers['edit_trigger'].setDisabled(True)
         self.general_info['edit_date'].setDisabled(True)
         self.general_info['edit_daq_time'].setDisabled(True)
         self.general_info['edit_max_rate'].setDisabled(True)
@@ -459,8 +459,8 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.label_active_channels_1 = QtGui.QLabel(tr('MainWindow',', 1:'))
         self.label_active_channels_2 = QtGui.QLabel(tr('MainWindow',', 2:'))
         self.label_active_channels_3 = QtGui.QLabel(tr('MainWindow',', 3:'))
-        self.label_coincidences = QtGui.QLabel(tr('MainWindow','Coincidences:'))
-        self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Coincidence time window:'))
+        self.label_coincidences = QtGui.QLabel(tr('MainWindow','Trigger condition:'))
+        self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Time window for trigger condition:'))
         self.label_veto = QtGui.QLabel(tr('MainWindow','Veto:'))
         self.thresholds = []
         for cnt in range(4):
@@ -496,7 +496,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.label_muonic = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))
         self.label_start_params = QtGui.QLabel(tr('MainWindow','Start parameter:'))
         self.label_refreshtime = QtGui.QLabel(tr('MainWindow','Measurement intervals:'))
-        self.label_open_files = QtGui.QLabel(tr('MainWindow','Currently opend files:'))
+        self.label_open_files = QtGui.QLabel(tr('MainWindow','Currently opened files:'))
         self.label_last_path = QtGui.QLabel(tr('MainWindow','Last saved files:'))
         self.start_params = QtGui.QLineEdit(self)
         self.start_params.setReadOnly(True)

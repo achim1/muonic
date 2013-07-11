@@ -167,7 +167,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
         self.l_chan2, = self.ax.plot(self.l_time,self.chan2, c='c',  label='ch2',lw=3)
         self.l_chan3, = self.ax.plot(self.l_time,self.chan3, c='b', label='ch3',lw=3)
         if not self.do_not_show_trigger:
-            self.l_trigger, = self.ax.plot(self.l_time,self.trigger, c='g', label='trg',lw=3)
+            self.l_trigger, = self.ax.plot(self.l_time,self.trigger, c='g', label='trigger',lw=3)
 
         self.N0 = 0
         self.N1 = 0
