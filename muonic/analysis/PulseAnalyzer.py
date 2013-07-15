@@ -345,7 +345,7 @@ class DecayTriggerThorough:
         # then we do not want to have more than one
         # hit in the first
         # again: use selfveto to adjust the behavior
-        if pulses2 == 2 and pulses1 == 1:
+        if pulses2 >= 2 and pulses1 == 1:
             # check if the width of the pulses is as required
             singlepulsewidth = ttp[single_channel][0][1] - ttp[single_channel][0][0]
             doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
