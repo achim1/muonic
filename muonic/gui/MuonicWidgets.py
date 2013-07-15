@@ -39,7 +39,7 @@ class RateWidget(QtGui.QWidget):
         self.run              = False
         self.scalers_result   = False
         self.MAXLENGTH = 40        
-        self.scalers_monitor  = scalersCanvas(self, logger, self.MAXLENGTH)
+        self.scalers_monitor  = ScalarsCanvas(self, logger, self.MAXLENGTH)
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
@@ -740,7 +740,7 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon velocity histogram
         """
-        self.fitrange = None#(0.,0.24)
+        self.fitrange = (0.,0.24)
         fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
@@ -1024,7 +1024,8 @@ class DAQWidget(QtGui.QWidget):
     def on_file_clicked(self):
         """
         save the raw daq data to a automatically named file
-        """       
+        """
+        self.mainwindow.daq.put("CE")        
         self.outputfile = open(self.mainwindow.rawfilename,"w")
         self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
         self.write_file = True
