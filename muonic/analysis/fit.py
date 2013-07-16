@@ -159,14 +159,18 @@ def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
     bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
 
     if fitrange is not None:
-
         if fitrange[0] < binning[0]:
             fitrange[0] = binning[0]
         if fitrange[1] > binning[1]:
             fitrange[1] = binning[1]
         bin_mask = [(bin_centers <= fitrange[1]) & (bin_centers >= fitrange[0])]
-        bin_centers = numpy.asarray([x for x in bin_centers if (x <= fitrange[1] and x >= fitrange[0])])
-        bincontent = bincontent[bin_mask]
+        bin_centers_ = numpy.asarray([x for x in bin_centers if (x <= fitrange[1] and x >= fitrange[0])])
+        if len(bin_centers_) < 3:
+            print 'WARNING: fit range too small. Skipping fitting. Try with larger fit range.'
+            return None
+        else:
+            bin_centers = bin_centers_
+            bincontent = bincontent[bin_mask]
 
 
     # we cut the leading edge of the distribution away for the fit
@@ -198,7 +202,6 @@ def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
     p0 = numpy.array([20,1.0,5])
 
     #output = optimize.leastsq(error,p0,args=(fit_bin_centers,fitbincontent),full_output=1)
-
     output = optimize.leastsq(error,p0,args=(cut_bincenters,cut_bincontent),full_output=1)
 
     p = output[0]
