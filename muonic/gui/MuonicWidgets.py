@@ -10,7 +10,7 @@ from PyQt4 import QtCore
 #muonic imports
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
-from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog
+from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
 from ..analysis.fit import main as fit
 from ..analysis.fit import gaussian_fit
 from ..analysis.PulseAnalyzer import VelocityTrigger,DecayTriggerThorough
@@ -699,14 +699,16 @@ class VelocityWidget(QtGui.QWidget):
         self.activateVelocity.setText(tr("Dialog", "Measure muon velocity", None, QtGui.QApplication.UnicodeUTF8))
         self.activateVelocity.setObjectName("activate_velocity")
         self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
+        self.velocityfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Change fit range')) 
         layout = QtGui.QGridLayout(self)
-        layout.addWidget(self.activateVelocity,0,0,1,2)
+        layout.addWidget(self.activateVelocity,0,0,1,3)
         self.velocitycanvas = VelocityCanvas(self,logger,binning = self.binning)
         self.velocitycanvas.setObjectName("velocity_plot")
-        layout.addWidget(self.velocitycanvas,1,0,1,2)
+        layout.addWidget(self.velocitycanvas,1,0,1,3)
         ntb = NavigationToolbar(self.velocitycanvas, self)
         layout.addWidget(ntb,2,0)
-        layout.addWidget(self.velocityfit_button,2,1)      
+        layout.addWidget(self.velocityfitrange_button,2,1)      
+        layout.addWidget(self.velocityfit_button,2,2)      
         QtCore.QObject.connect(self.activateVelocity,
                                QtCore.SIGNAL("clicked()"),
                                self.activateVelocityClicked
@@ -715,6 +717,11 @@ class VelocityWidget(QtGui.QWidget):
         QtCore.QObject.connect(self.velocityfit_button,
                               QtCore.SIGNAL("clicked()"),
                               self.velocityFitClicked
+                              )
+
+        QtCore.QObject.connect(self.velocityfitrange_button,
+                              QtCore.SIGNAL("clicked()"),
+                              self.velocityFitRangeClicked
                               )
         
     def calculate(self,pulses):
@@ -736,11 +743,22 @@ class VelocityWidget(QtGui.QWidget):
     def is_active(self):
         return self.active
     
+    def velocityFitRangeClicked(self):
+        """
+        fit the muon velocity histogram
+        """
+        config_dialog = FitRangeConfigDialog()
+        rv = config_dialog.exec_()
+        if rv == 1:
+            print 'oo'
+        else:
+            print 'uuuu'
+
+
     def velocityFitClicked(self):
         """
         fit the muon velocity histogram
         """
-        self.fitrange = None#(0.,1.98)
         fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])

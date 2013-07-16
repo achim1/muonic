@@ -151,6 +151,41 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.buttonBox,4,2)
         self.setLayout(grid)
         self.show()
+class FitRangeConfigDialog(MuonicDialog):
+
+        def __init__(self, *args):
+            QtGui.QDialog.__init__(self,*args)
+
+            #self.resize(480, 360)
+            self.setModal(True)
+            self.setWindowTitle("Fit Range Configuration")  
+
+            grid = QtGui.QGridLayout()
+            
+            lower_label    = QtGui.QLabel("Lower limit for the fit range: ") 
+            lower = QtGui.QSpinBox()
+            lower.setObjectName("lower_limit")
+            lower.setMaximum(1)
+            lower.setMinimum(1)
+            grid.addWidget(lower_label,0,0)
+            grid.addWidget(lower,0,1)
+           
+            upper_label    = QtGui.QLabel("Upper limit for the fit range: ") 
+            upper = QtGui.QSpinBox()
+            upper.setObjectName("upper_limit")
+            upper.setMaximum(1)
+            upper.setMinimum(1)
+            grid.addWidget(upper_label,1,0)
+            grid.addWidget(upper,1,1)
+           
+            self.buttonBox = self.createButtonBox(leftoffset=200)
+            QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+            QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+            QtCore.QMetaObject.connectSlotsByName(self)
+            
+            grid.addWidget(self.buttonBox,2,0,2,0)
+            self.setLayout(grid)
+            self.show()
 
 class VelocityConfigDialog(MuonicDialog):
 
