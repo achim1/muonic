@@ -805,6 +805,9 @@ class DecayWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self,parent=parent) 
         self.logger = logger 
         self.mufit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!'))
+        self.mufit_button.setEnabled(False)
+        self.decayfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Change fit range')) 
+        self.decayfitrange_button.setEnabled(False)
         self.lifetime_monitor = LifetimeCanvas(self,logger)
         self.minsinglepulsewidth = 0
         self.maxsinglepulsewidth = 100000 #inf
@@ -824,12 +827,17 @@ class DecayWidget(QtGui.QWidget):
         self.dec_mes_start       = None
         self.previous_coinc_time_03 = "00"
         self.previous_coinc_time_02 = "0A"
+        self.binning = (0,10,21)
+        self.fitrange = (self.binning[0],self.binning[1])
 
         QtCore.QObject.connect(self.mufit_button,
                               QtCore.SIGNAL("clicked()"),
                               self.mufitClicked
                               )
-
+        QtCore.QObject.connect(self.decayfitrange_button,
+                              QtCore.SIGNAL("clicked()"),
+                              self.decayFitRangeClicked
+                              )
 
         ntb1 = NavigationToolbar(self.lifetime_monitor, self)
 
@@ -852,7 +860,8 @@ class DecayWidget(QtGui.QWidget):
         decay_tab.addWidget(lastDecay,2,0)
         decay_tab.addWidget(self.lifetime_monitor,3,0,1,2)
         decay_tab.addWidget(ntb1,4,0)
-        decay_tab.addWidget(self.mufit_button,4,1)
+        decay_tab.addWidget(self.mufit_button,4,2)
+        decay_tab.addWidget(self.decayfitrange_button,4,1)
         self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
         self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
         
@@ -877,12 +886,15 @@ class DecayWidget(QtGui.QWidget):
         """
         fit the muon decay histogram
         """
-        fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights))
+        fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
     def update(self):
         if self.decay:
+            self.mufit_button.setEnabled(True)
+            self.decayfitrange_button.setEnabled(True)
+
             decay_times =  [decay_time[0] for decay_time in self.decay]
             self.lifetime_monitor.update_plot(decay_times)
             self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
@@ -898,6 +910,16 @@ class DecayWidget(QtGui.QWidget):
         else:
             pass
 
+    def decayFitRangeClicked(self):
+        """
+        fit the muon decay histogram
+        """
+        config_dialog = FitRangeConfigDialog(upperlim = (0.,10.,self.fitrange[1]), lowerlim = (-1.,10.,self.fitrange[0]))
+        rv = config_dialog.exec_()
+        if rv == 1:
+            upper_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("upper_limit")).value()
+            lower_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("lower_limit")).value()
+            self.fitrange = (lower_limit,upper_limit)
 
     def activateMuondecayClicked(self):
         """

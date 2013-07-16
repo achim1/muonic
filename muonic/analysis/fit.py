@@ -10,7 +10,7 @@ import pylab
 import sys
 #import optimalbins
 
-def main(bincontent=None):
+def main(bincontent=None,binning = (0,10,21), fitrange = None):
 
     def decay(p,x):
         return p[0]*numpy.exp(-x/p[1])+p[2]
@@ -35,7 +35,7 @@ def main(bincontent=None):
         #nbins = optimalbins.optbinsize(times,1,30)
         print "Nbins:",nbins
         
-        bin_edges = numpy.linspace(xmin,xmax,nbins)
+        bin_edges = numpy.linspace(binning[0],binning[1],binning[2])
         bin_centers = bin_edges[:-1] + 0.5*(bin_edges[1]-bin_edges[0])
         
         hist,edges = numpy.histogram(times,bin_edges)
@@ -78,9 +78,22 @@ def main(bincontent=None):
         if len(bincontent) == 0:
             print 'WARNING: Empty bins.'
             return None
-
-        bins = numpy.linspace(0,10,21)
+    
+        bins = numpy.linspace(binning[0],binning[1],binning[2])
         bin_centers = bins[:-1] + 0.5*(bins[1]-bins[0])
+        if fitrange is not None:
+            if fitrange[0] < binning[0]:
+                fitrange = (binning[0], fitrange[1])
+            if fitrange[1] > binning[1]:
+                fitrange = (fitrange[0],binning[1])
+            bin_mask = [(bin_centers <= fitrange[1]) & (bin_centers >= fitrange[0])]
+            bin_centers_ = numpy.asarray([x for x in bin_centers if (x <= fitrange[1] and x >= fitrange[0])])
+            if len(bin_centers_) < 3:
+                print 'WARNING: fit range too small. Skipping fitting. Try with larger fit range.'
+                return None
+            else:
+                bin_centers = bin_centers_
+                bincontent = bincontent[bin_mask]
 
         # we cut the leading edge of the distribution away for the fit 
         glob_max = max(bincontent)
