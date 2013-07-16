@@ -160,9 +160,9 @@ def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
 
     if fitrange is not None:
         if fitrange[0] < binning[0]:
-            fitrange[0] = binning[0]
+            fitrange = (binning[0], fitrange[1])
         if fitrange[1] > binning[1]:
-            fitrange[1] = binning[1]
+            fitrange = (fitrange[0],binning[1])
         bin_mask = [(bin_centers <= fitrange[1]) & (bin_centers >= fitrange[0])]
         bin_centers_ = numpy.asarray([x for x in bin_centers if (x <= fitrange[1] and x >= fitrange[0])])
         if len(bin_centers_) < 3:

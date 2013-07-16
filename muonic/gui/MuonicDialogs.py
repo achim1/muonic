@@ -153,7 +153,7 @@ class DecayConfigDialog(MuonicDialog):
         self.show()
 class FitRangeConfigDialog(MuonicDialog):
 
-        def __init__(self, *args):
+        def __init__(self, upperlim = None, lowerlim = None, *args):
             QtGui.QDialog.__init__(self,*args)
 
             #self.resize(480, 360)
@@ -163,18 +163,26 @@ class FitRangeConfigDialog(MuonicDialog):
             grid = QtGui.QGridLayout()
             
             lower_label    = QtGui.QLabel("Lower limit for the fit range: ") 
-            lower = QtGui.QSpinBox()
+            lower = QtGui.QDoubleSpinBox()
+            lower.setDecimals(2)
+            lower.setSingleStep(0.01)
             lower.setObjectName("lower_limit")
-            lower.setMaximum(1)
-            lower.setMinimum(1)
+            if lowerlim:
+                lower.setMaximum(lowerlim[1])
+                lower.setMinimum(lowerlim[0])
+                lower.setValue(lowerlim[2])
             grid.addWidget(lower_label,0,0)
             grid.addWidget(lower,0,1)
            
             upper_label    = QtGui.QLabel("Upper limit for the fit range: ") 
-            upper = QtGui.QSpinBox()
+            upper = QtGui.QDoubleSpinBox()
+            upper.setDecimals(2)
+            upper.setSingleStep(0.01)
             upper.setObjectName("upper_limit")
-            upper.setMaximum(1)
-            upper.setMinimum(1)
+            if upperlim:
+                upper.setMaximum(upperlim[1])
+                upper.setMinimum(upperlim[0])
+                upper.setValue(upperlim[2])
             grid.addWidget(upper_label,1,0)
             grid.addWidget(upper,1,1)
            

@@ -693,7 +693,7 @@ class VelocityWidget(QtGui.QWidget):
         self.channel_distance = 100. # in cm
         self.omit_early_pulses = True
         self.binning = (0.,2,10)
-        self.fitrange = None
+        self.fitrange = (self.binning[0],self.binning[1])
 
         self.activateVelocity = QtGui.QCheckBox(self)
         self.activateVelocity.setText(tr("Dialog", "Measure muon velocity", None, QtGui.QApplication.UnicodeUTF8))
@@ -707,8 +707,10 @@ class VelocityWidget(QtGui.QWidget):
         layout.addWidget(self.velocitycanvas,1,0,1,3)
         ntb = NavigationToolbar(self.velocitycanvas, self)
         layout.addWidget(ntb,2,0)
-        layout.addWidget(self.velocityfitrange_button,2,1)      
-        layout.addWidget(self.velocityfit_button,2,2)      
+        layout.addWidget(self.velocityfitrange_button,2,1)
+        layout.addWidget(self.velocityfit_button,2,2)
+        self.velocityfitrange_button.setEnabled(False)
+        self.velocityfit_button.setEnabled(False)
         QtCore.QObject.connect(self.activateVelocity,
                                QtCore.SIGNAL("clicked()"),
                                self.activateVelocityClicked
@@ -737,6 +739,8 @@ class VelocityWidget(QtGui.QWidget):
     #FIXME: we should not name this update
     #since update is already a member
     def update(self):
+        self.velocityfitrange_button.setEnabled(True)    
+        self.velocityfit_button.setEnabled(True)
         self.findChild(VelocityCanvas,QtCore.QString("velocity_plot")).update_plot(self.times)
         self.times = []
 
@@ -747,18 +751,18 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon velocity histogram
         """
-        config_dialog = FitRangeConfigDialog()
+        config_dialog = FitRangeConfigDialog(upperlim = (0.,3.,self.fitrange[1]), lowerlim = (-1.,3.,self.fitrange[0]))
         rv = config_dialog.exec_()
         if rv == 1:
-            print 'oo'
-        else:
-            print 'uuuu'
-
+            upper_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("upper_limit")).value()
+            lower_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("lower_limit")).value()
+            self.fitrange = (lower_limit,upper_limit)
 
     def velocityFitClicked(self):
         """
         fit the muon velocity histogram
         """
+        print 'That is it ', self.fitrange
         fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
