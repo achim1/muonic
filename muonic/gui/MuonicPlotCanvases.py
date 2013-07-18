@@ -357,8 +357,8 @@ class LifetimeCanvas(MuonicHistCanvas):
     measurement
     """
     
-    def __init__(self,parent,logger):       
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0,10,21),xlabel="time between pulses (microseconds)",ylabel="events")
+    def __init__(self,parent,logger,binning = (0,10,21)):       
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="time between pulses (microseconds)",ylabel="events")
 
      
 class VelocityCanvas(MuonicHistCanvas):  
@@ -372,7 +372,7 @@ class PulseWidthCanvas(MuonicHistCanvas):
 
     def __init__(self,parent,logger,histcolor="r"): 
         #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,50),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,30),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
         self.ax.set_title("Pulsewidths")
         
     def update_plot(self,data):
