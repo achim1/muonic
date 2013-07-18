@@ -345,6 +345,10 @@ class RateWidget(QtGui.QWidget):
 
         self.run = False
         self.data_file_write = False
+        date = time.gmtime()        
+        comment_file = '# stopped run on: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        self.data_file.write(comment_file)
+
         self.data_file.close()
 
 

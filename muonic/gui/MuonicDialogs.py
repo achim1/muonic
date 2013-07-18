@@ -322,14 +322,13 @@ class ConfigDialog(MuonicDialog):
     Set Channel configuration
     """
     
-    def __init__(self,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True,coincidencecheckbox_0 = True,coincidencecheckbox_1 = False,coincidencecheckbox_2 = False,coincidencecheckbox_3 = False,vetocheckbox = False,vetocheckbox_0 = False,vetocheckbox_1 = False,vetocheckbox_2 = False, advanced_opts = False, gatewidth = 100, *args):
+    def __init__(self,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True,coincidencecheckbox_0 = True,coincidencecheckbox_1 = False,coincidencecheckbox_2 = False,coincidencecheckbox_3 = False,vetocheckbox = False,vetocheckbox_0 = False,vetocheckbox_1 = False,vetocheckbox_2 = False, *args):
 
         QtGui.QDialog.__init__(self,*args)
 
         self.setObjectName("Configure")
         self.setModal(True)
         self.setWindowTitle("Channel Configuration")  
-        self.advanced_opts = advanced_opts
         self.buttonBox = self.createButtonBox(leftoffset=30, topoffset=300)
 
         # used advanced grid layout...
@@ -353,30 +352,77 @@ class ConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(label="Select Channel",objectname = "channelcheckbox",leftoffset=300,setchecked=channels), 0, 0)
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Coincidence",objectname = "coincidencecheckbox",leftoffset=20,setchecked=coincidence,itemlabels=["Single","Twofold","Threefold","Fourfold"]), 0, 1)
         grid.addWidget(self.createCheckGroupBox(radio=True,checkable=True,checkable_set=vetocheckbox,label="Veto",objectname = "vetocheckbox",leftoffset=180,setchecked=vetochecks,itemlabels=["Chan1","Chan2","Chan3"]), 0, 2)
-        
-        advancedgroupBox = QtGui.QGroupBox("Advanced options")
-        advancedgroupBox.setCheckable(True)
-        advancedgroupBox.setChecked(False)
-        advancedgroupBox.setObjectName("advancedgroupbox")      
-        advancedgrouplayout = QtGui.QGridLayout(advancedgroupBox)
-        self.gatewidth = QtGui.QSpinBox()
-        self.gatewidth.setSuffix(' ns')
-        self.gatewidth.setObjectName("gatewidth")
-        self.gatewidth_label = QtGui.QLabel("Coincidence timewindow (default: 100 ns)")
-        self.gatewidth.setMaximum(159990)
-        self.gatewidth.setMinimum(10)
-        self.gatewidth.setValue(gatewidth)
-        self.gatewidth.setToolTip(QtCore.QString("Define a gatewidth, which is the coincidence timewindow"))
-        advancedgrouplayout.addWidget(self.gatewidth,0,0)
-        advancedgrouplayout.addWidget(self.gatewidth_label,0,1)
-
-        grid.addWidget(advancedgroupBox,1,0)        
-        
+                
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
-        grid.addWidget(self.buttonBox,2,2,1,2)
+        grid.addWidget(self.buttonBox,1,2,1,2)
 
+        self.setLayout(grid)
+        
+        self.show()
+
+class AdvancedDialog(MuonicDialog):
+    """
+    Set Channel configuration
+    """
+    
+    def __init__(self,gatewidth = 100, timewindow = 5.0, writepulses = None, nostatus = None, *args):
+
+        QtGui.QDialog.__init__(self,*args)
+
+        self.setObjectName("Configure")
+        self.setModal(True)
+        self.setWindowTitle("Advanced Configurations")  
+        self.buttonBox = self.createButtonBox(leftoffset=30, topoffset=300)
+
+        # used advanced grid layout...
+        grid = QtGui.QGridLayout()
+        self.gatewidth = QtGui.QSpinBox()
+        self.gatewidth.setSuffix(' ns')
+        self.gatewidth.setObjectName("gatewidth")
+        self.gatewidth_label = QtGui.QLabel("Coincidence timewindow (default: 100 ns): ")
+        self.gatewidth.setMaximum(159990)
+        self.gatewidth.setSingleStep(10)        
+        self.gatewidth.setMinimum(10)
+        self.gatewidth.setValue(gatewidth)
+        self.gatewidth.setToolTip(QtCore.QString("Define a gatewidth, which is the coincidence timewindow"))
+        grid.addWidget(self.gatewidth,0,1)
+        grid.addWidget(self.gatewidth_label,0,0)
+
+        self.timewindow_label = QtGui.QLabel("Readout timewindow (default: 5 s): ")
+        self.timewindow = QtGui.QDoubleSpinBox()
+        self.timewindow.setDecimals(1)
+        self.timewindow.setSingleStep(0.1)
+        self.timewindow.setSuffix(' s')
+        self.timewindow.setObjectName("timewindow")
+        self.timewindow.setMaximum(1000)
+        self.timewindow.setMinimum(0.01)
+        self.timewindow.setValue(timewindow)
+        self.timewindow.setToolTip(QtCore.QString("Define an interval for calculating and refreshing the rates."))
+        grid.addWidget(self.timewindow,1,1)
+        grid.addWidget(self.timewindow_label,1,0)
+
+        self.writepulses_label = QtGui.QLabel("Write pulse file: ")
+        self.writepulses = QtGui.QCheckBox()
+        self.writepulses.setChecked(writepulses)
+        self.writepulses.setObjectName("writepulses")
+        self.writepulses.setToolTip(QtCore.QString("Write a pulse file ('P' file) or not, same as option -p."))
+        grid.addWidget(self.writepulses,2,1)
+        grid.addWidget(self.writepulses_label,2,0)
+
+        self.nostatus_label = QtGui.QLabel("Write no DAQ status lines to RAW file: ")
+        self.nostatus = QtGui.QCheckBox()
+        self.nostatus.setObjectName("nostatus")
+        self.nostatus.setChecked(nostatus)
+        self.nostatus.setToolTip(QtCore.QString("Write no DAQ status lines to RAW file, same as option -n."))
+        grid.addWidget(self.nostatus,3,1)
+        grid.addWidget(self.nostatus_label,3,0)
+
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        grid.addWidget(self.buttonBox,4,0,1,2)
         self.setLayout(grid)
         
         self.show()

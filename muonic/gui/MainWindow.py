@@ -22,7 +22,7 @@ import webbrowser
 from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 
-from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog
+from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
 
@@ -72,19 +72,20 @@ class MainWindow(QtGui.QMainWindow):
 
  
         # the time when the rate measurement is started
-        now = datetime.datetime.now()
+        self.now = datetime.datetime.now()
         #self.rate_mes_start = now     
-        date = time.gmtime()
-        self.filename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"R",opts.user[0],opts.user[1]) )
-        self.rawfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
+        self.date = time.gmtime()
+        self.filename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"R",opts.user[0],opts.user[1]) )
+        self.rawfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
         self.raw_mes_start = False
 
-        self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
+        self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"L",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
-        if opts.writepulses:
+        self.writepulses = opts.writepulses
+        if self.writepulses:
                 self.daq.put('CE')
-                self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",opts.user[0],opts.user[1]) )
-                self.pulse_mes_start = now
+                self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"P",opts.user[0],opts.user[1]) )
+                self.pulse_mes_start = self.now
         else:
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
@@ -181,6 +182,7 @@ class MainWindow(QtGui.QMainWindow):
             self.logger.warning("Timewindow small, can produce extremely high CPU load! Make sure you know what you are doing.")
 
         self.logger.info("Timewindow is %4.2f" %opts.timewindow)
+        self.timewindow = opts.timewindow
 
         self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
         self.tabwidget.ratewidget = self.tabwidget.widget(0)
@@ -227,7 +229,12 @@ class MainWindow(QtGui.QMainWindow):
         config = QtGui.QAction(QtGui.QIcon(''),'Channel Configuration', self)
         config.setStatusTip('Configure the Coincidences and channels')
         self.connect(config, QtCore.SIGNAL('triggered()'), self.config_menu)
-       
+
+        # prepare the advanced config menu
+        advanced = QtGui.QAction(QtGui.QIcon(''),'Advanced Configurations', self)
+        advanced.setStatusTip('Advanced configurations')
+        self.connect(advanced, QtCore.SIGNAL('triggered()'), self.advanced_menu)       
+
         # prepare the threshold menu
         thresholds = QtGui.QAction(QtGui.QIcon(''),'Thresholds', self)
         thresholds.setStatusTip('Set trigger thresholds')
@@ -253,6 +260,7 @@ class MainWindow(QtGui.QMainWindow):
         settings = menubar.addMenu(tr('MainWindow', '&Settings'))
         settings.addAction(config)
         settings.addAction(thresholds)
+        settings.addAction(advanced)
 
         helpmenu = menubar.addMenu(tr('MainWindow','&Help'))
         helpmenu.addAction(helpdaqcommands)
@@ -262,7 +270,7 @@ class MainWindow(QtGui.QMainWindow):
         #time.sleep(0.5)
         loading.setValue(3)
         self.processIncoming()
-        for i in xrange(4,int(opts.timewindow) + 4):
+        for i in xrange(4,int(self.timewindow) + 4):
             # wait a full cycle, so that the plot is finished at start
             time.sleep(1)
             loading.setValue(i)
@@ -286,8 +294,8 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.ratewidget.update()
         self.query_daq_for_scalars()
         self.timer.start(1000)
-        self.widgetupdater.start(opts.timewindow*1000)
-        
+        self.widgetupdater.start(self.timewindow*1000) 
+
     #def exit_program(self,*args):
     #    """
     #    This function is used either with the 'x' button
@@ -391,7 +399,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.daq.put('TL')
   
-
     def config_menu(self):
         """
         Show the config dialog
@@ -403,7 +410,7 @@ class MainWindow(QtGui.QMainWindow):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2, True, self.coincidence_time)
+        config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2)
         rv = config_window.exec_()
         if rv == 1:
             
@@ -425,15 +432,6 @@ class MainWindow(QtGui.QMainWindow):
             vetochan1 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
             vetochan2 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
             vetochan3 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
-            
-            if config_window.findChild(QtGui.QGroupBox,QtCore.QString("advancedgroupbox")).isChecked():
-                gatewidth = bin(int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())/10).replace('0b','').zfill(16)
-                _03 = format(int(gatewidth[0:8],2),'x').zfill(2)
-                _02 = format(int(gatewidth[8:16],2),'x').zfill(2)
-                tmp_msg = 'WC 03 '+str(_03)
-                self.daq.put(tmp_msg)
-                tmp_msg = 'WC 02 '+str(_02)
-                self.daq.put(tmp_msg)
             
             tmp_msg = ''
             if veto:
@@ -488,7 +486,63 @@ class MainWindow(QtGui.QMainWindow):
             self.logger.debug('coincidence threefold %s' %threefold)
             self.logger.debug('coincidence fourfold %s' %fourfold)
         self.daq.put('DC')
+           
+    def advanced_menu(self):
+        """
+        Show the config dialog
+        """
+        gatewidth = 0.
+        # get the actual channels...
+        self.daq.put('DC')
+        # wait explicitely till the channels get loaded
+        self.logger.info("loading channel information...")
+        time.sleep(1)
+
+        adavanced_window = AdvancedDialog(self.coincidence_time,self.timewindow,self.writepulses,self.nostatus)
+        rv = adavanced_window.exec_()
+        if rv == 1:
+            _timewindow = float(adavanced_window.findChild(QtGui.QDoubleSpinBox,QtCore.QString("timewindow")).value())
+            _gatewidth = bin(int(adavanced_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())/10).replace('0b','').zfill(16)
+            _nostatus = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("nostatus")).isChecked()
+            _writepulses = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("writepulses")).isChecked()
             
+            _03 = format(int(_gatewidth[0:8],2),'x').zfill(2)
+            _02 = format(int(_gatewidth[8:16],2),'x').zfill(2)
+            tmp_msg = 'WC 03 '+str(_03)
+            self.daq.put(tmp_msg)
+            tmp_msg = 'WC 02 '+str(_02)
+            self.daq.put(tmp_msg)
+            if _timewindow < 0.01 or _timewindow > 10000.:
+                      self.logger.warning("Timewindow too small or too big, resetting to 5 s.")
+                      self.timewindow = 5.0
+            else:
+                self.timewindow = _timewindow
+            self.widgetupdater.start(self.timewindow*1000)
+            #self.opts.nostatus = _nostatus
+            self.nostatus = _nostatus
+            #self.opts.writepulses = _writepulses
+            
+            if _writepulses:
+                self.daq.put('CE')
+                self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"P",self.opts.user[0],self.opts.user[1]) )
+                self.pulse_mes_start = self.now
+                if not self.pulseextractor.pulsefile:
+                    self.pulseextractor.pulsefile = open(self.pulsefilename,'w')
+            else:
+                self.pulsefilename = ''
+                self.pulse_mes_start = False
+                if self.pulseextractor.pulsefile:          
+                    self.pulseextractor.pulsefile.close()
+                self.pulseextractor.pulsefile = False
+            self.writepulses = _writepulses
+
+            self.logger.debug('Writing gatewidth WC 02 %s WC 03 %s' %(_02,_03))
+            self.logger.debug('Setting timewindow to %.2f ' %(_timewindow))
+            self.logger.debug('Switching nostatus option to %s' %(_nostatus))
+            self.logger.debug('Switching pulsefile option to %s' %(_writepulses))
+
+        self.daq.put('DC')
+             
     def help_menu(self):
         """
         Show a simple help menu
