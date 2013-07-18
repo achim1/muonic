@@ -489,7 +489,7 @@ class MainWindow(QtGui.QMainWindow):
            
     def advanced_menu(self):
         """
-        Show the config dialog
+        Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the nostatus option
         """
         gatewidth = 0.
         # get the actual channels...
