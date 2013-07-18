@@ -352,9 +352,10 @@ class PulseanalyzerWidget(QtGui.QWidget):
     """
     Provide a widget which is able to show a plot of triggered pulses
     """        
-    def __init__(self,logger):
-        QtGui.QWidget.__init__(self)
+    def __init__(self,logger,parent=None):
+        QtGui.QWidget.__init__(self,parent=parent)
         self.logger = logger
+        self.mainwindow = self.parentWidget()
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
         self.activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths", None, QtGui.QApplication.UnicodeUTF8))
         self.activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
@@ -410,7 +411,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
             self.activatePulseanalyzer.setChecked(True)
             self.active = True
             self.logger.debug("Switching on Pulseanalyzer.")
-            self.parentWidget().parentWidget().parentWidget().daq.put("DC")
+            self.mainwindow.daq.put("CE")
         else:
             self.logger.debug("Switching off Pulseanalyzer.")
             self.activatePulseanalyzer.setChecked(False)            
@@ -1007,7 +1008,7 @@ class DecayWidget(QtGui.QWidget):
             self.logger.info("The muon decay measurement was active for %f hours" % mtime)
             newmufilename = self.parentWidget().parentWidget().parentWidget().decayfilename.replace("HOURS",str(mtime))
             shutil.move(self.parentWidget().parentWidget().parentWidget().decayfilename,newmufilename)
-            self.parentWidget().parentWidget().parentWidget().daq.put("DC")
+            #self.parentWidget().parentWidget().parentWidget().daq.put("CD")
             self.active = False
             self.activateMuondecay.setChecked(False)
 

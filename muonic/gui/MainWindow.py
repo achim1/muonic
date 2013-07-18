@@ -82,6 +82,7 @@ class MainWindow(QtGui.QMainWindow):
         self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"L",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
         if opts.writepulses:
+                self.daq.put('CE')
                 self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec,"P",opts.user[0],opts.user[1]) )
                 self.pulse_mes_start = now
         else:
@@ -190,7 +191,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
         self.tabwidget.velocitywidget = self.tabwidget.widget(2)
 
-        self.tabwidget.addTab(PulseanalyzerWidget(logger),"Pulse Analyzer")
+        self.tabwidget.addTab(PulseanalyzerWidget(logger,parent = self),"Pulse Analyzer")
         self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(3)
 
         self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
