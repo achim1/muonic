@@ -1208,7 +1208,8 @@ class GPSWidget(QtGui.QWidget):
         """
         Display/refresh the GPS information
         """
-        self.gps_dump = []        
+        self.refresh_button.setEnabled(False)
+        self.gps_dump = [] 
         self.logger.info('Reading GPS.')
         self.mainwindow.processIncoming()
         self.switch_active(True)        
@@ -1266,30 +1267,30 @@ class GPSWidget(QtGui.QWidget):
         __altitude = ''
         __posfix = 0
         __chksum = False
-
+        self.refresh_button.setEnabled(True)
         try:
-            __satellites = int(str(self.gps_dump[8]).strip().replace('Sats used:', '').strip())
 
             if str(self.gps_dump[3]).strip().replace('Status:','').strip() == 'A (valid)':
                 self.logger.info('Valid GPS signal: found %i ' %(__satellites))
                 __status = True
+                __satellites = int(str(self.gps_dump[8]).strip().replace('Sats used:', '').strip())
+                __posfix = int(str(self.gps_dump[4]).strip().replace('PosFix#:', '').strip())
+                __gps_time = str(self.gps_dump[2]).strip().replace('Date+Time:', '').strip()
+                if str(self.gps_dump[12]).strip().replace('ChkSumErr:', '').strip() == '0':
+                    __chksum = True
+                else:
+                    __chksum = False
+ 
+                __altitude = str(self.gps_dump[7]).strip().replace('Altitude:', '').strip()
+
+                __latitude = str(self.gps_dump[5]).strip().replace('Latitude:', '').strip()
+
+                __longitude = str(self.gps_dump[6]).strip().replace('Longitude:', '').strip()
+
             else:
                 __status = False
                 self.logger.info('Invalid GPS signal.')
 
-            __posfix = int(str(self.gps_dump[4]).strip().replace('PosFix#:', '').strip())
-
-            __gps_time = str(self.gps_dump[2]).strip().replace('Date+Time:', '').strip()
-            if str(self.gps_dump[12]).strip().replace('ChkSumErr:', '').strip() == '0':
-                __chksum = True
-            else:
-                __chksum = False
-
-            __altitude = str(self.gps_dump[7]).strip().replace('Altitude:', '').strip()
-
-            __latitude = str(self.gps_dump[5]).strip().replace('Latitude:', '').strip()
-
-            __longitude = str(self.gps_dump[6]).strip().replace('Longitude:', '').strip()
             self.gps_dump = []
         except:
             self.logger.warning('Error evaluating GPS information.')
