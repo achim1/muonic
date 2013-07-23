@@ -367,7 +367,7 @@ class AdvancedDialog(MuonicDialog):
     Set Channel configuration
     """
     
-    def __init__(self,gatewidth = 100, timewindow = 5.0, writepulses = None, nostatus = None, *args):
+    def __init__(self,gatewidth = 100, timewindow = 5.0, nostatus = None, *args):
 
         QtGui.QDialog.__init__(self,*args)
 
@@ -403,26 +403,19 @@ class AdvancedDialog(MuonicDialog):
         grid.addWidget(self.timewindow,1,1)
         grid.addWidget(self.timewindow_label,1,0)
 
-        self.writepulses_label = QtGui.QLabel("Write pulse file: ")
-        self.writepulses = QtGui.QCheckBox()
-        self.writepulses.setChecked(writepulses)
-        self.writepulses.setObjectName("writepulses")
-        self.writepulses.setToolTip(QtCore.QString("Write a pulse file ('P' file) or not, same as option -p."))
-        grid.addWidget(self.writepulses,2,1)
-        grid.addWidget(self.writepulses_label,2,0)
 
         self.nostatus_label = QtGui.QLabel("Write no DAQ status lines to RAW file: ")
         self.nostatus = QtGui.QCheckBox()
         self.nostatus.setObjectName("nostatus")
         self.nostatus.setChecked(nostatus)
         self.nostatus.setToolTip(QtCore.QString("Write no DAQ status lines to RAW file, same as option -n."))
-        grid.addWidget(self.nostatus,3,1)
-        grid.addWidget(self.nostatus_label,3,0)
+        grid.addWidget(self.nostatus,2,1)
+        grid.addWidget(self.nostatus_label,2,0)
 
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
-        grid.addWidget(self.buttonBox,4,0,1,2)
+        grid.addWidget(self.buttonBox,3,0,1,2)
         self.setLayout(grid)
         
         self.show()

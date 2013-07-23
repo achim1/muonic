@@ -489,13 +489,12 @@ class MainWindow(QtGui.QMainWindow):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        adavanced_window = AdvancedDialog(self.coincidence_time,self.timewindow,self.writepulses,self.nostatus)
+        adavanced_window = AdvancedDialog(self.coincidence_time,self.timewindow,self.nostatus)
         rv = adavanced_window.exec_()
         if rv == 1:
             _timewindow = float(adavanced_window.findChild(QtGui.QDoubleSpinBox,QtCore.QString("timewindow")).value())
             _gatewidth = bin(int(adavanced_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())/10).replace('0b','').zfill(16)
             _nostatus = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("nostatus")).isChecked()
-            _writepulses = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("writepulses")).isChecked()
             
             _03 = format(int(_gatewidth[0:8],2),'x').zfill(2)
             _02 = format(int(_gatewidth[8:16],2),'x').zfill(2)
@@ -510,25 +509,10 @@ class MainWindow(QtGui.QMainWindow):
                 self.timewindow = _timewindow
             self.widgetupdater.start(self.timewindow*1000)
             self.nostatus = _nostatus
-            
-            if _writepulses:
-                self.daq.put('CE')
-                self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"P",self.opts.user[0],self.opts.user[1]) )
-                self.pulse_mes_start = self.now
-                if not self.pulseextractor.pulsefile:
-                    self.pulseextractor.pulsefile = open(self.pulsefilename,'w')
-            else:
-                self.pulsefilename = ''
-                self.pulse_mes_start = False
-                if self.pulseextractor.pulsefile:          
-                    self.pulseextractor.pulsefile.close()
-                self.pulseextractor.pulsefile = False
-            self.writepulses = _writepulses
 
             self.logger.debug('Writing gatewidth WC 02 %s WC 03 %s' %(_02,_03))
             self.logger.debug('Setting timewindow to %.2f ' %(_timewindow))
             self.logger.debug('Switching nostatus option to %s' %(_nostatus))
-            self.logger.debug('Switching pulsefile option to %s' %(_writepulses))
 
         self.daq.put('DC')
              
