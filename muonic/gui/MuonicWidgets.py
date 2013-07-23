@@ -83,23 +83,23 @@ class RateWidget(QtGui.QWidget):
         self.scalers['scalers_buffer'] = dict()
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
             self.scalers['scalers_buffer'][ch] = 0
-        self.scalers['label_ch0'] = QtGui.QLabel(tr('MainWindow','N 0:'))
+        self.scalers['label_ch0'] = QtGui.QLabel(tr('MainWindow','channel 0:'))
         self.scalers['edit_ch0'] = QtGui.QLineEdit(self)
         self.scalers['edit_ch0'].setReadOnly(True)
         self.scalers['edit_ch0'].setDisabled(True)
-        self.scalers['label_ch1'] = QtGui.QLabel(tr('MainWindow','N 1:'))
+        self.scalers['label_ch1'] = QtGui.QLabel(tr('MainWindow','channel 1:'))
         self.scalers['edit_ch1'] = QtGui.QLineEdit(self)
         self.scalers['edit_ch1'].setReadOnly(True)
         self.scalers['edit_ch1'].setDisabled(True)
-        self.scalers['label_ch2'] = QtGui.QLabel(tr('MainWindow','N 2:'))
+        self.scalers['label_ch2'] = QtGui.QLabel(tr('MainWindow','channel 2:'))
         self.scalers['edit_ch2'] = QtGui.QLineEdit(self)
         self.scalers['edit_ch2'].setReadOnly(True)
         self.scalers['edit_ch2'].setDisabled(True)
-        self.scalers['label_ch3'] = QtGui.QLabel(tr('MainWindow','N 3:'))
+        self.scalers['label_ch3'] = QtGui.QLabel(tr('MainWindow','channel 3:'))
         self.scalers['edit_ch3'] = QtGui.QLineEdit(self)
         self.scalers['edit_ch3'].setReadOnly(True)
         self.scalers['edit_ch3'].setDisabled(True)
-        self.scalers['label_trigger'] = QtGui.QLabel(tr('MainWindow','N trigger:'))
+        self.scalers['label_trigger'] = QtGui.QLabel(tr('MainWindow','trigger:'))
         self.scalers['edit_trigger'] = QtGui.QLineEdit(self)
         self.scalers['edit_trigger'].setReadOnly(True)
         self.scalers['edit_trigger'].setDisabled(True)
@@ -224,12 +224,12 @@ class RateWidget(QtGui.QWidget):
 
     def update(self):
         if self.run:
-            self.general_info['edit_daq_time'].setText('%.2f' %(self.timewindow))
-            self.general_info['edit_max_rate'].setText('%.2f' %(self.general_info['max_rate']))
+            self.general_info['edit_daq_time'].setText('%.2f s' %(self.timewindow))
+            self.general_info['edit_max_rate'].setText('%.2f Hz' %(self.general_info['max_rate']))
             if self.mainwindow.channelcheckbox_0:
                 self.rates['edit_ch0'].setEnabled(True)
                 self.scalers['edit_ch0'].setDisabled(False)
-                self.rates['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']/self.timewindow))
+                self.rates['edit_ch0'].setText('%.2f  Hz' %(self.scalers['scalers_buffer']['ch0']/self.timewindow))
                 self.scalers['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']))
             else:
                 self.rates['edit_ch0'].setEnabled(False)
@@ -237,7 +237,7 @@ class RateWidget(QtGui.QWidget):
             if self.mainwindow.channelcheckbox_1:
                 self.rates['edit_ch1'].setDisabled(False)
                 self.scalers['edit_ch1'].setDisabled(False)
-                self.rates['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']/self.timewindow))
+                self.rates['edit_ch1'].setText('%.2f Hz Hz' %(self.scalers['scalers_buffer']['ch1']/self.timewindow))
                 self.scalers['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']))
             else:
                 self.rates['edit_ch1'].setDisabled(True)
@@ -245,7 +245,7 @@ class RateWidget(QtGui.QWidget):
             if self.mainwindow.channelcheckbox_2:
                 self.rates['edit_ch2'].setDisabled(False)
                 self.scalers['edit_ch2'].setDisabled(False)
-                self.rates['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']/self.timewindow))
+                self.rates['edit_ch2'].setText('%.2f Hz' %(self.scalers['scalers_buffer']['ch2']/self.timewindow))
                 self.scalers['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']))
             else:
                 self.rates['edit_ch2'].setDisabled(True)
@@ -253,7 +253,7 @@ class RateWidget(QtGui.QWidget):
             if self.mainwindow.channelcheckbox_3:
                 self.rates['edit_ch3'].setDisabled(False)
                 self.scalers['edit_ch3'].setDisabled(False)
-                self.rates['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']/self.timewindow))
+                self.rates['edit_ch3'].setText('%.2f Hz' %(self.scalers['scalers_buffer']['ch3']/self.timewindow))
                 self.scalers['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']))
             else:
                 self.rates['edit_ch3'].setDisabled(True)
@@ -267,7 +267,7 @@ class RateWidget(QtGui.QWidget):
             else:
                 self.rates['edit_trigger'].setDisabled(False)
                 self.scalers['edit_trigger'].setDisabled(False)
-                self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
+                self.rates['edit_trigger'].setText('%.2f Hz' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
                 self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
 
             self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
@@ -286,7 +286,13 @@ class RateWidget(QtGui.QWidget):
 
         self.logger.debug("Start Button Clicked")
         date = time.gmtime()
-        comment_file = '# new run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        comment_file = '# new rate measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        if self.mainwindow.tabwidget.decaywidget.is_active():
+            comment_file = '# new decay measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        if self.mainwindow.tabwidget.velocitywidget.is_active():
+            comment_file = '# new velocity measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+
+
         self.data_file = open(self.mainwindow.filename, 'a')        
         self.data_file.write(comment_file)
         self.run = True
@@ -360,6 +366,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self,parent=parent)
         self.logger = logger
         self.mainwindow = self.parentWidget()
+        self.pulsefile = self.mainwindow.pulseextractor.pulsefile
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
         self.activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths", None, QtGui.QApplication.UnicodeUTF8))
         self.activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
@@ -412,14 +419,29 @@ class PulseanalyzerWidget(QtGui.QWidget):
         Perform extra actions when the checkbox is clicked
         """
         if not self.active:
+            self.pulsefile = self.mainwindow.pulseextractor.pulsefile
             self.activatePulseanalyzer.setChecked(True)
             self.active = True
             self.logger.debug("Switching on Pulseanalyzer.")
             self.mainwindow.daq.put("CE")
+
+            self.mainwindow.daq.put('CE')
+            if not self.pulsefile:
+                self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
+                self.mainwindow.pulse_mes_start = self.mainwindow.now
+                self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
+
         else:
             self.logger.debug("Switching off Pulseanalyzer.")
             self.activatePulseanalyzer.setChecked(False)            
             self.active = False
+
+            if not self.pulsefile:
+                self.mainwindow.pulsefilename = ''
+                self.mainwindow.pulse_mes_start = False
+                if self.mainwindow.pulseextractor.pulsefile:
+                    self.mainwindow.pulseextractor.pulsefile.close()
+                self.mainwindow.pulseextractor.pulsefile = False
 
 
 class StatusWidget(QtGui.QWidget): # not used yet
@@ -460,10 +482,6 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.label_thresholds_2 = QtGui.QLabel(tr('MainWindow','Threshold channel 2:'))        
         self.label_thresholds_3 = QtGui.QLabel(tr('MainWindow','Threshold channel 3:'))        
         self.label_active_channels = QtGui.QLabel(tr('MainWindow','Active channels:'))
-        self.label_active_channels_0 = QtGui.QLabel(tr('MainWindow','0:'))
-        self.label_active_channels_1 = QtGui.QLabel(tr('MainWindow',', 1:'))
-        self.label_active_channels_2 = QtGui.QLabel(tr('MainWindow',', 2:'))
-        self.label_active_channels_3 = QtGui.QLabel(tr('MainWindow',', 3:'))
         self.label_coincidences = QtGui.QLabel(tr('MainWindow','Trigger condition:'))
         self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Time window for trigger condition:'))
         self.label_veto = QtGui.QLabel(tr('MainWindow','Veto:'))
@@ -473,17 +491,21 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.thresholds[cnt].setReadOnly(True)
             self.thresholds[cnt].setText(self.daq_stats['thresholds'][cnt])
             self.thresholds[cnt].setDisabled(True)
-        self.active_channel_0 = QtGui.QCheckBox(self)
-        self.active_channel_1 = QtGui.QCheckBox(self)
-        self.active_channel_2 = QtGui.QCheckBox(self)
-        self.active_channel_3 = QtGui.QCheckBox(self)
-        self.active_channel_0.setCheckable(False)
+        self.active_channel_0 = QtGui.QLineEdit(self)
+        self.active_channel_1 = QtGui.QLineEdit(self)
+        self.active_channel_2 = QtGui.QLineEdit(self)
+        self.active_channel_3 = QtGui.QLineEdit(self)
+        self.active_channel_0.setText('Channel 0')
+        self.active_channel_1.setText('Channel 1')
+        self.active_channel_2.setText('Channel 2')
+        self.active_channel_3.setText('Channel 3')
+        self.active_channel_0.setReadOnly(True)
         self.active_channel_0.setEnabled(False)
-        self.active_channel_1.setCheckable(False)
+        self.active_channel_1.setReadOnly(True)
         self.active_channel_1.setEnabled(False)
-        self.active_channel_2.setCheckable(False)
+        self.active_channel_2.setReadOnly(True)
         self.active_channel_2.setEnabled(False)
-        self.active_channel_3.setCheckable(False)
+        self.active_channel_3.setReadOnly(True)
         self.active_channel_3.setEnabled(False)
         self.coincidences = QtGui.QLineEdit(self)
         self.coincidences.setReadOnly(True)
@@ -499,6 +521,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.veto.setText(self.daq_stats['veto'])
 
         self.label_muonic = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))
+        self.label_measurements = QtGui.QLabel(tr('MainWindow','Active measurements:'))
         self.label_start_params = QtGui.QLabel(tr('MainWindow','Start parameter:'))
         self.label_refreshtime = QtGui.QLabel(tr('MainWindow','Measurement intervals:'))
         self.label_open_files = QtGui.QLabel(tr('MainWindow','Currently opened files:'))
@@ -506,6 +529,9 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.start_params = QtGui.QLineEdit(self)
         self.start_params.setReadOnly(True)
         self.start_params.setDisabled(True)
+        self.measurements = QtGui.QLineEdit(self)
+        self.measurements.setReadOnly(True)
+        self.measurements.setDisabled(True)
         self.start_params.setText(self.muonic_stats['start_params'])
         self.refreshtime = QtGui.QLineEdit(self)
         self.refreshtime.setReadOnly(True)
@@ -536,15 +562,10 @@ class StatusWidget(QtGui.QWidget): # not used yet
         status_layout = QtGui.QGridLayout(self)
         status_layout.addWidget(self.label_daq,0,0)
         status_layout.addWidget(self.label_active_channels,0,1)
-        status_layout.addWidget(self.label_active_channels_0,0,2)
-        status_layout.addWidget(self.active_channel_0,0,3)
-        status_layout.addWidget(self.label_active_channels_1,0,4)
-        status_layout.addWidget(self.active_channel_1,0,5)
-        status_layout.addWidget(self.label_active_channels_2,0,6)
-        status_layout.addWidget(self.active_channel_2,0,7)
-        status_layout.addWidget(self.label_active_channels_3,0,8)
-        status_layout.addWidget(self.active_channel_3,0,9)
-        status_layout.addWidget(self.label_thresholds_0,1,1,1,8)
+        status_layout.addWidget(self.active_channel_0,0,2,1,2)
+        status_layout.addWidget(self.active_channel_1,0,4,1,2)
+        status_layout.addWidget(self.active_channel_2,0,6,1,2)
+        status_layout.addWidget(self.active_channel_3,0,8,1,2)
         status_layout.addWidget(self.thresholds[0],1,2,1,8)
         status_layout.addWidget(self.label_thresholds_1,2,1,1,8)
         status_layout.addWidget(self.thresholds[1],2,2,1,8)
@@ -563,9 +584,11 @@ class StatusWidget(QtGui.QWidget): # not used yet
         status_layout.addWidget(self.label_start_params,8,1)
         status_layout.addWidget(self.start_params,8,2,1,8)
         status_layout.addWidget(self.label_refreshtime,9,1)
-        status_layout.addWidget(self.refreshtime,9,2,1,8)
+        status_layout.addWidget(self.refreshtime,9,2,1,2)
         status_layout.addWidget(self.label_open_files,10,1)
         status_layout.addWidget(self.open_files,10,2,1,8)
+        status_layout.addWidget(self.label_measurements,9,4)
+        status_layout.addWidget(self.measurements,9,5,1,5)
         #status_layout.addWidget(self.label_last_path,11,1)
         #status_layout.addWidget(self.last_path,11,2,1,8)
 
@@ -602,7 +625,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.logger.debug("Refreshing status infos")
         if (self.mainwindow.tabwidget.statuswidget.isVisible()):
             self.muonic_stats['start_params'] = str(self.mainwindow.opts).replace('{', '').replace('}','')
-            self.muonic_stats['refreshtime'] = str(self.mainwindow.opts.timewindow)+ ' s'
+            self.muonic_stats['refreshtime'] = str(self.mainwindow.timewindow)+ ' s'
             self.muonic_stats['last_path'] = 'too'
             
             self.daq_stats['thresholds'][0] = str(self.mainwindow.threshold_ch0)+ ' mV'
@@ -639,22 +662,10 @@ class StatusWidget(QtGui.QWidget): # not used yet
                 self.thresholds[cnt].setText(self.daq_stats['thresholds'][cnt])
                 self.thresholds[cnt].setEnabled(True)
 
-            self.active_channel_0.setCheckable(True)
-            self.active_channel_0.setEnabled(True)
-            self.active_channel_0.setChecked(self.daq_stats['active_channel_0'])
-            self.active_channel_0.setEnabled(False)
-            self.active_channel_1.setEnabled(True)            
-            self.active_channel_1.setCheckable(True)
-            self.active_channel_1.setChecked(self.daq_stats['active_channel_1'])
-            self.active_channel_1.setEnabled(False)
-            self.active_channel_2.setEnabled(True)            
-            self.active_channel_2.setCheckable(True)
-            self.active_channel_2.setChecked(self.daq_stats['active_channel_2'])
-            self.active_channel_2.setEnabled(False)
-            self.active_channel_3.setEnabled(True)            
-            self.active_channel_3.setCheckable(True)
-            self.active_channel_3.setChecked(self.daq_stats['active_channel_3'])
-            self.active_channel_3.setEnabled(False)
+            self.active_channel_0.setEnabled(self.daq_stats['active_channel_0'])
+            self.active_channel_1.setEnabled(self.daq_stats['active_channel_1'])
+            self.active_channel_2.setEnabled(self.daq_stats['active_channel_2'])
+            self.active_channel_3.setEnabled(self.daq_stats['active_channel_3'])
             self.coincidences.setText(self.daq_stats['coincidences'])
             self.coincidences.setEnabled(True)
             self.coincidence_timewindow.setText(self.daq_stats['coincidence_timewindow'])
@@ -665,7 +676,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.muonic_stats['open_files'] = str(self.mainwindow.filename)
             self.muonic_stats['open_files'] += ', ' + self.mainwindow.rawfilename
             self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
-            if self.mainwindow.opts.writepulses:
+            if self.mainwindow.writepulses:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.pulsefilename
             self.start_params.setText(self.muonic_stats['start_params'])
             self.start_params.setEnabled(True)
@@ -675,7 +686,15 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.open_files.setEnabled(True)
             #self.last_path.setText(self.muonic_stats['last_path'])
             #self.last_path.setEnabled(True)
-            
+            measurements = ''
+            if self.mainwindow.tabwidget.ratewidget.is_active():
+                measurements = 'rate measurement'
+            if self.mainwindow.tabwidget.decaywidget.is_active():
+                measurements += ', decay measurement'
+            if self.mainwindow.tabwidget.velocitywidget.is_active():
+                measurements += ', velocity measurement'
+            self.measurements.setText(measurements)
+            self.measurements.setEnabled(True)
             self.start_params.setEnabled(True)
 
             self.active = False
@@ -791,18 +810,20 @@ class VelocityWidget(QtGui.QWidget):
                     if config_dialog.findChild(QtGui.QRadioButton,QtCore.QString("lowercheckbox_" + ch_label )).isChecked():
                         self.lower_channel = chan + 1 #
             
-                self.logger.info("Switching off decay measurment if running!")
+                self.logger.info("Switching off decay measurement if running!")
                 if self.parentWidget().parentWidget().decaywidget.is_active():
                     self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
                 self.channel_distance  = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
                 self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
                 self.active = True
+                self.parentWidget().parentWidget().ratewidget.startClicked()
             else:
                 self.activateVelocity.setChecked(False)
                 self.active = False
         else:
             self.activateVelocity.setChecked(False)            
             self.active = False
+            self.parentWidget().parentWidget().ratewidget.stopClicked()            
 
 class DecayWidget(QtGui.QWidget):
     
@@ -970,7 +991,7 @@ class DecayWidget(QtGui.QWidget):
                     for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
                         if channel[1]:
                             self.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
-                    self.logger.info("Switching off velocity measurment if running!")
+                    self.logger.info("Switching off velocity measurement if running!")
                     if self.parentWidget().parentWidget().velocitywidget.is_active():
                         self.parentWidget().parentWidget().velocitywidget.activateVelocityClicked()
 
@@ -994,12 +1015,13 @@ class DecayWidget(QtGui.QWidget):
                     self.dec_mes_start = now
                     #self.decaywidget.findChild("activate_mudecay").setChecked(True)
                     self.active = True
+                    self.parentWidget().parentWidget().ratewidget.startClicked()            
+
                 else:
                     self.activateMuondecay.setChecked(False)
                     self.active = False
 
         else:
-            #self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString("activate_mudecay")).setChecked(False)
             reset_time = "WC 03 " + self.previous_coinc_time_03
             self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
             reset_time = "WC 02 " + self.previous_coinc_time_02
@@ -1015,6 +1037,7 @@ class DecayWidget(QtGui.QWidget):
             #self.parentWidget().parentWidget().parentWidget().daq.put("CD")
             self.active = False
             self.activateMuondecay.setChecked(False)
+            self.parentWidget().parentWidget().ratewidget.stopClicked()            
 
 class DAQWidget(QtGui.QWidget):
 

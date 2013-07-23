@@ -46,6 +46,7 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
         self.opts = opts
+        self.DATAPATH = DATAPATH
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
@@ -81,7 +82,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"L",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
-        self.writepulses = opts.writepulses
+        self.writepulses = False
         if self.writepulses:
                 self.daq.put('CE')
                 self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"P",opts.user[0],opts.user[1]) )
@@ -89,7 +90,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
-        self.nostatus = opts.nostatus
+        self.nostatus = False
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL') # get the thresholds
@@ -170,40 +171,30 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget = QtGui.QTabWidget(self)
         #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
-        try:
-            opts.timewindow = float(opts.timewindow)
-        except ValueError:
-            self.logger.error("Timewindow not given as float value! Reseting to default value.")
-            opts.timewindow = 5.
-        if opts.timewindow <= 0.01:
-            self.logger.error("Timewindow too small, can produce extremely high CPU load! Reseting to default value.")
-            opts.timewindow = 5.
-        if opts.timewindow <= 0.1:
-            self.logger.warning("Timewindow small, can produce extremely high CPU load! Make sure you know what you are doing.")
 
-        self.logger.info("Timewindow is %4.2f" %opts.timewindow)
-        self.timewindow = opts.timewindow
+        self.timewindow = 5.0
+        self.logger.info("Timewindow is %4.2f" %self.timewindow)
 
         self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
         self.tabwidget.ratewidget = self.tabwidget.widget(0)
-          
-        self.tabwidget.addTab(DecayWidget(logger,parent = self),"Muon Decay")
-        self.tabwidget.decaywidget = self.tabwidget.widget(1)
-      
-        self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
-        self.tabwidget.velocitywidget = self.tabwidget.widget(2)
 
         self.tabwidget.addTab(PulseanalyzerWidget(logger,parent = self),"Pulse Analyzer")
-        self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(3)
+        self.tabwidget.pulseanalyzerwidget = self.tabwidget.widget(1)
 
-        self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
-        self.tabwidget.gpswidget = self.tabwidget.widget(4)
+        self.tabwidget.addTab(DecayWidget(logger,parent = self),"Muon Decay")
+        self.tabwidget.decaywidget = self.tabwidget.widget(2)
+      
+        self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
+        self.tabwidget.velocitywidget = self.tabwidget.widget(3)
 
         self.tabwidget.addTab(StatusWidget(logger,parent=self),"Status")
-        self.tabwidget.statuswidget = self.tabwidget.widget(5)
+        self.tabwidget.statuswidget = self.tabwidget.widget(4)
 
         self.tabwidget.addTab(DAQWidget(logger,parent=self),"DAQ Output")
-        self.tabwidget.daqwidget = self.tabwidget.widget(6)
+        self.tabwidget.daqwidget = self.tabwidget.widget(5)
+
+        self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
+        self.tabwidget.gpswidget = self.tabwidget.widget(6)
         
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
@@ -518,9 +509,7 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 self.timewindow = _timewindow
             self.widgetupdater.start(self.timewindow*1000)
-            #self.opts.nostatus = _nostatus
             self.nostatus = _nostatus
-            #self.opts.writepulses = _writepulses
             
             if _writepulses:
                 self.daq.put('CE')
