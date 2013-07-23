@@ -238,12 +238,16 @@ class MainWindow(QtGui.QMainWindow):
         # about
         aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
         self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
-       
         
         # sphinx-documentation
-        sphinxdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Sphinx documentation', self)
+        sphinxdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Technical documentation', self)
         self.connect(sphinxdocs,QtCore.SIGNAL('triggered()'),self.sphinxdoc_menu)
+        
+        # manual
+        manualdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Manual', self)
+        self.connect(manualdocs,QtCore.SIGNAL('triggered()'),self.manualdoc_menu)
  
+
         # create the menubar and fill it with the submenus
         menubar  = self.menuBar()
         filemenu = menubar.addMenu(tr('MainWindow','&File'))
@@ -257,6 +261,7 @@ class MainWindow(QtGui.QMainWindow):
         helpmenu.addAction(helpdaqcommands)
         helpmenu.addAction(aboutmuonic)
         helpmenu.addAction(sphinxdocs)
+        helpmenu.addAction(manualdocs)
 
         #time.sleep(0.5)
         loading.setValue(3)
@@ -533,7 +538,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def sphinxdoc_menu(self):
         """
-        Show the sphinx documentation that comes with muonic an a
+        Show the sphinx documentation that comes with muonic in a
         browser
         """
         docs = (os.path.join(DOCPATH,"index.html"))
@@ -542,6 +547,18 @@ class MainWindow(QtGui.QMainWindow):
         success = webbrowser.open(docs)
         if not success:
             self.logger.warning("Can not open webbrowser!")
+
+    def manualdoc_menu(self):
+        """
+        Show the manual that comes with muonic in a pdf viewer
+        """
+        docs = (os.path.join(DOCPATH,"manual.pdf"))
+
+        self.logger.info("opening docs from %s" %docs)
+        success = webbrowser.open(docs)
+        if not success:
+            self.logger.warning("Can not open PDF reader!")
+
 
 
     def query_daq_for_scalars(self):
