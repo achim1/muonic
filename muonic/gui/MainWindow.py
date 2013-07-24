@@ -169,6 +169,9 @@ class MainWindow(QtGui.QMainWindow):
         
         #tab widget to hold the different physics widgets
         self.tabwidget = QtGui.QTabWidget(self)
+        #pal = QtGui.QPalette()
+        #pal.setColor(QtGui.QPalette.Window, QtGui.QColor(0,222,0))
+        #self.tabwidget.setPalette(pal)
         #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
 
