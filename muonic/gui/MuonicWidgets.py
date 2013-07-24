@@ -65,25 +65,18 @@ class RateWidget(QtGui.QWidget):
         self.table.setColumnWidth(1,60)
         self.table.setHorizontalHeaderLabels(["rate [Hz]","scaler"])
         self.table.setVerticalHeaderLabels(["channel 0","channel 1","channel 2","channel 3","trigger"])
-        self.rates['edit_ch0'] = QtGui.QTableWidgetItem('--')
-        self.rates['edit_ch1'] = QtGui.QTableWidgetItem('--')
-        self.rates['edit_ch2'] = QtGui.QTableWidgetItem('--')
-        self.rates['edit_ch3'] = QtGui.QTableWidgetItem('--')
-        self.rates['edit_trigger'] = QtGui.QTableWidgetItem('--')
+        self.table.horizontalHeader().setStretchLastSection(True)
         self.scalers = dict()
         self.scalers['scalers_buffer'] = dict()
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
             self.scalers['scalers_buffer'][ch] = 0
-        self.scalers['edit_ch0'] = QtGui.QTableWidgetItem('--')
-        self.scalers['edit_ch1'] = QtGui.QTableWidgetItem('--')
-        self.scalers['edit_ch2'] = QtGui.QTableWidgetItem('--')
-        self.scalers['edit_ch3'] = QtGui.QTableWidgetItem('--')
-        self.scalers['edit_trigger'] = QtGui.QTableWidgetItem('--')
         
         for cn in enumerate(['edit_ch0','edit_ch1','edit_ch2','edit_ch3','edit_trigger']):
+            self.rates[cn[1]] = QtGui.QTableWidgetItem('--')
+            self.scalers[cn[1]] = QtGui.QTableWidgetItem('--')
             self.table.setItem(cn[0], 0, self.rates[cn[1]])
             self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsEditable)
-            self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsSelectable)
+            #self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsSelectable)
             self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsEnabled)
             
             self.table.setItem(cn[0], 1, self.scalers[cn[1]])
@@ -228,7 +221,7 @@ class RateWidget(QtGui.QWidget):
             self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
       
     def is_active(self):
-        return True # rate widget is always active    
+        return self.run # rate widget is always active    
 
     def startClicked(self):
         """
