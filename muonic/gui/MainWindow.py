@@ -237,11 +237,7 @@ class MainWindow(QtGui.QMainWindow):
         # helpmenu
         helpdaqcommands = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'DAQ Commands', self)
         self.connect(helpdaqcommands, QtCore.SIGNAL('triggered()'), self.help_menu)
-  
-        # about
-        aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
-        self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
-        
+
         # sphinx-documentation
         sphinxdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Technical documentation', self)
         self.connect(sphinxdocs,QtCore.SIGNAL('triggered()'),self.sphinxdoc_menu)
@@ -249,7 +245,12 @@ class MainWindow(QtGui.QMainWindow):
         # manual
         manualdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Manual', self)
         self.connect(manualdocs,QtCore.SIGNAL('triggered()'),self.manualdoc_menu)
- 
+   
+        # about
+        aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
+        self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
+        
+
 
         # create the menubar and fill it with the submenus
         menubar  = self.menuBar()
@@ -262,9 +263,9 @@ class MainWindow(QtGui.QMainWindow):
 
         helpmenu = menubar.addMenu(tr('MainWindow','&Help'))
         helpmenu.addAction(helpdaqcommands)
-        helpmenu.addAction(aboutmuonic)
         helpmenu.addAction(sphinxdocs)
         helpmenu.addAction(manualdocs)
+        helpmenu.addAction(aboutmuonic)
 
         #time.sleep(0.5)
         loading.setValue(3)

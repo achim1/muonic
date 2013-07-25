@@ -61,7 +61,7 @@ class RateWidget(QtGui.QWidget):
             self.rates['rates_buffer'][ch] = []
         self.rates['label_ch0'] = QtGui.QLabel(tr('MainWindow','channel 0:'))
         self.table = QtGui.QTableWidget(5,2,self)
-        self.table.setColumnWidth(0,80)
+        self.table.setColumnWidth(0,85)
         self.table.setColumnWidth(1,60)
         self.table.setHorizontalHeaderLabels(["rate [Hz]","scaler"])
         self.table.setVerticalHeaderLabels(["channel 0","channel 1","channel 2","channel 3","trigger"])
@@ -305,7 +305,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.mainwindow = self.parentWidget()
         self.pulsefile = self.mainwindow.pulseextractor.pulsefile
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
-        self.activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths", None, QtGui.QApplication.UnicodeUTF8))
+        self.activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths and write out the pulsefile.", None, QtGui.QApplication.UnicodeUTF8))
         self.activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
         self.activatePulseanalyzer.setObjectName("activate_pulseanalyzer")
         grid = QtGui.QGridLayout(self)
@@ -657,7 +657,7 @@ class VelocityWidget(QtGui.QWidget):
         self.fitrange = (self.binning[0],self.binning[1])
 
         self.activateVelocity = QtGui.QCheckBox(self)
-        self.activateVelocity.setText(tr("Dialog", "Measure muon velocity", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateVelocity.setText(tr("Dialog", "Measure muon velocity (writes also the pulsefile)", None, QtGui.QApplication.UnicodeUTF8))
         self.activateVelocity.setObjectName("activate_velocity")
         self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
         self.velocityfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Change fit range')) 
@@ -807,7 +807,7 @@ class DecayWidget(QtGui.QWidget):
         # activate Muondecay mode with a checkbox
         self.activateMuondecay = QtGui.QCheckBox(self)
         self.activateMuondecay.setObjectName("activate_mudecay")
-        self.activateMuondecay.setText(tr("Dialog", "Check for decayed muons.", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateMuondecay.setText(tr("Dialog", "Check for decayed muons (writes also the pulsefile).", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QObject.connect(self.activateMuondecay,
                               QtCore.SIGNAL("clicked()"),
                               self.activateMuondecayClicked
