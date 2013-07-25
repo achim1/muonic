@@ -54,10 +54,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setWindowTitle(QtCore.QString("muonic") )
         self.statusbar = QtGui.QMainWindow.statusBar(self)
-        #self.ready = QtGui.QLabel(tr('MainWindow','Ready'))
-        #self.statusbar.addPermanentWidget(self.ready)  
-        loading = QtGui.QProgressDialog(QtCore.QString("Initializing DAQ"), QtCore.QString("Wait for it!"), 0,9)
-        loading.show()
         self.logger  = logger
 
         # put the file in the data directory
@@ -70,11 +66,8 @@ class MainWindow(QtGui.QMainWindow):
         # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
         # TODO: consistancy....        
  
-
- 
         # the time when the rate measurement is started
         self.now = datetime.datetime.now()
-        #self.rate_mes_start = now     
         self.date = time.gmtime()
         self.filename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"R",opts.user[0],opts.user[1]) )
         self.rawfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
@@ -95,7 +88,6 @@ class MainWindow(QtGui.QMainWindow):
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL') # get the thresholds
         time.sleep(0.5) #give the daq some time to ract
-        loading.setValue(1)
         self.threshold_ch0 = 300
         self.threshold_ch1 = 300
         self.threshold_ch2 = 300
@@ -158,9 +150,6 @@ class MainWindow(QtGui.QMainWindow):
             except DAQIOError:
                 self.logger.debug("Queue empty!")
         
-        # an anchor to the Application
-        #self.root = root
-
         # A timer to periodically call processIncoming and check what is in the queue
         self.timer = QtCore.QTimer()
         QtCore.QObject.connect(self.timer,
@@ -202,21 +191,17 @@ class MainWindow(QtGui.QMainWindow):
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
         self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,self.tabwidget.pulseanalyzerwidget,self.tabwidget.velocitywidget,self.tabwidget.ratewidget]
-        #self.timerEvent(None)
         self.widgetupdater = QtCore.QTimer()
         QtCore.QObject.connect(self.widgetupdater,
                            QtCore.SIGNAL("timeout()"),
                            self.widgetUpdate)
  
         self.setCentralWidget(self.tabwidget)
-        loading.setValue(2)
         # provide buttons to exit the application
         exit = QtGui.QAction(QtGui.QIcon('/usr/share/icons/gnome/24x24/actions/exit.png'), 'Exit', self)
         exit.setShortcut('Ctrl+Q')
         exit.setStatusTip('Exit application')
 
-        #self.connect(exit, QtCore.SIGNAL('triggered()'), self.exit_program)
-        #self.connect(exit, QtCore.SIGNAL('closeEmitApp()'), QtCore.SLOT('close()') )
         self.connect(exit, QtCore.SIGNAL('triggered()'), QtCore.SLOT('close()') )
 
         # prepare the config menu
@@ -250,8 +235,6 @@ class MainWindow(QtGui.QMainWindow):
         aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
         self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
         
-
-
         # create the menubar and fill it with the submenus
         menubar  = self.menuBar()
         filemenu = menubar.addMenu(tr('MainWindow','&File'))
@@ -267,114 +250,10 @@ class MainWindow(QtGui.QMainWindow):
         helpmenu.addAction(manualdocs)
         helpmenu.addAction(aboutmuonic)
 
-        #time.sleep(0.5)
-        loading.setValue(3)
         self.processIncoming()
-        for i in xrange(4,int(self.timewindow) + 4):
-            # wait a full cycle, so that the plot is finished at start
-            time.sleep(1)
-            loading.setValue(i)
-         
-        self.query_daq_for_scalars()
-        time.sleep(0.5) #wait till the DAQ has responded
-        while self.daq.data_available():
-            try:
-                msg = self.daq.get(0)
-                self.get_scalars_from_queue(msg)
-            except DAQIOError:
-                self.logger.debug("Queue empty!")
-           
-        # FIXME: Manually initialize the ratewidget
-        # this is necessary since the call to QtTimer.start()
-        # calls not the fct immediately        
-        time_window = self.thisscalarquery - self.lastscalarquery
-        rates = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
-
-        self.tabwidget.ratewidget.calculate(rates)
-        self.tabwidget.ratewidget.update()
-        self.query_daq_for_scalars()
         self.timer.start(1000)
         self.widgetupdater.start(self.timewindow*1000) 
 
-    #def exit_program(self,*args):
-    #    """
-    #    This function is used either with the 'x' button
-    #    (then an event has to be passed)
-    #    Or it is used with the File->Exit button, than no event
-    #    will be passed.
-    #    """
-
-    #    ev = False
-    #    if args:
-    #        ev = args[0]
-    #    # ask kindly if the user is really sure if she/he wants to exit
-    #    reply = QtGui.QMessageBox.question(self, 'Attention!',
-    #            'Do you really want to exit?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-
-    #    if reply == QtGui.QMessageBox.Yes:
-    #        now = datetime.datetime.now()
-
-    #        # close the RAW file (if any)
-    #        if self.tabwidget.daqwidget.write_file:
-    #            self.tabwidget.daqwidget.write_file = False
-    #            mtime = now - self.raw_mes_start
-    #            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-    #            self.logger.info("The raw data was written for %f hours" % mtime)
-    #            newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
-    #            shutil.move(self.rawfilename,newrawfilename)
-    #            self.tabwidget.daqwidget.outputfile.close()
-
-    #        if self.tabwidget.decaywidget.is_active():
-
-    #            mtime = now - self.tabwidget.decaywidget.dec_mes_start
-    #            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-    #            self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-    #            newmufilename = self.decayfilename.replace("HOURS",str(mtime))
-    #            shutil.move(self.decayfilename,newmufilename)
-
-    #        if self.pulsefilename:
-    #            old_pulsefilename = self.pulsefilename
-    #            # no pulses shall be extracted any more, 
-    #            # this means changing lots of switches
-    #            self.pulsefilename = False
-    #            self.showpulses = False
-    #            self.pulseextractor.close_file()
-    #            mtime = now - self.pulse_mes_start
-    #            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-    #            self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
-    #            newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
-    #            shutil.move(old_pulsefilename,newpulsefilename)
-    #          
-    #        self.tabwidget.ratewidget.data_file_write = False
-    #        self.tabwidget.ratewidget.data_file.close()
-    #        mtime = now - self.tabwidget.ratewidget.rate_mes_start
-    #        #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
-    #        mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-    #        #print 'new mtime ', mtime, str(mtime)
-    #        self.logger.info("The rate measurement was active for %f hours" % mtime)
-    #        newratefilename = self.filename.replace("HOURS",str(mtime))
-    #        #print 'new raw name', newratefilename
-    #        shutil.move(self.filename,newratefilename)
-    #        time.sleep(0.5)
-    #        self.tabwidget.writefile = False
-    #        try:
-    #            self.tabwidget.decaywidget.mu_file.close()
- 
-    #        except AttributeError:
-    #            pass
-
-    #        #self.root.quit()           
-    #        #self.connect(self, QtCore.SIGNAL('closeEmitApp()'), QtCore.SLOT('close()') )
-    #        #self.emit(QtCore.SIGNAL('closeEmitApp()'))
-    #        self.emit(QtCore.SIGNAL('lastWindowClosed()'))
-    #        self.close()
-
-    #    else: # don't close the mainwindow
-    #        if ev:
-    #            ev.ignore()
-    #        else:
-    #            pass
-    
     #the individual menus
     def threshold_menu(self):
         """
@@ -815,7 +694,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.pulseanalyzerwidget.calculate(self.pulses)
                     # we have to count the triggers in the time intervall
                     # FIXME: find a method to calculate rate from 
-                    # previously taken file
+                    # previously taken RAW file
                     self.channel_counts[0] += 1                         
                     for channel,pulses in enumerate(self.pulses[1:]):
                         if pulses:
@@ -835,7 +714,6 @@ class MainWindow(QtGui.QMainWindow):
         """
     
         # this fct is called every timewindow - so we have to query for scalars
-        # FIXME: decouple scalar query and plot-drawing
         self.query_daq_for_scalars()
         for widg in self.tabwidget.dynamic_widgets:
             if widg.is_active():

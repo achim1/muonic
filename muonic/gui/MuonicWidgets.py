@@ -229,7 +229,8 @@ class RateWidget(QtGui.QWidget):
         """
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
-        self.mainwindow.daq.put('DC')
+        self.mainwindow.query_daq_for_scalars()
+        self.mainwindow.daq.put('DC') # FIXME:  why is this necessary
         time.sleep(0.2)
         self.table.setEnabled(True)
 
