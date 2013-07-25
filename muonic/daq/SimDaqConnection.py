@@ -125,15 +125,22 @@ class SimDaqConnection(object):
         Simulate DAQ I/O
         """
         while self.running:
-            
-            self.logger.debug("inqueue size is %d" %self.inqueue.qsize())
-            while self.inqueue.qsize():
-                try:
-                    #print self.inqueue.get(0)
-                    self.port.write(str(self.inqueue.get(0))+"\r")
-                except Queue.Empty:
-                    self.logger.debug("Queue empty!")
-            
+            try:
+                self.logger.debug("inqueue size is %d" %self.inqueue.qsize())
+                while self.inqueue.qsize():
+                    try:
+                        #print self.inqueue.get(0)
+                        self.port.write(str(self.inqueue.get(0))+"\r")
+                    except Queue.Empty:
+                        self.logger.debug("Queue empty!")
+            except NotImplementedError:
+                self.logger.debug("Running Mac version of muonic.")
+                while True:
+                    try:
+                        self.port.write(str(self.inqueue.get(timeout=0.01))+"\r")
+                    except Queue.Empty:
+                        pass
+
             while self.port.inWaiting():
                 self.outqueue.put(self.port.readline().strip())
             time.sleep(0.02)

@@ -82,8 +82,13 @@ class DAQProvider:
         """
         is new data from daq available
         """
-
-        return self.outqueue.qsize()
+        size = None
+        try:
+            size = self.outqueue.qsize()
+        except NotImplementedError:
+            self.logger.debug("Running Mac version of muonic.")
+            size = not self.outqueue.empty()
+        return size
 
 class DAQClient(DAQProvider):
     

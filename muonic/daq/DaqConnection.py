@@ -110,13 +110,23 @@ class DaqConnection(object):
         """
 
         while self.running:
-            while self.inqueue.qsize():
-                try:
-                    self.port.write(str(self.inqueue.get(0))+"\r")
-                except Queue.Empty:
-                    pass
-            
-            sleep(0.1)
+            try:
+                while self.inqueue.qsize():
+                    try:
+                        self.port.write(str(self.inqueue.get(0))+"\r")
+                    except Queue.Empty:
+                        pass
+                
+                sleep(0.1)
+            except NotImplementedError:
+                self.logger.debug("Running Mac version of muonic.")
+                while True:
+                    try:
+                        self.port.write(str(self.inqueue.get(timeout=0.01))+"\r")
+                    except Queue.Empty:
+                        pass
+                 
+                sleep(0.1)
 
 
 class DaqServer(DaqConnection):
