@@ -1266,3 +1266,101 @@ class GPSWidget(QtGui.QWidget):
 
         self.switch_active(False)
         return True
+
+
+class DemoWidget(QtGui.QWidget):
+
+    def __init__(self,logger,parent=None):
+
+        QtGui.QWidget.__init__(self,parent=parent)
+        self.active = False
+        self.mainwindow = self.parentWidget()
+        self.logger = logger
+        self.pulses = False
+        self.pulsewidths = []
+
+        self.label           = QtGui.QLabel(tr('MainWindow','Demonstrator:'))
+        self.start_button  = QtGui.QPushButton(tr('MainWindow','Start demnonstration'))
+        self.stop_button     = QtGui.QPushButton(tr('MainWindow', 'Stop demonstration'))
+        self.activateDemo = QtGui.QCheckBox(self)
+        self.activateDemo.setObjectName("activate_demo")
+        self.activateDemo.setText(tr("Dialog", "Activate demonstration display", None, QtGui.QApplication.UnicodeUTF8))
+        QtCore.QObject.connect(self.activateDemo,
+                              QtCore.SIGNAL("clicked()"),
+                              self.activateDemoClicked
+                              )
+        self.color = []
+        self.label_channel = []
+        self.channel_demo = []
+        for cn in range(4):
+            self.color.append(QtGui.QColor(0, 0, 0))
+            self.label_channel.append(QtGui.QLabel(tr('MainWindow','Channel %i:' % cn)))
+            self.channel_demo.append(QtGui.QFrame(self))
+            #self.channel_demo[cn].setGeometry(0, 0, 80, 10)
+            self.channel_demo[cn].setStyleSheet("QWidget { background-color: %s }" % self.color[cn].name())
+
+        demo_layout = QtGui.QGridLayout(self)
+        demo_layout.addWidget(self.activateDemo,0,0,1,5)
+        demo_layout.addWidget(self.label_channel[0],1,0,1,1)
+        demo_layout.addWidget(self.channel_demo[0],1,1,1,2)
+        demo_layout.addWidget(self.label_channel[1],3,0,1,1)
+        demo_layout.addWidget(self.channel_demo[1],3,1,1,2)
+        demo_layout.addWidget(self.label_channel[2],5,0,1,1)
+        demo_layout.addWidget(self.channel_demo[2],5,1,1,2)
+        demo_layout.addWidget(self.label_channel[3],7,0,1,1)
+        demo_layout.addWidget(self.channel_demo[3],7,1,1,2)
+
+    def activateDemoClicked(self):
+        """
+        Enable or Disable the demonstration display
+        """
+        if not self.is_active():
+            self.active = True
+        else:
+            self.active = False
+
+    def is_active(self):
+        """
+        Is the demonstration activated? return bool
+        """
+        return self.active
+
+    def calculate(self, pulses):
+        """
+        calculate the pulses, pulsewidths and so on for the demonstration
+        """
+        self.pulses = pulses
+        pulsewidths = []
+        for chan in pulses[1:]:
+            for le, fe in chan:
+                if fe is not None:
+                    pulsewidths.append(fe - le)
+                else:
+                    pulsewidths.append(0.)
+        self.pulsewidths += pulsewidths
+        self.update()
+
+    def update(self):
+        """
+        Update the demonstration widget
+        """
+        if self.pulses:
+            for chan in enumerate(self.pulses[1:]):
+                #for pulse in chan[1]:
+                #    self.color[chan[0]].setRgb(255,0,0)
+                #    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
+                if len(chan[1]) > 0:
+                    self.color[chan[0]].setRgb(255,0,0)
+                    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
+                
+                time.sleep(0.1)
+                for chan in enumerate(self.pulses[1:]):
+
+                    self.color[chan[0]].setRgb(0,0,0)
+                    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
+
+            self.pulsewidths = []
+        else:
+            self.pulsewidths = []
+            self.logger.warning("Could not read the pulse information!")
+            pass
