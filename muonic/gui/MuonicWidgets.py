@@ -652,9 +652,8 @@ class VelocityWidget(QtGui.QWidget):
         self.trigger = VelocityTrigger(logger)
         self.times = []
         self.active = False
-        self.channel_distance = 100. # in cm
         self.omit_early_pulses = True
-        self.binning = (0.,2,10)
+        self.binning = (0.,60,10)
         self.fitrange = (self.binning[0],self.binning[1])
 
         self.activateVelocity = QtGui.QCheckBox(self)
@@ -691,11 +690,10 @@ class VelocityWidget(QtGui.QWidget):
     def calculate(self,pulses):
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel,omit_early_pulses = self.omit_early_pulses)
         if (flighttime != None and flighttime > 0):
-            velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
-            #print flighttime,velocity,self.channel_distance
-            self.logger.info("measured VELOCITY %s" %velocity.__repr__())
+            #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
+            self.logger.info("measured flighttime %s" %flighttime.__repr__())
             if flighttime != None:
-                self.times.append(velocity)
+                self.times.append(flighttime)
                 
         
     #FIXME: we should not name this update
@@ -713,7 +711,7 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon velocity histogram
         """
-        config_dialog = FitRangeConfigDialog(upperlim = (0.,3.,self.fitrange[1]), lowerlim = (-1.,3.,self.fitrange[0]))
+        config_dialog = FitRangeConfigDialog(upperlim = (0.,60.,self.fitrange[1]), lowerlim = (-1.,60.,self.fitrange[0]))
         rv = config_dialog.exec_()
         if rv == 1:
             upper_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("upper_limit")).value()
@@ -751,7 +749,6 @@ class VelocityWidget(QtGui.QWidget):
                 self.logger.info("Switching off decay measurement if running!")
                 if self.parentWidget().parentWidget().decaywidget.is_active():
                     self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
-                self.channel_distance  = config_dialog.findChild(QtGui.QSpinBox,QtCore.QString("channel_distance")).value()            
                 self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
                 self.active = True
                 self.parentWidget().parentWidget().ratewidget.startClicked()

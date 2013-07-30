@@ -209,14 +209,6 @@ class VelocityConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Upper Channel",objectname = "uppercheckbox",leftoffset=20, setchecked=[0]), 0, 0)
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Lower Channel",objectname = "lowercheckbox",leftoffset=180,setchecked=[1]), 0, 1)
        
-        channel_label    = QtGui.QLabel("Distance between channels (in cm)") 
-        channel_distance = QtGui.QSpinBox()
-        channel_distance.setObjectName("channel_distance")
-        channel_distance.setMaximum(1000)
-        channel_distance.setMinimum(1)
-        grid.addWidget(channel_distance,1,0)
-        grid.addWidget(channel_label,1,1)
-
         early_pulse_cut = QtGui.QCheckBox()
         early_pulse_cut.setObjectName("early_pulse_cut")
         early_pulse_cut.setText("omit pulses smaller than 10ns")
@@ -229,8 +221,8 @@ class VelocityConfigDialog(MuonicDialog):
         QtCore.QMetaObject.connectSlotsByName(self)
         
         
-        grid.addWidget(self.buttonBox,2,1)
-        grid.addWidget(early_pulse_cut,2,0)
+        grid.addWidget(self.buttonBox,1,1)
+        grid.addWidget(early_pulse_cut,1,0)
         self.setLayout(grid)
         self.show()
 

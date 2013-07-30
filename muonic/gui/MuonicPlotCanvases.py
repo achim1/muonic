@@ -363,15 +363,13 @@ class LifetimeCanvas(MuonicHistCanvas):
      
 class VelocityCanvas(MuonicHistCanvas):  
     
-    def __init__(self,parent,logger,binning = (0.,2,10)): 
-        #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xmin=0.7,xmax=1.3,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
+    def __init__(self,parent,logger,binning = (0.,35,10)): 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xmin=0.,xmax=35,ymin=0,ymax=2,ylabel="events",xlabel="flight time dt [ns]") 
         self.dimension = r"$c$"
         
 class PulseWidthCanvas(MuonicHistCanvas):     
 
     def __init__(self,parent,logger,histcolor="r"): 
-        #super(VelocityCanvas,self).__init__(self,parent,logger,binning=n.linspace(0.7,1.3,20),xmin=0.8,xmax=1.2,ymin=0,ymax=2,ylabel="events",xlabel="muon velocity (c)") 
         MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,30),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
         self.ax.set_title("Pulsewidths")
         
