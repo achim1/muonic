@@ -1273,8 +1273,10 @@ class DemoWidget(QtGui.QWidget):
         self.active = False
         self.mainwindow = self.parentWidget()
         self.logger = logger
-        self.pulses = False
+        self.pulses = []
         self.pulsewidths = []
+        self.demo_timer = None
+        self.timer_switch = False
 
         self.label           = QtGui.QLabel(tr('MainWindow','Demonstrator:'))
         self.start_button  = QtGui.QPushButton(tr('MainWindow','Start demnonstration'))
@@ -1289,7 +1291,7 @@ class DemoWidget(QtGui.QWidget):
         self.color = []
         self.label_channel = []
         self.channel_demo = []
-        for cn in range(4):
+        for cn in range(5):
             self.color.append(QtGui.QColor(0, 0, 0))
             self.label_channel.append(QtGui.QLabel(tr('MainWindow','Channel %i:' % cn)))
             self.channel_demo.append(QtGui.QFrame(self))
@@ -1306,6 +1308,9 @@ class DemoWidget(QtGui.QWidget):
         demo_layout.addWidget(self.channel_demo[2],5,1,1,2)
         demo_layout.addWidget(self.label_channel[3],7,0,1,1)
         demo_layout.addWidget(self.channel_demo[3],7,1,1,2)
+        self.label_channel[4] = QtGui.QLabel(tr('MainWindow','Trigger:'))
+        demo_layout.addWidget(self.label_channel[4],1,3,1,2)
+        demo_layout.addWidget(self.channel_demo[4],3,3,5,2)
 
     def activateDemoClicked(self):
         """
@@ -1313,8 +1318,13 @@ class DemoWidget(QtGui.QWidget):
         """
         if not self.is_active():
             self.active = True
+            self.demo_timer = QtCore.QTimer()
+            QtCore.QObject.connect(self.demo_timer, QtCore.SIGNAL("timeout()"), self.update)
+            self.demo_timer.start(50)
         else:
             self.active = False
+            self.demo_timer.stop()
+            self.demo_timer = None
 
     def is_active(self):
         """
@@ -1326,7 +1336,9 @@ class DemoWidget(QtGui.QWidget):
         """
         calculate the pulses, pulsewidths and so on for the demonstration
         """
-        self.pulses = pulses
+        self.pulses.append(pulses)
+        if len(self.pulses) > 100:
+            self.pulses = self.pulses[1:]
         pulsewidths = []
         for chan in pulses[1:]:
             for le, fe in chan:
@@ -1335,29 +1347,36 @@ class DemoWidget(QtGui.QWidget):
                 else:
                     pulsewidths.append(0.)
         self.pulsewidths += pulsewidths
-        self.update()
 
     def update(self):
         """
         Update the demonstration widget
         """
-        if self.pulses:
-            for chan in enumerate(self.pulses[1:]):
-                #for pulse in chan[1]:
-                #    self.color[chan[0]].setRgb(255,0,0)
-                #    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
-                if len(chan[1]) > 0:
-                    self.color[chan[0]].setRgb(255,0,0)
-                    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
-                
-                time.sleep(0.1)
-                for chan in enumerate(self.pulses[1:]):
+        if len(self.pulses) > 100:
+            self.pulses = self.pulses[1:]
+        if self.timer_switch:
 
-                    self.color[chan[0]].setRgb(0,0,0)
-                    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
-
-            self.pulsewidths = []
+            if len(self.pulses) > 0:
+                for pulses in self.pulses:
+                    for chan in enumerate(pulses[1:]):
+                        #for pulse in chan[1]:
+                        #    self.color[chan[0]].setRgb(255,0,0)
+                        #    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
+                        if len(chan[1]) > 0:
+                            self.color[chan[0]].setRgb(255,0,0)
+                            self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
+                    if pulses[0]:
+                        self.color[4].setRgb(255,0,0)
+                        self.channel_demo[4].setStyleSheet("QWidget { background-color: %s }" % self.color[4].name())
+                self.pulsewidths = []
+                self.pulses = []
+            
+            else:
+                self.pulsewidths = []
+                pass
+            self.timer_switch = False
         else:
-            self.pulsewidths = []
-            self.logger.warning("Could not read the pulse information!")
-            pass
+            for cn in range(5):
+                self.color[cn].setRgb(0,0,0)
+                self.channel_demo[cn].setStyleSheet("QWidget { background-color: %s }" % self.color[cn].name())
+            self.timer_switch = True
