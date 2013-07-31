@@ -38,7 +38,7 @@ class RateWidget(QtGui.QWidget):
         self.logger           = logger
         self.run              = False
         self.scalers_result   = False
-        self.MAXLENGTH = 40        
+        self.MAXLENGTH = 40
         self.scalers_monitor  = ScalarsCanvas(self, logger, self.MAXLENGTH)
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
@@ -236,6 +236,12 @@ class RateWidget(QtGui.QWidget):
 
         self.logger.debug("Start Button Clicked")
         date = time.gmtime()
+
+        for ch in ['ch0','ch1','ch2','ch3','trigger']:
+            self.scalers['scalers_buffer'][ch] = 0
+        for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
+            self.rates['rates_buffer'][ch] = []
+
         comment_file = '# new rate measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
         if self.mainwindow.tabwidget.decaywidget.is_active():
             comment_file = '# new decay measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
