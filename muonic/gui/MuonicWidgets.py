@@ -242,11 +242,11 @@ class RateWidget(QtGui.QWidget):
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
 
-        comment_file = '# new rate measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
         if self.mainwindow.tabwidget.decaywidget.is_active():
-            comment_file = '# new decay measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+            comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
         if self.mainwindow.tabwidget.velocitywidget.is_active():
-            comment_file = '# new velocity measurement run from: %i-%i-%i %i:%i:%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+            comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
 
 
         self.data_file = open(self.mainwindow.filename, 'a')        
