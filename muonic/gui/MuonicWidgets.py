@@ -695,11 +695,10 @@ class VelocityWidget(QtGui.QWidget):
         
     def calculate(self,pulses):
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel,omit_early_pulses = self.omit_early_pulses)
-        if (flighttime != None and flighttime > 0):
+        if flighttime != None and flighttime > 0:
             #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             self.logger.info("measured flighttime %s" %flighttime.__repr__())
-            if flighttime != None:
-                self.times.append(flighttime)
+            self.times.append(flighttime)
                 
         
     #FIXME: we should not name this update
@@ -757,6 +756,7 @@ class VelocityWidget(QtGui.QWidget):
                     self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
                 self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
                 self.active = True
+                self.parentWidget().parentWidget().parentWidget().daq.put("CE")
                 self.parentWidget().parentWidget().ratewidget.startClicked()
             else:
                 self.activateVelocity.setChecked(False)
