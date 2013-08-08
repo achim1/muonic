@@ -1317,8 +1317,8 @@ class DemoWidget(QtGui.QWidget):
         demo_layout.addWidget(self.label_channel[3],4,0,1,1)
         demo_layout.addWidget(self.channel_demo[3],4,1,1,2)
         self.label_channel[4] = QtGui.QLabel(tr('MainWindow','Trigger:'))
-        demo_layout.addWidget(self.label_channel[4],1,3,1,2)
-        demo_layout.addWidget(self.channel_demo[4],3,3,5,2)
+        demo_layout.addWidget(self.label_channel[4],2,3,1,1)
+        demo_layout.addWidget(self.channel_demo[4],1,4,4,1)
 
     def activateDemoClicked(self):
         """
