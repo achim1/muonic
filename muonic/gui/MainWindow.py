@@ -398,7 +398,7 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 self.timewindow = _timewindow
             self.widgetupdater.start(self.timewindow*1000)
-            self.nostatus = _nostatus
+            self.nostatus = not _nostatus
 
             self.logger.debug('Writing gatewidth WC 02 %s WC 03 %s' %(_02,_03))
             self.logger.debug('Setting timewindow to %.2f ' %(_timewindow))

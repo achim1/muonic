@@ -126,7 +126,7 @@ class PulseCanvas(MuonicPlotCanvas):
             #    _pulsemax = self.ax.get_xlim()[0]
             self.ax.set_xlim(0, _pulsemax)
             try:
-                self.ax.legend(loc=1, ncol=5, mode="expand", borderaxespad=0., handlelength=0.5)
+                self.ax.legend(loc=1, ncol=5, mode="expand", borderaxespad=0., handlelength=1)
             except:
                 self.logger.info('An error with the legend occured!')
                 self.ax.legend(loc=2)
@@ -138,7 +138,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
     
     def __init__(self,parent,logger, MAXLENGTH = 40):
         
-        MuonicPlotCanvas.__init__(self,parent,logger,xlabel="Time in s",ylabel="Rate in Hz")
+        MuonicPlotCanvas.__init__(self,parent,logger,xlabel="Time (s)",ylabel="Rate (Hz)")
         self.do_not_show_trigger = False
         #max length of shown = MAXLENGTH*timewindow
         self.MAXLENGTH = MAXLENGTH
@@ -330,7 +330,7 @@ class MuonicHistCanvas(MuonicPlotCanvas):
 
         # we now have to pass our new patches 
         # to the figure we created..            
-        self.ax.patches = self.hist_patches      
+        self.ax.patches = self.hist_patches 
         self.fig.canvas.draw()
 
 
@@ -357,24 +357,24 @@ class LifetimeCanvas(MuonicHistCanvas):
     measurement
     """
     
-    def __init__(self,parent,logger,binning = (0,10,21)):       
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="time between pulses (microseconds)",ylabel="events")
+    def __init__(self,parent,logger,binning = (0,10,21)): 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="Time between Pulses ($\mu$seconds)",ylabel="Events")
 
      
 class VelocityCanvas(MuonicHistCanvas):  
     
-    def __init__(self,parent,logger,binning = (0.,35,10)): 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xmin=0.,xmax=35,ymin=0,ymax=2,ylabel="events",xlabel="flight time dt [ns]") 
-        self.dimension = r"$c$"
+    def __init__(self,parent,logger,binning = (0.,30,15)): 
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xmin=0.,xmax=30,ymin=0,ymax=2,ylabel="Events",xlabel="Flight Time (ns)") 
+        self.dimension = r"$ns$"
         
 class PulseWidthCanvas(MuonicHistCanvas):     
 
     def __init__(self,parent,logger,histcolor="r"): 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,30),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="events",xlabel="pulsewidth (ns)") 
-        self.ax.set_title("Pulsewidths")
+        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,30),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="Events",xlabel="Pulse Width (ns)") 
+        self.ax.set_title("Pulse widths")
         
     def update_plot(self,data):
         super(PulseWidthCanvas,self).update_plot(data)
-        self.ax.set_title("Pulsewidths")
+        self.ax.set_title("Pulse widths")
         
         

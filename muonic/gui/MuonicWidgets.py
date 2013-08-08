@@ -258,13 +258,13 @@ class RateWidget(QtGui.QWidget):
         if not self.mainwindow.channelcheckbox_0:
             self.rates['edit_ch0'].setText('off')
             self.scalers['edit_ch0'].setText('off')
-        if self.mainwindow.channelcheckbox_1:
+        if not self.mainwindow.channelcheckbox_1:
             self.rates['edit_ch1'].setText('off')
             self.scalers['edit_ch1'].setText('off')
-        if self.mainwindow.channelcheckbox_2:
+        if not self.mainwindow.channelcheckbox_2:
             self.rates['edit_ch2'].setText('off')
             self.scalers['edit_ch2'].setText('off')
-        if self.mainwindow.channelcheckbox_3:
+        if not self.mainwindow.channelcheckbox_3:
             self.rates['edit_ch3'].setText('off')
             self.scalers['edit_ch3'].setText('off')
         self.general_info['edit_date'].setDisabled(False)
@@ -312,7 +312,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.mainwindow = self.parentWidget()
         self.pulsefile = self.mainwindow.pulseextractor.pulsefile
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
-        self.activatePulseanalyzer.setText(tr("Dialog", "Show oscilloscope as well as the pulswidths and write out the pulsefile.", None, QtGui.QApplication.UnicodeUTF8))
+        self.activatePulseanalyzer.setText(tr("Dialog", "Show Oscilloscope and Pulse Width Distribution", None, QtGui.QApplication.UnicodeUTF8))
         self.activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
         self.activatePulseanalyzer.setObjectName("activate_pulseanalyzer")
         grid = QtGui.QGridLayout(self)
@@ -593,13 +593,13 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.daq_stats['active_channel_2'] = self.mainwindow.channelcheckbox_2
             self.daq_stats['active_channel_3'] = self.mainwindow.channelcheckbox_3
             if self.mainwindow.coincidencecheckbox_0:
-                self.daq_stats['coincidences'] = 'Single coincidence condition set.'
+                self.daq_stats['coincidences'] = 'Single Coincidence.'
             elif self.mainwindow.coincidencecheckbox_1:
-                self.daq_stats['coincidences'] = 'Twofold coincidence condition set.'
+                self.daq_stats['coincidences'] = 'Twofold Coincidence.'
             elif self.mainwindow.coincidencecheckbox_2:
-                self.daq_stats['coincidences'] = 'Threefold coincidence condition set.'
+                self.daq_stats['coincidences'] = 'Threefold Coincidence.'
             elif self.mainwindow.coincidencecheckbox_3:
-                self.daq_stats['coincidences'] = 'Fourfold coincidence condition set.'
+                self.daq_stats['coincidences'] = 'Fourfold Coincidence.'
 
             for cnt in range(4):
                 self.thresholds[cnt].setDisabled(False)                
@@ -632,11 +632,13 @@ class StatusWidget(QtGui.QWidget): # not used yet
             #self.last_path.setEnabled(True)
             measurements = ''
             if self.mainwindow.tabwidget.ratewidget.is_active():
-                measurements = 'rate measurement'
+                measurements = 'Muon Rates'
             if self.mainwindow.tabwidget.decaywidget.is_active():
-                measurements += ', decay measurement'
+                measurements += ', Muon Decay'
             if self.mainwindow.tabwidget.velocitywidget.is_active():
-                measurements += ', velocity measurement'
+                measurements += ', Muon Velocity'
+            if self.mainwindow.tabwidget.pulseanalyzerwidget.is_active():
+                measurements += ', Pulse Analyzer'
             self.measurements.setText(measurements)
             self.measurements.setEnabled(True)
             self.start_params.setEnabled(True)
@@ -659,14 +661,14 @@ class VelocityWidget(QtGui.QWidget):
         self.times = []
         self.active = False
         self.omit_early_pulses = True
-        self.binning = (0.,60,10)
+        self.binning = (0.,30,15)
         self.fitrange = (self.binning[0],self.binning[1])
 
         self.activateVelocity = QtGui.QCheckBox(self)
-        self.activateVelocity.setText(tr("Dialog", "Measure muon velocity (writes also the pulsefile)", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateVelocity.setText(tr("Dialog", "Measure Flight Time", None, QtGui.QApplication.UnicodeUTF8))
         self.activateVelocity.setObjectName("activate_velocity")
         self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
-        self.velocityfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Change fit range')) 
+        self.velocityfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Fit Range')) 
         layout = QtGui.QGridLayout(self)
         layout.addWidget(self.activateVelocity,0,0,1,3)
         self.velocitycanvas = VelocityCanvas(self,logger,binning = self.binning)
@@ -716,7 +718,7 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon velocity histogram
         """
-        config_dialog = FitRangeConfigDialog(upperlim = (0.,60.,self.fitrange[1]), lowerlim = (-1.,60.,self.fitrange[0]))
+        config_dialog = FitRangeConfigDialog(upperlim = (0.,60.,self.fitrange[1]), lowerlim = (-1.,60.,self.fitrange[0]), dimension = 'ns')
         rv = config_dialog.exec_()
         if rv == 1:
             upper_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("upper_limit")).value()
@@ -773,7 +775,7 @@ class DecayWidget(QtGui.QWidget):
         self.logger = logger 
         self.mufit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!'))
         self.mufit_button.setEnabled(False)
-        self.decayfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Change fit range')) 
+        self.decayfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Fit Range')) 
         self.decayfitrange_button.setEnabled(False)
         self.lifetime_monitor = LifetimeCanvas(self,logger)
         self.minsinglepulsewidth = 0
@@ -811,7 +813,7 @@ class DecayWidget(QtGui.QWidget):
         # activate Muondecay mode with a checkbox
         self.activateMuondecay = QtGui.QCheckBox(self)
         self.activateMuondecay.setObjectName("activate_mudecay")
-        self.activateMuondecay.setText(tr("Dialog", "Check for decayed muons (writes also the pulsefile).", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateMuondecay.setText(tr("Dialog", "Check for Decayed Muons", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QObject.connect(self.activateMuondecay,
                               QtCore.SIGNAL("clicked()"),
                               self.activateMuondecayClicked
@@ -881,7 +883,7 @@ class DecayWidget(QtGui.QWidget):
         """
         fit the muon decay histogram
         """
-        config_dialog = FitRangeConfigDialog(upperlim = (0.,10.,self.fitrange[1]), lowerlim = (-1.,10.,self.fitrange[0]))
+        config_dialog = FitRangeConfigDialog(upperlim = (0.,10.,self.fitrange[1]), lowerlim = (-1.,10.,self.fitrange[0]), dimension = 'microsecond')
         rv = config_dialog.exec_()
         if rv == 1:
             upper_limit  = config_dialog.findChild(QtGui.QDoubleSpinBox,QtCore.QString("upper_limit")).value()
@@ -1289,7 +1291,7 @@ class DemoWidget(QtGui.QWidget):
         self.stop_button     = QtGui.QPushButton(tr('MainWindow', 'Stop demonstration'))
         self.activateDemo = QtGui.QCheckBox(self)
         self.activateDemo.setObjectName("activate_demo")
-        self.activateDemo.setText(tr("Dialog", "Activate demonstration display", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateDemo.setText(tr("Dialog", "Activate Demonstration Display", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QObject.connect(self.activateDemo,
                               QtCore.SIGNAL("clicked()"),
                               self.activateDemoClicked
@@ -1298,7 +1300,7 @@ class DemoWidget(QtGui.QWidget):
         self.label_channel = []
         self.channel_demo = []
         for cn in range(5):
-            self.color.append(QtGui.QColor(0, 0, 0))
+            self.color.append(QtGui.QColor(255, 255, 255))
             self.label_channel.append(QtGui.QLabel(tr('MainWindow','Channel %i:' % cn)))
             self.channel_demo.append(QtGui.QFrame(self))
             #self.channel_demo[cn].setGeometry(0, 0, 80, 10)
@@ -1308,12 +1310,12 @@ class DemoWidget(QtGui.QWidget):
         demo_layout.addWidget(self.activateDemo,0,0,1,5)
         demo_layout.addWidget(self.label_channel[0],1,0,1,1)
         demo_layout.addWidget(self.channel_demo[0],1,1,1,2)
-        demo_layout.addWidget(self.label_channel[1],3,0,1,1)
-        demo_layout.addWidget(self.channel_demo[1],3,1,1,2)
-        demo_layout.addWidget(self.label_channel[2],5,0,1,1)
-        demo_layout.addWidget(self.channel_demo[2],5,1,1,2)
-        demo_layout.addWidget(self.label_channel[3],7,0,1,1)
-        demo_layout.addWidget(self.channel_demo[3],7,1,1,2)
+        demo_layout.addWidget(self.label_channel[1],2,0,1,1)
+        demo_layout.addWidget(self.channel_demo[1],2,1,1,2)
+        demo_layout.addWidget(self.label_channel[2],3,0,1,1)
+        demo_layout.addWidget(self.channel_demo[2],3,1,1,2)
+        demo_layout.addWidget(self.label_channel[3],4,0,1,1)
+        demo_layout.addWidget(self.channel_demo[3],4,1,1,2)
         self.label_channel[4] = QtGui.QLabel(tr('MainWindow','Trigger:'))
         demo_layout.addWidget(self.label_channel[4],1,3,1,2)
         demo_layout.addWidget(self.channel_demo[4],3,3,5,2)
@@ -1383,6 +1385,6 @@ class DemoWidget(QtGui.QWidget):
             self.timer_switch = False
         else:
             for cn in range(5):
-                self.color[cn].setRgb(0,0,0)
+                self.color[cn].setRgb(255,255,255)
                 self.channel_demo[cn].setStyleSheet("QWidget { background-color: %s }" % self.color[cn].name())
             self.timer_switch = True

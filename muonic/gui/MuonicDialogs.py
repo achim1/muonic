@@ -98,7 +98,7 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.mintime_label,2,1)
 
 
-        pulsewidthgroupBox = QtGui.QGroupBox("Set conditions on pulsewidth")
+        pulsewidthgroupBox = QtGui.QGroupBox("Set conditions on pulse width")
         pulsewidthgroupBox.setCheckable(True)
         pulsewidthgroupBox.setChecked(False)
         pulsewidthgroupBox.setObjectName("pulsewidthgroupbox")      
@@ -106,7 +106,8 @@ class DecayConfigDialog(MuonicDialog):
         
         self.minsinglepulsewidth = QtGui.QSpinBox()
         self.minsinglepulsewidth.setObjectName("minsinglepulsewidth")
-        self.minsinglepulsewidth_label = QtGui.QLabel("Min mu pulse width (ns)")
+        self.minsinglepulsewidth_label = QtGui.QLabel("Min mu pulse width")
+        self.minsinglepulsewidth.setSuffix(' ns')
         self.minsinglepulsewidth.setValue(10)
         self.minsinglepulsewidth.setToolTip(QtCore.QString("Define a MINIMUM width for the MUON pulse"))
         self.minsinglepulsewidth.setMaximum(11000)
@@ -115,7 +116,8 @@ class DecayConfigDialog(MuonicDialog):
  
         self.maxsinglepulsewidth = QtGui.QSpinBox()
         self.maxsinglepulsewidth.setObjectName("maxsinglepulsewidth")
-        self.maxsinglepulsewidth_label = QtGui.QLabel("Max mu pulse width (ns)")
+        self.maxsinglepulsewidth_label = QtGui.QLabel("Max mu pulse width")
+        self.maxsinglepulsewidth.setSuffix(' ns')
         self.maxsinglepulsewidth.setMaximum(11000)
         self.maxsinglepulsewidth.setValue(300)
         self.maxsinglepulsewidth.setToolTip(QtCore.QString("Define a MAXIMUM width for the MUON pulse"))
@@ -124,7 +126,8 @@ class DecayConfigDialog(MuonicDialog):
 
         self.mindoublepulsewidth = QtGui.QSpinBox()
         self.mindoublepulsewidth.setObjectName("mindoublepulsewidth")
-        self.mindoublepulsewidth_label = QtGui.QLabel("Min e pulse width (ns)")
+        self.mindoublepulsewidth_label = QtGui.QLabel("Min e pulse width")
+        self.mindoublepulsewidth.setSuffix(' ns')
         self.maxsinglepulsewidth.setMaximum(11000)
         self.mindoublepulsewidth.setValue(5)
         self.mindoublepulsewidth.setToolTip(QtCore.QString("Define a MINIMUM width for the ELECTRON pulse"))
@@ -134,7 +137,8 @@ class DecayConfigDialog(MuonicDialog):
 
         self.maxdoublepulsewidth = QtGui.QSpinBox()
         self.maxdoublepulsewidth.setObjectName("maxdoublepulsewidth")
-        self.maxdoublepulsewidth_label = QtGui.QLabel("Max e pulse width (ns)")
+        self.maxdoublepulsewidth_label = QtGui.QLabel("Max e pulse width")
+        self.maxdoublepulsewidth.setSuffix(' ns')
         self.maxsinglepulsewidth.setMaximum(11000)
         self.maxdoublepulsewidth.setValue(300)
         self.maxdoublepulsewidth.setToolTip(QtCore.QString("Define a MINIMUM width for the ELECTRON pulse"))
@@ -153,7 +157,7 @@ class DecayConfigDialog(MuonicDialog):
         self.show()
 class FitRangeConfigDialog(MuonicDialog):
 
-        def __init__(self, upperlim = None, lowerlim = None, *args):
+        def __init__(self, upperlim = None, lowerlim = None, dimension = '', *args):
             QtGui.QDialog.__init__(self,*args)
 
             #self.resize(480, 360)
@@ -167,6 +171,7 @@ class FitRangeConfigDialog(MuonicDialog):
             lower.setDecimals(2)
             lower.setSingleStep(0.01)
             lower.setObjectName("lower_limit")
+            lower.setSuffix(' %s' %(str(dimension)))
             if lowerlim:
                 lower.setMaximum(lowerlim[1])
                 lower.setMinimum(lowerlim[0])
@@ -179,6 +184,7 @@ class FitRangeConfigDialog(MuonicDialog):
             upper.setDecimals(2)
             upper.setSingleStep(0.01)
             upper.setObjectName("upper_limit")
+            upper.setSuffix(' %s' %(str(dimension)))            
             if upperlim:
                 upper.setMaximum(upperlim[1])
                 upper.setMinimum(upperlim[0])
@@ -287,7 +293,7 @@ class ThresholdDialog(MuonicDialog):
             thres.setObjectName("thr_ch_" + ch)
             thres.setValue(int(thr))
             thres.setSuffix(' mV')
-            label = QtGui.QLabel("Chan " + ch )
+            label = QtGui.QLabel("Channel " + ch )
             self.v_box.addWidget(label)
             self.v_box.addWidget(thres)
                         
@@ -373,7 +379,7 @@ class AdvancedDialog(MuonicDialog):
         self.gatewidth = QtGui.QSpinBox()
         self.gatewidth.setSuffix(' ns')
         self.gatewidth.setObjectName("gatewidth")
-        self.gatewidth_label = QtGui.QLabel("gatewidth timewindow (default: 100 ns): ")
+        self.gatewidth_label = QtGui.QLabel("Gatewidth Timewindow (default: 100 ns): ")
         self.gatewidth.setMaximum(159990)
         self.gatewidth.setSingleStep(10)        
         self.gatewidth.setMinimum(10)
@@ -382,7 +388,7 @@ class AdvancedDialog(MuonicDialog):
         grid.addWidget(self.gatewidth,0,1)
         grid.addWidget(self.gatewidth_label,0,0)
 
-        self.timewindow_label = QtGui.QLabel("Readout timewindow for the rate measurement (default: 5 s): ")
+        self.timewindow_label = QtGui.QLabel("Readout interval (default: 5 s): ")
         self.timewindow = QtGui.QDoubleSpinBox()
         self.timewindow.setDecimals(1)
         self.timewindow.setSingleStep(0.1)
@@ -396,11 +402,12 @@ class AdvancedDialog(MuonicDialog):
         grid.addWidget(self.timewindow_label,1,0)
 
 
-        self.nostatus_label = QtGui.QLabel("Write no DAQ status lines to RAW file: ")
+        self.nostatus_label = QtGui.QLabel("Write DAQ status lines to RAW file: ")
         self.nostatus = QtGui.QCheckBox()
         self.nostatus.setObjectName("nostatus")
         self.nostatus.setChecked(nostatus)
-        self.nostatus.setToolTip(QtCore.QString("Write no DAQ status lines to RAW file, same as option -n."))
+        self.nostatus.setToolTip(QtCore.QString("Write DAQ status lines to RAW file, same as option -n."))
+        self.nostatus.setChecked(True)
         grid.addWidget(self.nostatus,2,1)
         grid.addWidget(self.nostatus_label,2,0)
 
