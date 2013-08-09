@@ -421,10 +421,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.muonic_stats['last_path'] = 'not set yet - click on Refresh.'
 
         self.label_daq = QtGui.QLabel(tr('MainWindow','Status of the DAQ card:'))
-        self.label_thresholds_0 = QtGui.QLabel(tr('MainWindow','Threshold channel 0:'))
-        self.label_thresholds_1 = QtGui.QLabel(tr('MainWindow','Threshold channel 1:'))        
-        self.label_thresholds_2 = QtGui.QLabel(tr('MainWindow','Threshold channel 2:'))        
-        self.label_thresholds_3 = QtGui.QLabel(tr('MainWindow','Threshold channel 3:'))        
+        self.label_thresholds = QtGui.QLabel(tr('MainWindow','Threshold:'))
         self.label_active_channels = QtGui.QLabel(tr('MainWindow','Active channels:'))
         self.label_coincidences = QtGui.QLabel(tr('MainWindow','Trigger condition:'))
         self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Time window for trigger condition:'))
@@ -470,21 +467,24 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.label_refreshtime = QtGui.QLabel(tr('MainWindow','Measurement intervals:'))
         self.label_open_files = QtGui.QLabel(tr('MainWindow','Currently opened files:'))
         self.label_last_path = QtGui.QLabel(tr('MainWindow','Last saved files:'))
-        self.start_params = QtGui.QLineEdit(self)
+        self.start_params = QtGui.QPlainTextEdit()
         self.start_params.setReadOnly(True)
         self.start_params.setDisabled(True)
+        self.start_params.document().setMaximumBlockCount(10)
         self.measurements = QtGui.QLineEdit(self)
         self.measurements.setReadOnly(True)
         self.measurements.setDisabled(True)
-        self.start_params.setText(self.muonic_stats['start_params'])
+        self.start_params.setPlainText(self.muonic_stats['start_params'])
         self.refreshtime = QtGui.QLineEdit(self)
         self.refreshtime.setReadOnly(True)
         self.refreshtime.setDisabled(True)
         self.refreshtime.setText(self.muonic_stats['refreshtime'])
-        self.open_files = QtGui.QLineEdit(self)
+
+        self.open_files = QtGui.QPlainTextEdit()
         self.open_files.setReadOnly(True)
         self.open_files.setDisabled(True)
-        self.open_files.setText(self.muonic_stats['open_files'])
+        self.open_files.setPlainText(self.muonic_stats['open_files'])
+        self.open_files.document().setMaximumBlockCount(10)
         #self.last_path = QtGui.QLineEdit(self)
         #self.last_path.setReadOnly(True)
         #self.last_path.setDisabled(True)
@@ -505,38 +505,37 @@ class StatusWidget(QtGui.QWidget): # not used yet
 
         status_layout = QtGui.QGridLayout(self)
         status_layout.addWidget(self.label_daq,0,0)
-        status_layout.addWidget(self.label_active_channels,0,1)
-        status_layout.addWidget(self.active_channel_0,0,2,1,2)
-        status_layout.addWidget(self.active_channel_1,0,4,1,2)
-        status_layout.addWidget(self.active_channel_2,0,6,1,2)
-        status_layout.addWidget(self.active_channel_3,0,8,1,2)
-        status_layout.addWidget(self.thresholds[0],1,2,1,8)
-        status_layout.addWidget(self.label_thresholds_1,2,1,1,8)
-        status_layout.addWidget(self.thresholds[1],2,2,1,8)
-        status_layout.addWidget(self.label_thresholds_2,3,1,1,8)
-        status_layout.addWidget(self.thresholds[2],3,2,1,8)
-        status_layout.addWidget(self.label_thresholds_3,4,1,1,8)
-        status_layout.addWidget(self.thresholds[3],4,2,1,8)
-        status_layout.addWidget(self.label_coincidences,5,1)
-        status_layout.addWidget(self.coincidences,5,2,1,8)
-        status_layout.addWidget(self.label_coincidence_timewindow,6,1)
-        status_layout.addWidget(self.coincidence_timewindow,6,2,1,8)        
-        status_layout.addWidget(self.label_veto,7,1)
-        status_layout.addWidget(self.veto,7,2,1,8)
-
-        status_layout.addWidget(self.label_muonic,8,0)
-        status_layout.addWidget(self.label_start_params,8,1)
-        status_layout.addWidget(self.start_params,8,2,1,8)
-        status_layout.addWidget(self.label_refreshtime,9,1)
-        status_layout.addWidget(self.refreshtime,9,2,1,2)
-        status_layout.addWidget(self.label_open_files,10,1)
-        status_layout.addWidget(self.open_files,10,2,1,8)
-        status_layout.addWidget(self.label_measurements,9,4)
-        status_layout.addWidget(self.measurements,9,5,1,5)
+        status_layout.addWidget(self.label_active_channels,1,0)
+        status_layout.addWidget(self.active_channel_0,1,1)
+        status_layout.addWidget(self.active_channel_1,1,2)
+        status_layout.addWidget(self.active_channel_2,1,3)
+        status_layout.addWidget(self.active_channel_3,1,4)
+        status_layout.addWidget(self.thresholds[0],2,1)
+        status_layout.addWidget(self.label_thresholds,2,0)
+        status_layout.addWidget(self.thresholds[1],2,2)
+        status_layout.addWidget(self.thresholds[2],2,3)
+        status_layout.addWidget(self.thresholds[3],2,4)
+        status_layout.addWidget(self.label_coincidences,3,0)
+        status_layout.addWidget(self.coincidences,3,1,1,2)
+        status_layout.addWidget(self.label_coincidence_timewindow,3,3)
+        status_layout.addWidget(self.coincidence_timewindow,3,4)
+        status_layout.addWidget(self.label_veto,4,0)
+        status_layout.addWidget(self.veto,4,1,1,4)
+        nix = QtGui.QLabel(self)        
+        status_layout.addWidget(nix,5,0)
+        status_layout.addWidget(self.label_muonic,6,0)
+        status_layout.addWidget(self.label_measurements,7,0)
+        status_layout.addWidget(self.measurements,7,1,1,2)
+        status_layout.addWidget(self.label_refreshtime,7,3)
+        status_layout.addWidget(self.refreshtime,7,4)
+        status_layout.addWidget(self.label_start_params,8,0)
+        status_layout.addWidget(self.start_params,8,1,2,4)
+        status_layout.addWidget(self.label_open_files,10,0)
+        status_layout.addWidget(self.open_files,10,1,2,4)
         #status_layout.addWidget(self.label_last_path,11,1)
         #status_layout.addWidget(self.last_path,11,2,1,8)
 
-        status_layout.addWidget(self.refresh_button,11,0,1,6)
+        status_layout.addWidget(self.refresh_button,12,0,1,6)
         #status_layout.addWidget(self.save_button,11,2,1,2)
 
     def on_refresh_clicked(self):
@@ -622,11 +621,11 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
             if self.mainwindow.writepulses:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.pulsefilename
-            self.start_params.setText(self.muonic_stats['start_params'])
+            self.start_params.setPlainText(self.muonic_stats['start_params'])
             self.start_params.setEnabled(True)
             self.refreshtime.setText(self.muonic_stats['refreshtime'])
             self.refreshtime.setEnabled(True)
-            self.open_files.setText(self.muonic_stats['open_files'])
+            self.open_files.setPlainText(self.muonic_stats['open_files'])
             self.open_files.setEnabled(True)
             #self.last_path.setText(self.muonic_stats['last_path'])
             #self.last_path.setEnabled(True)
@@ -1296,29 +1295,16 @@ class DemoWidget(QtGui.QWidget):
                               QtCore.SIGNAL("clicked()"),
                               self.activateDemoClicked
                               )
-        self.color = []
-        self.label_channel = []
-        self.channel_demo = []
-        for cn in range(5):
-            self.color.append(QtGui.QColor(255, 255, 255))
-            self.label_channel.append(QtGui.QLabel(tr('MainWindow','Channel %i:' % cn)))
-            self.channel_demo.append(QtGui.QFrame(self))
-            #self.channel_demo[cn].setGeometry(0, 0, 80, 10)
-            self.channel_demo[cn].setStyleSheet("QWidget { background-color: %s }" % self.color[cn].name())
+        self.color = QtGui.QColor(255, 255, 255)
+        self.label_trigger = QtGui.QLabel(tr('MainWindow','Trigger'))
+        self.channel_trigger = QtGui.QFrame(self)
+        #self.channel_demo[cn].setGeometry(0, 0, 80, 10)
+        self.channel_trigger.setStyleSheet("QWidget { background-color: %s }" % self.color.name())
 
         demo_layout = QtGui.QGridLayout(self)
-        demo_layout.addWidget(self.activateDemo,0,0,1,5)
-        demo_layout.addWidget(self.label_channel[0],1,0,1,1)
-        demo_layout.addWidget(self.channel_demo[0],1,1,1,2)
-        demo_layout.addWidget(self.label_channel[1],2,0,1,1)
-        demo_layout.addWidget(self.channel_demo[1],2,1,1,2)
-        demo_layout.addWidget(self.label_channel[2],3,0,1,1)
-        demo_layout.addWidget(self.channel_demo[2],3,1,1,2)
-        demo_layout.addWidget(self.label_channel[3],4,0,1,1)
-        demo_layout.addWidget(self.channel_demo[3],4,1,1,2)
-        self.label_channel[4] = QtGui.QLabel(tr('MainWindow','Trigger:'))
-        demo_layout.addWidget(self.label_channel[4],2,3,1,1)
-        demo_layout.addWidget(self.channel_demo[4],1,4,4,1)
+        demo_layout.addWidget(self.activateDemo,0,0,1,3)
+        demo_layout.addWidget(self.label_trigger,1,0,1,1)
+        demo_layout.addWidget(self.channel_trigger,1,1,2,2)
 
     def activateDemoClicked(self):
         """
@@ -1328,7 +1314,7 @@ class DemoWidget(QtGui.QWidget):
             self.active = True
             self.demo_timer = QtCore.QTimer()
             QtCore.QObject.connect(self.demo_timer, QtCore.SIGNAL("timeout()"), self.update)
-            self.demo_timer.start(50)
+            self.demo_timer.start(100)
         else:
             self.active = False
             self.demo_timer.stop()
@@ -1366,16 +1352,9 @@ class DemoWidget(QtGui.QWidget):
 
             if len(self.pulses) > 0:
                 for pulses in self.pulses:
-                    for chan in enumerate(pulses[1:]):
-                        #for pulse in chan[1]:
-                        #    self.color[chan[0]].setRgb(255,0,0)
-                        #    self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
-                        if len(chan[1]) > 0:
-                            self.color[chan[0]].setRgb(255,0,0)
-                            self.channel_demo[chan[0]].setStyleSheet("QWidget { background-color: %s }" % self.color[chan[0]].name())
                     if pulses[0]:
-                        self.color[4].setRgb(255,0,0)
-                        self.channel_demo[4].setStyleSheet("QWidget { background-color: %s }" % self.color[4].name())
+                        self.color.setRgb(255,0,0)
+                        self.channel_trigger.setStyleSheet("QWidget { background-color: %s }" % self.color.name())
                 self.pulsewidths = []
                 self.pulses = []
             
@@ -1384,7 +1363,6 @@ class DemoWidget(QtGui.QWidget):
                 pass
             self.timer_switch = False
         else:
-            for cn in range(5):
-                self.color[cn].setRgb(255,255,255)
-                self.channel_demo[cn].setStyleSheet("QWidget { background-color: %s }" % self.color[cn].name())
+            self.color.setRgb(255,255,255)
+            self.channel_trigger.setStyleSheet("QWidget { background-color: %s }" % self.color.name())
             self.timer_switch = True
