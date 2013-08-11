@@ -1270,3 +1270,99 @@ class GPSWidget(QtGui.QWidget):
 
         self.switch_active(False)
         return True
+
+
+class DemoWidget(QtGui.QWidget):
+
+    def __init__(self,logger,parent=None):
+
+        QtGui.QWidget.__init__(self,parent=parent)
+        self.active = False
+        self.mainwindow = self.parentWidget()
+        self.logger = logger
+        self.pulses = []
+        self.pulsewidths = []
+        self.demo_timer = None
+        self.timer_switch = False
+
+        self.label           = QtGui.QLabel(tr('MainWindow','Demonstrator:'))
+        self.start_button  = QtGui.QPushButton(tr('MainWindow','Start demnonstration'))
+        self.stop_button     = QtGui.QPushButton(tr('MainWindow', 'Stop demonstration'))
+        self.activateDemo = QtGui.QCheckBox(self)
+        self.activateDemo.setObjectName("activate_demo")
+        self.activateDemo.setText(tr("Dialog", "Activate Demonstration Display", None, QtGui.QApplication.UnicodeUTF8))
+        QtCore.QObject.connect(self.activateDemo,
+                              QtCore.SIGNAL("clicked()"),
+                              self.activateDemoClicked
+                              )
+        self.color = QtGui.QColor(255, 255, 255)
+        self.label_trigger = QtGui.QLabel(tr('MainWindow','Trigger'))
+        self.channel_trigger = QtGui.QFrame(self)
+        #self.channel_demo[cn].setGeometry(0, 0, 80, 10)
+        self.channel_trigger.setStyleSheet("QWidget { background-color: %s }" % self.color.name())
+
+        demo_layout = QtGui.QGridLayout(self)
+        demo_layout.addWidget(self.activateDemo,0,0,1,3)
+        demo_layout.addWidget(self.label_trigger,1,0,1,1)
+        demo_layout.addWidget(self.channel_trigger,1,1,2,2)
+
+    def activateDemoClicked(self):
+        """
+        Enable or Disable the demonstration display
+        """
+        if not self.is_active():
+            self.active = True
+            self.demo_timer = QtCore.QTimer()
+            QtCore.QObject.connect(self.demo_timer, QtCore.SIGNAL("timeout()"), self.update)
+            self.demo_timer.start(100)
+        else:
+            self.active = False
+            self.demo_timer.stop()
+            self.demo_timer = None
+
+    def is_active(self):
+        """
+        Is the demonstration activated? return bool
+        """
+        return self.active
+
+    def calculate(self, pulses):
+        """
+        calculate the pulses, pulsewidths and so on for the demonstration
+        """
+        self.pulses.append(pulses)
+        if len(self.pulses) > 100:
+            self.pulses = self.pulses[1:]
+        pulsewidths = []
+        for chan in pulses[1:]:
+            for le, fe in chan:
+                if fe is not None:
+                    pulsewidths.append(fe - le)
+                else:
+                    pulsewidths.append(0.)
+        self.pulsewidths += pulsewidths
+
+    def update(self):
+        """
+        Update the demonstration widget
+        """
+        if len(self.pulses) > 100:
+            self.pulses = self.pulses[1:]
+        if self.timer_switch:
+
+            if len(self.pulses) > 0:
+                for pulses in self.pulses:
+                    if pulses[0]:
+                        self.color.setRgb(255,0,0)
+                        self.channel_trigger.setStyleSheet("QWidget { background-color: %s }" % self.color.name())
+                self.pulsewidths = []
+                self.pulses = []
+            
+            else:
+                self.pulsewidths = []
+                pass
+            self.timer_switch = False
+        else:
+            self.color.setRgb(255,255,255)
+            self.channel_trigger.setStyleSheet("QWidget { background-color: %s }" % self.color.name())
+            self.timer_switch = True
