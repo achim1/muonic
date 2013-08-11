@@ -24,7 +24,7 @@ from ..daq.DAQProvider import DAQIOError
 
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
-from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget, DemoWidget
+from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
 
 DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
 # this is hard-coded! There must be a better solution...
@@ -187,9 +187,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
         self.tabwidget.gpswidget = self.tabwidget.widget(6)
-
-        self.tabwidget.addTab(DemoWidget(logger,parent=self),"Demonstrator")
-        self.tabwidget.demowidget = self.tabwidget.widget(7)        
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
         self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,self.tabwidget.pulseanalyzerwidget,self.tabwidget.velocitywidget,self.tabwidget.ratewidget]
@@ -689,13 +686,11 @@ class MainWindow(QtGui.QMainWindow):
                         self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
                 continue
             
-            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.active or self.tabwidget.demowidget.is_active()):#self.showpulses or self.pulsefilename) :
+            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.active):#self.showpulses or self.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
                 if self.pulses != None:
                     #self.pulses_to_show = self.pulses
                     self.tabwidget.pulseanalyzerwidget.calculate(self.pulses)
-                    if self.tabwidget.demowidget.is_active():
-                        self.tabwidget.demowidget.calculate(self.pulses)
                     # we have to count the triggers in the time intervall
                     # FIXME: find a method to calculate rate from 
                     # previously taken RAW file
