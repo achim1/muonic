@@ -659,7 +659,6 @@ class VelocityWidget(QtGui.QWidget):
         self.trigger = VelocityTrigger(logger)
         self.times = []
         self.active = False
-        self.omit_early_pulses = True
         self.binning = (0.,30,15)
         self.fitrange = (self.binning[0],self.binning[1])
 
@@ -695,7 +694,7 @@ class VelocityWidget(QtGui.QWidget):
                               )
         
     def calculate(self,pulses):
-        flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel,omit_early_pulses = self.omit_early_pulses)
+        flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
         if flighttime != None and flighttime > 0:
             #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             self.logger.info("measured flighttime %s" %flighttime.__repr__())
@@ -755,7 +754,6 @@ class VelocityWidget(QtGui.QWidget):
                 self.logger.info("Switching off decay measurement if running!")
                 if self.parentWidget().parentWidget().decaywidget.is_active():
                     self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
-                self.omit_early_pulses = config_dialog.findChild(QtGui.QCheckBox,QtCore.QString("early_pulse_cut")).isChecked() 
                 self.active = True
                 self.parentWidget().parentWidget().parentWidget().daq.put("CE")
                 self.parentWidget().parentWidget().ratewidget.startClicked()

@@ -274,7 +274,7 @@ class VelocityTrigger:
         self.logger = logger
         self.logger.info("Velocity trigger initialized")
         
-    def trigger(self,pulses,upperchannel=1,lowerchannel=2,omit_early_pulses=True):
+    def trigger(self,pulses,upperchannel=1,lowerchannel=2):
         """
         Timedifference will be calculated t(upperchannel) - t(lowerchannel)
         """
@@ -283,9 +283,6 @@ class VelocityTrigger:
         lowerpulses = len(pulses[lowerchannel])
         
         if upperpulses and lowerpulses:
-            if omit_early_pulses:
-                if (pulses[upperchannel][0][1] - pulses[upperchannel][0][0] < 10) or (pulses[lowerchannel][0][1] - pulses[lowerchannel][0][0] < 10):
-                    return None
             if len(pulses[upperchannel][0]) > 1 and len(pulses[lowerchannel][0]) > 1:
                 pulsewidth = []
 

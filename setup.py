@@ -22,17 +22,17 @@ from glob import glob
 datapath = (os.getenv('HOME') + os.sep + 'muonic_data')
 
 setup(name='muonic',
-      version='1.1.0',
+      version='2.0.0',
       description='Software to work with QNet DAQ cards',
       long_description='Software is able to manage DAQ comunications and shows e.g. a rate plot...',
-      author='Robert Franke,Achim Stoessl',
-      author_email="achim.stoessl@desy.de",
+      author='Robert Franke,Achim Stoessl,Basho Kaminsky',
+      author_email="achim.stoessl@desy.de, basho.kaminsky@desy.de",
       url='http://code.google.com/p/muonic/',
-      download_url="http://muonic.googlecode.com/files/muonic_1.0.tar.gz",
+      download_url="http://muonic.googlecode.com/files/muonic_2.0.tar.gz",
       # can only be used with setuptools
       #install_requires=['numpy','scipy','pyserial','matplotlib','PyQt'],
       license="GPL",
-      platforms=["Ubuntu 10.10"],
+      platforms=["Ubuntu 12.04"],
       classifiers=[
           "License :: GNU General Public License (GPL)",
           "Programming Language :: Python",
