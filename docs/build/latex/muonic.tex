@@ -13,9 +13,9 @@
 
 
 \title{muonic Documentation}
-\date{May 24, 2013}
-\release{1.0.1}
-\author{robert.franke,achim.stoessl}
+\date{August 14, 2013}
+\release{2.0.0}
+\author{robert.franke,achim.stoessl,basho.kaminsky}
 \newcommand{\sphinxlogo}{}
 \renewcommand{\releasename}{Release}
 \makeindex
@@ -31,75 +31,72 @@
     \PYG@it{\PYG@bf{\PYG@ff{#1}}}}}}}
 \def\PYG#1#2{\PYG@reset\PYG@toks#1+\relax+\PYG@do{#2}}
 
-\expandafter\def\csname PYG@tok@gd\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@gu\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
-\expandafter\def\csname PYG@tok@gt\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.25,0.82}{##1}}}
-\expandafter\def\csname PYG@tok@gs\endcsname{\let\PYG@bf=\textbf}
-\expandafter\def\csname PYG@tok@gr\endcsname{\def\PYG@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@cm\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
-\expandafter\def\csname PYG@tok@vg\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@m\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@mh\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@cs\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}\def\PYG@bc##1{\setlength{\fboxsep}{0pt}\colorbox[rgb]{1.00,0.94,0.94}{\strut ##1}}}
-\expandafter\def\csname PYG@tok@ge\endcsname{\let\PYG@it=\textit}
-\expandafter\def\csname PYG@tok@vc\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@il\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@go\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.19,0.19,0.19}{##1}}}
-\expandafter\def\csname PYG@tok@cp\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@gi\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@gh\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
-\expandafter\def\csname PYG@tok@ni\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.84,0.33,0.22}{##1}}}
-\expandafter\def\csname PYG@tok@nl\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.13,0.44}{##1}}}
-\expandafter\def\csname PYG@tok@nn\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
-\expandafter\def\csname PYG@tok@no\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.38,0.68,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@na\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@nb\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@nc\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
-\expandafter\def\csname PYG@tok@nd\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.33,0.33,0.33}{##1}}}
-\expandafter\def\csname PYG@tok@ne\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@nf\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.49}{##1}}}
-\expandafter\def\csname PYG@tok@si\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.44,0.63,0.82}{##1}}}
-\expandafter\def\csname PYG@tok@s2\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@vi\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@nt\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.45}{##1}}}
-\expandafter\def\csname PYG@tok@nv\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
-\expandafter\def\csname PYG@tok@s1\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@gp\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
-\expandafter\def\csname PYG@tok@sh\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@ow\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@sx\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
-\expandafter\def\csname PYG@tok@bp\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@c1\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
-\expandafter\def\csname PYG@tok@kc\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@c\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
-\expandafter\def\csname PYG@tok@mf\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@err\endcsname{\def\PYG@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
-\expandafter\def\csname PYG@tok@kd\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@ss\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.32,0.47,0.09}{##1}}}
-\expandafter\def\csname PYG@tok@sr\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.14,0.33,0.53}{##1}}}
-\expandafter\def\csname PYG@tok@mo\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@mi\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
-\expandafter\def\csname PYG@tok@kn\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@o\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
-\expandafter\def\csname PYG@tok@kr\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@s\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@kp\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@w\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
-\expandafter\def\csname PYG@tok@kt\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.56,0.13,0.00}{##1}}}
-\expandafter\def\csname PYG@tok@sc\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@sb\endcsname{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@k\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
-\expandafter\def\csname PYG@tok@se\endcsname{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
-\expandafter\def\csname PYG@tok@sd\endcsname{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@gd{\def\PYG@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\def\PYG@tok@gu{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\def\PYG@tok@gt{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.25,0.82}{##1}}}
+\def\PYG@tok@gs{\let\PYG@bf=\textbf}
+\def\PYG@tok@gr{\def\PYG@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\def\PYG@tok@cm{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
+\def\PYG@tok@vg{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@m{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@mh{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@cs{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}\def\PYG@bc##1{\colorbox[rgb]{1.00,0.94,0.94}{##1}}}
+\def\PYG@tok@ge{\let\PYG@it=\textit}
+\def\PYG@tok@vc{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@il{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@go{\def\PYG@tc##1{\textcolor[rgb]{0.19,0.19,0.19}{##1}}}
+\def\PYG@tok@cp{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@gi{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\def\PYG@tok@gh{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\def\PYG@tok@ni{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.84,0.33,0.22}{##1}}}
+\def\PYG@tok@nl{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.13,0.44}{##1}}}
+\def\PYG@tok@nn{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
+\def\PYG@tok@no{\def\PYG@tc##1{\textcolor[rgb]{0.38,0.68,0.84}{##1}}}
+\def\PYG@tok@na{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@nb{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@nc{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.05,0.52,0.71}{##1}}}
+\def\PYG@tok@nd{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.33,0.33,0.33}{##1}}}
+\def\PYG@tok@ne{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@nf{\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.49}{##1}}}
+\def\PYG@tok@si{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.44,0.63,0.82}{##1}}}
+\def\PYG@tok@s2{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@vi{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@nt{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.02,0.16,0.45}{##1}}}
+\def\PYG@tok@nv{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.38,0.84}{##1}}}
+\def\PYG@tok@s1{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@gp{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
+\def\PYG@tok@sh{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@ow{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@sx{\def\PYG@tc##1{\textcolor[rgb]{0.78,0.36,0.04}{##1}}}
+\def\PYG@tok@bp{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@c1{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
+\def\PYG@tok@kc{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@c{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.50,0.56}{##1}}}
+\def\PYG@tok@mf{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@err{\def\PYG@bc##1{\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{##1}}}
+\def\PYG@tok@kd{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@ss{\def\PYG@tc##1{\textcolor[rgb]{0.32,0.47,0.09}{##1}}}
+\def\PYG@tok@sr{\def\PYG@tc##1{\textcolor[rgb]{0.14,0.33,0.53}{##1}}}
+\def\PYG@tok@mo{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@mi{\def\PYG@tc##1{\textcolor[rgb]{0.13,0.50,0.31}{##1}}}
+\def\PYG@tok@kn{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@o{\def\PYG@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\def\PYG@tok@kr{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@s{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@kp{\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@w{\def\PYG@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\def\PYG@tok@kt{\def\PYG@tc##1{\textcolor[rgb]{0.56,0.13,0.00}{##1}}}
+\def\PYG@tok@sc{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@sb{\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@k{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.00,0.44,0.13}{##1}}}
+\def\PYG@tok@se{\let\PYG@bf=\textbf\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
+\def\PYG@tok@sd{\let\PYG@it=\textit\def\PYG@tc##1{\textcolor[rgb]{0.25,0.44,0.63}{##1}}}
 
 \def\PYGZbs{\char`\\}
 \def\PYGZus{\char`\_}
 \def\PYGZob{\char`\{}
 \def\PYGZcb{\char`\}}
 \def\PYGZca{\char`\^}
-\def\PYGZam{\char`\&}
-\def\PYGZlt{\char`\<}
-\def\PYGZgt{\char`\>}
 \def\PYGZsh{\char`\#}
 \def\PYGZpc{\char`\%}
 \def\PYGZdl{\char`\$}
@@ -118,20 +115,20 @@
 
 
 
-\chapter{Documentation for release 1.0.1, documentation built on May 22, 2013}
+\chapter{Documentation for release 2.0.0, documentation built on August 14, 2013}
 \label{index:welcome-to-muonic-documentation}\label{index:documentation-for-release-release-documentation-built-on-today}
 Contents:
 
 
 \section{muonic - a python gui for QNET experiments}
 \label{intro::doc}\label{intro:muonic-a-python-gui-for-qnet-experiments}
-The muonic project provides an interface to communicate with QNet DAQ cards and to perform simple analysis of QNet data.
-Its goal is to ensure easy and stable access to the QNet cards and visualize some of the features of the cards. It is meant to be used in school projects, so it should be easy to use even by people who do not have lots of programming or LINUX backround. Automated data taking can be used to ensure no valuable data is lost.
+The muonic project provides an interface to communicate with QuarkNet DAQ cards and to perform simple analysis of the generated data.
+Its goal is to ensure easy and stable access to the QuarkNet cards and visualize some of the features of the cards. It is meant to be used in school projects, so it should be easy to use even by people who do not have lots LINUX backround or experience with scientific software. Automated data taking can be used to ensure no valuable data is lost.
 
 
 \subsection{Licence and terms of agreement}
 \label{intro:licence-and-terms-of-agreement}
-Muonic is ditributet under the terms of GPL (Gnu Public License). With the use of the software you accept the condidions of the GPL. This means also that the authors can not be made responsible for any damage of any kind to hard- or software.
+Muonic is ditributed under the terms of GPL (Gnu Public License). With the use of the software you accept the condidions of the GPL. This means also that the authors can not be made responsible for any damage of any kind to hard- or software.
 
 
 \section{muonic setup and installation}
@@ -165,11 +162,11 @@ python-serial
 
 \subsection{installation with the setup.py script}
 \label{setup:installation-with-the-setup-py-script}
-Run the following command in the muonic main directory
+Run the following command in the directory where you checked out the source code:
 
 \emph{python setup.py install}
 
-This will put the muonic package into your python site-packages directory and alsot the exectuables \emph{muonic} and \emph{which\_tty\_daq} to your user/bin directory.
+This will install the muonic package into your python site-packages directory and also the exectuables \emph{muonic} and \emph{which\_tty\_daq} to your usr/bin directory. It also generates a new directory in your home dir: \emph{\$HOME/muonic\_data}
 
 The use of python-virtualenv is recommended.
 
@@ -203,11 +200,13 @@ For help you can call
 
 \code{muonic -{-}help}
 
+which gives you also an overview abot the options.
+
 {[}OPTIONS{]}
 \index{muonic command line option!-s}\index{-s!muonic command line option}
 
 \begin{fulllineitems}
-\phantomsection\label{tutorial:cmdoption-muonic-s}\pysigline{\bfcode{-s}\code{}}\pysigline{\bfcode{use~the~simulation~mode~of~muonic.~This~should~only~used~for~testing~and~developing~the~software}}
+\phantomsection\label{tutorial:cmdoption-muonic-s}\pysigline{\bfcode{-s}\code{}}\pysigline{\bfcode{use~the~simulation~mode~of~muonic~(no~real~data,~so~no~physics~behind!).~This~should~only~used~for~testing~and~developing~the~software}}
 \end{fulllineitems}
 
 \index{muonic command line option!-d}\index{-d!muonic command line option}
@@ -300,10 +299,12 @@ Muonic translates the chosen settings to the corresponding DAQ commands and send
 
 Two menu items are of interest here:
 * Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.
+*
+.. note:
 
-\begin{notice}{note}{Note:}
+\begin{Verbatim}[commandchars=\\\{\}]
 You have to ensure that the checkboxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.
-\end{notice}
+\end{Verbatim}
 
 \begin{notice}{note}{Note:}
 The concidence is realized by the DAQ in a way that no specific channels can be given. Instead this is meant as an `any' condition.
@@ -311,11 +312,11 @@ So `twofold' means that `any two of the enabled channels' must claim signal inst
 \end{notice}
 
 \begin{notice}{warning}{Warning:}
-Measurements ad DESY indicated that the veto feature of the DAq might not work properly in all cases.
+Measurements at DESY indicated that the veto feature of the DAQ card might not work properly in all cases.
 \end{notice}
 \begin{itemize}
 \item {} 
-Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression.
+Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression. One can use for the calibration the rates in the muon rates tab.
 
 \end{itemize}
 
@@ -324,9 +325,63 @@ A proper calibration of the individual channels is the key to a succesfull measu
 \end{notice}
 
 
-\subsubsection{Looking at raw DAQ data}
-\label{tutorial:looking-at-raw-daq-data}
-The first tab of muonic displays the raw ASCII DAQ data.
+\subsubsection{Muon Rates}
+\label{tutorial:muon-rates}
+In the first tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
+In the block on the right side of the tab, the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. On the bottom right side is also the maximum rate of the measurment. The plot and the shown values can be reset by clicking on `Restart'. The `Stop' button can be used to temporarily hold the plot to have a better look at it.
+
+\begin{notice}{note}{Note:}
+You can use the displayed `max rate' at the right bottom to check if anything with the measurement went wrong.
+\end{notice}
+
+\begin{notice}{note}{Note:}
+Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the `R' file (see above).
+\end{notice}
+
+
+\subsubsection{Muon Lifetime}
+\label{tutorial:muon-lifetime}
+A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on `Fit!'. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.
+\begin{description}
+\item[{The measurment can be activated with the checkbox. In the following popup window the measurment has to be configured. It depends mainly on the detector you use and influences the quality of the measurment. The signal is accepted if more than one pulse appears in the single pulse channel or if one pulse appears in the single pulse channel and \textgreater{}= 2 pulses appear in the double pulse channel. The coincidence time is set to ?microseconds for this measurement. The signal are vetoed with the veto channel: only events are accepted if no pulse occurs there. If the selfveto is activated it accepts only events if:}] \leavevmode\begin{itemize}
+\item {} 
+more than one pulse appears in the single pulse channel and none pulse is measured in the double pulse channel
+
+\item {} 
+one pulse in the single pulse channel appears and exactly two pulses in the double pulse channel.
+
+\end{itemize}
+
+\end{description}
+
+\begin{notice}{warning}{Warning:}
+The error of the fit might be wrong!
+\end{notice}
+
+
+\subsubsection{Muon Velocity}
+\label{tutorial:muon-velocity}
+In this tab the muon velocity can be measured. The measurement can be started with activating the checkbox. In the following popup window it has to be configured.
+
+\begin{notice}{warning}{Warning:}
+The error of the fit might be wrong!
+\end{notice}
+
+
+\subsubsection{Pulse Analyzer}
+\label{tutorial:pulse-analyzer}
+You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.
+On the left side is an oscilloscope of the pulsewidths shown and on the right side are the pulsewidths collected in an histogram.
+
+
+\subsubsection{GPS Output}
+\label{tutorial:gps-output}
+In this tab you can read out the GPS information of the DAQ card. It requires a connected GPS antenna. The information are summarized on the bottom in a text box, from where they can be copied.
+
+
+\subsubsection{Raw DAQ data}
+\label{tutorial:raw-daq-data}
+The last tab of muonic displays the raw ASCII DAQ data.
 This can be saved to a file. If the DAQ status messages should be supressed in that file, the option \emph{-n} should be given at the start of muonic.
 The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
 To issue such an command periodically, you can use the button `Periodic Call'
@@ -334,34 +389,6 @@ To issue such an command periodically, you can use the button `Periodic Call'
 \begin{notice}{note}{Note:}
 The two most importand DAQ commands are `CD' (`counter disable') and `CE' (`counter enable'). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.
 \end{notice}
-
-
-\subsubsection{Muon Rates}
-\label{tutorial:muon-rates}
-In this tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
-In the block on the left side of the tab the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. The measurement can be reset by clicking on `Restart'. The `Stop' button can be used to temporarily hold the plot to have a better look at it.
-
-\begin{notice}{note}{Note:}
-You can use the displayed `max rate' at the left bottom to check if anything with the measurement went wrong.
-\end{notice}
-
-\begin{notice}{note}{Note:}
-Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the `R' file.(see above)
-\end{notice}
-
-
-\subsubsection{Muon Lifetime}
-\label{tutorial:muon-lifetime}
-A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on `Fit!'. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.
-
-\begin{notice}{warning}{Warning:}
-This feature might not work properly, especially when used with the standard scintilators! Use it with extreme care.
-\end{notice}
-
-
-\subsubsection{Pulse Analyzer}
-\label{tutorial:pulse-analyzer}
-You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.
 
 
 \section{Fermilab DAQ - hardware documentation}
@@ -683,13 +710,79 @@ Provide a connection to the QNet DAQ cards via python-serial. For software testi
 \subsubsection{\emph{muonic.daq.DAQProvider}}
 \label{muonic:muonic-daq-daqprovider}
 Control the two I/O threads which communicate with the DAQ. If the simulated DAQ is used, there is only one thread.
-\phantomsection\label{muonic:module-muonic.daq.DAQProvider}\index{muonic.daq.DAQProvider (module)}\index{DAQProvider (class in muonic.daq.DAQProvider)}
+\phantomsection\label{muonic:module-muonic.daq.DAQProvider}\index{muonic.daq.DAQProvider (module)}\index{DAQClient (class in muonic.daq.DAQProvider)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQProvider}\pysiglinewithargsret{\strong{class }\code{muonic.daq.DAQProvider.}\bfcode{DAQProvider}}{\emph{opts}, \emph{logger}, \emph{root}}{}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQClient}\pysiglinewithargsret{\strong{class }\code{muonic.daq.DAQProvider.}\bfcode{DAQClient}}{\emph{port}, \emph{logger=None}, \emph{root=None}}{}~\index{data\_available() (muonic.daq.DAQProvider.DAQClient method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQClient.data_available}\pysiglinewithargsret{\bfcode{data\_available}}{}{}
+is new data from daq available
+
+\end{fulllineitems}
+
+\index{get() (muonic.daq.DAQProvider.DAQClient method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQClient.get}\pysiglinewithargsret{\bfcode{get}}{\emph{*args}}{}
+Get something from the daq
+
+\end{fulllineitems}
+
+\index{put() (muonic.daq.DAQProvider.DAQClient method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQClient.put}\pysiglinewithargsret{\bfcode{put}}{\emph{*args}}{}
+Send information to the daq
+
+\end{fulllineitems}
+
+\index{setup\_socket() (muonic.daq.DAQProvider.DAQClient method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQClient.setup_socket}\pysiglinewithargsret{\bfcode{setup\_socket}}{\emph{port}}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{DAQIOError}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQIOError}\pysigline{\strong{exception }\code{muonic.daq.DAQProvider.}\bfcode{DAQIOError}}
+\end{fulllineitems}
+
+\index{DAQProvider (class in muonic.daq.DAQProvider)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQProvider}\pysiglinewithargsret{\strong{class }\code{muonic.daq.DAQProvider.}\bfcode{DAQProvider}}{\emph{logger=None}, \emph{sim=False}}{}
 Launch the main part of the GUI and the worker threads. periodicCall and
 endApplication could reside in the GUI part, but putting them here
 means that you have all the thread controls in a single place.
+\index{data\_available() (muonic.daq.DAQProvider.DAQProvider method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQProvider.data_available}\pysiglinewithargsret{\bfcode{data\_available}}{}{}
+is new data from daq available
+
+\end{fulllineitems}
+
+\index{get() (muonic.daq.DAQProvider.DAQProvider method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQProvider.get}\pysiglinewithargsret{\bfcode{get}}{\emph{*args}}{}
+Get something from the daq
+
+\end{fulllineitems}
+
+\index{put() (muonic.daq.DAQProvider.DAQProvider method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DAQProvider.DAQProvider.put}\pysiglinewithargsret{\bfcode{put}}{\emph{*args}}{}
+Send information to the daq
+
+\end{fulllineitems}
+
 
 \end{fulllineitems}
 
@@ -721,6 +814,40 @@ Get data from the DAQ. Read it from the provided Queue.
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.daq.DaqConnection.DaqConnection.write}\pysiglinewithargsret{\bfcode{write}}{}{}
+Put messages from the inqueue which is filled by the DAQ
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{DaqServer (class in muonic.daq.DaqConnection)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DaqConnection.DaqServer}\pysiglinewithargsret{\strong{class }\code{muonic.daq.DaqConnection.}\bfcode{DaqServer}}{\emph{port}, \emph{logger}}{}~\index{read() (muonic.daq.DaqConnection.DaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DaqConnection.DaqServer.read}\pysiglinewithargsret{\bfcode{read}}{}{}
+Get data from the DAQ. Read it from the provided Queue.
+
+\end{fulllineitems}
+
+\index{serve() (muonic.daq.DaqConnection.DaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DaqConnection.DaqServer.serve}\pysiglinewithargsret{\bfcode{serve}}{}{}
+\end{fulllineitems}
+
+\index{setup\_socket() (muonic.daq.DaqConnection.DaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DaqConnection.DaqServer.setup_socket}\pysiglinewithargsret{\bfcode{setup\_socket}}{\emph{port}, \emph{adress=`127.0.0.1'}}{}
+\end{fulllineitems}
+
+\index{write() (muonic.daq.DaqConnection.DaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.DaqConnection.DaqServer.write}\pysiglinewithargsret{\bfcode{write}}{}{}
 Put messages from the inqueue which is filled by the DAQ
 
 \end{fulllineitems}
@@ -790,6 +917,32 @@ Simulate DAQ I/O
 
 \end{fulllineitems}
 
+\index{SimDaqServer (class in muonic.daq.SimDaqConnection)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaqServer}\pysiglinewithargsret{\strong{class }\code{muonic.daq.SimDaqConnection.}\bfcode{SimDaqServer}}{\emph{port}, \emph{logger}}{}~\index{read() (muonic.daq.SimDaqConnection.SimDaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaqServer.read}\pysiglinewithargsret{\bfcode{read}}{}{}
+Simulate DAQ I/O
+
+\end{fulllineitems}
+
+\index{serve() (muonic.daq.SimDaqConnection.SimDaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaqServer.serve}\pysiglinewithargsret{\bfcode{serve}}{}{}
+\end{fulllineitems}
+
+\index{setup\_socket() (muonic.daq.SimDaqConnection.SimDaqServer method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.daq.SimDaqConnection.SimDaqServer.setup_socket}\pysiglinewithargsret{\bfcode{setup\_socket}}{\emph{port}, \emph{adress=`127.0.0.1'}}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
 
 
 \subsection{pyqt4 gui with muonic.gui}
@@ -807,13 +960,21 @@ Provides the main window for the gui part of muonic
 \index{MainWindow (class in muonic.gui.MainWindow)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MainWindow.}\bfcode{MainWindow}}{\emph{inqueue}, \emph{outqueue}, \emph{logger}, \emph{opts}, \emph{root}, \emph{win\_parent=None}}{}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MainWindow.}\bfcode{MainWindow}}{\emph{daq}, \emph{logger}, \emph{opts}, \emph{win\_parent=None}}{}
 The main application
 \index{about\_menu() (muonic.gui.MainWindow.MainWindow method)}
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.about_menu}\pysiglinewithargsret{\bfcode{about\_menu}}{}{}
 Show a link to the online documentation
+
+\end{fulllineitems}
+
+\index{advanced\_menu() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.advanced_menu}\pysiglinewithargsret{\bfcode{advanced\_menu}}{}{}
+Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the nostatus option
 
 \end{fulllineitems}
 
@@ -834,14 +995,35 @@ Show the config dialog
 
 \end{fulllineitems}
 
-\index{exit\_program() (muonic.gui.MainWindow.MainWindow method)}
+\index{get\_channels\_from\_queue() (muonic.gui.MainWindow.MainWindow method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.exit_program}\pysiglinewithargsret{\bfcode{exit\_program}}{\emph{*args}}{}
-This function is used either with the `x' button
-(then an event has to be passed)
-Or it is used with the File-\textgreater{}Exit button, than no event
-will be passed.
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.get_channels_from_queue}\pysiglinewithargsret{\bfcode{get\_channels\_from\_queue}}{\emph{msg}}{}
+Explicitely scan message for channel information
+Return True if found, else False
+
+DC gives :
+DC C0=23 C1=71 C2=0A C3=00
+
+Which has the meaning:
+
+MM - 00 -\textgreater{} 8bits for channel enable/disable, coincidence and veto
+{\color{red}\bfseries{}\textbar{}7   \textbar{}6   \textbar{}5          \textbar{}4          \textbar{}3       \textbar{}2       \textbar{}1 \textbar{}0       \textbar{}
+\textbar{}veto\textbar{}veto\textbar{}coincidence\textbar{}coincidence\textbar{}channel3\textbar{}channel2\textbar{}channel1\textbar{}channel0\textbar{}}
+---------------------------bits-------------------------------------
+Set bits for veto:
+........................
+00 - ch0 is veto
+01 - ch1 is veto
+10 - ch2 is veto
+11 - ch3 is veto
+........................
+Set bits for coincidence
+........................
+00 - singles
+01 - twofold
+10 - threefold
+11 - fourfold
 
 \end{fulllineitems}
 
@@ -871,11 +1053,19 @@ Show a simple help menu
 
 \end{fulllineitems}
 
+\index{manualdoc\_menu() (muonic.gui.MainWindow.MainWindow method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.manualdoc_menu}\pysiglinewithargsret{\bfcode{manualdoc\_menu}}{}{}
+Show the manual that comes with muonic in a pdf viewer
+
+\end{fulllineitems}
+
 \index{processIncoming() (muonic.gui.MainWindow.MainWindow method)}
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.processIncoming}\pysiglinewithargsret{\bfcode{processIncoming}}{}{}
-Handle all the messages currently in the inqueue 
+Handle all the messages currently in the daq 
 and pass the result to the corresponding widgets
 
 \end{fulllineitems}
@@ -892,7 +1082,7 @@ Send a ``DS'' message to DAQ and record the time when this is don
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MainWindow.MainWindow.sphinxdoc_menu}\pysiglinewithargsret{\bfcode{sphinxdoc\_menu}}{}{}
-Show the sphinx documentation that comes with muonic an a
+Show the sphinx documentation that comes with muonic in a
 browser
 
 \end{fulllineitems}
@@ -979,6 +1169,14 @@ What should be done if we are looking for mu-decays?
 \phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.calculate}\pysiglinewithargsret{\bfcode{calculate}}{\emph{pulses}}{}
 \end{fulllineitems}
 
+\index{decayFitRangeClicked() (muonic.gui.MuonicWidgets.DecayWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.DecayWidget.decayFitRangeClicked}\pysiglinewithargsret{\bfcode{decayFitRangeClicked}}{}{}
+fit the muon decay histogram
+
+\end{fulllineitems}
+
 \index{is\_active() (muonic.gui.MuonicWidgets.DecayWidget method)}
 
 \begin{fulllineitems}
@@ -1002,11 +1200,65 @@ fit the muon decay histogram
 
 \end{fulllineitems}
 
+\index{GPSWidget (class in muonic.gui.MuonicWidgets)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.GPSWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{GPSWidget}}{\emph{logger}, \emph{parent=None}}{}~\index{calculate() (muonic.gui.MuonicWidgets.GPSWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.GPSWidget.calculate}\pysiglinewithargsret{\bfcode{calculate}}{}{}
+Readout the GPS information and display it in the tab.
+
+\end{fulllineitems}
+
+\index{is\_active() (muonic.gui.MuonicWidgets.GPSWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.GPSWidget.is_active}\pysiglinewithargsret{\bfcode{is\_active}}{}{}
+Is the GPS readout activated? return bool
+
+\end{fulllineitems}
+
+\index{on\_refresh\_clicked() (muonic.gui.MuonicWidgets.GPSWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.GPSWidget.on_refresh_clicked}\pysiglinewithargsret{\bfcode{on\_refresh\_clicked}}{}{}
+Display/refresh the GPS information
+
+\end{fulllineitems}
+
+\index{on\_save\_clicked() (muonic.gui.MuonicWidgets.GPSWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.GPSWidget.on_save_clicked}\pysiglinewithargsret{\bfcode{on\_save\_clicked}}{}{}
+Save the GPS data to an extra file
+
+\end{fulllineitems}
+
+\index{switch\_active() (muonic.gui.MuonicWidgets.GPSWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.GPSWidget.switch_active}\pysiglinewithargsret{\bfcode{switch\_active}}{\emph{switch=False}}{}
+Switch the GPS activation status.
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
 \index{PulseanalyzerWidget (class in muonic.gui.MuonicWidgets)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{PulseanalyzerWidget}}{\emph{logger}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{PulseanalyzerWidget}}{\emph{logger}, \emph{parent=None}}{}
 Provide a widget which is able to show a plot of triggered pulses
+\index{activatePulseanalyzerClicked() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.PulseanalyzerWidget.activatePulseanalyzerClicked}\pysiglinewithargsret{\bfcode{activatePulseanalyzerClicked}}{}{}
+Perform extra actions when the checkbox is clicked
+
+\end{fulllineitems}
+
 \index{calculate() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method)}
 
 \begin{fulllineitems}
@@ -1049,7 +1301,7 @@ Display rate plot
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MuonicWidgets.RateWidget.startClicked}\pysiglinewithargsret{\bfcode{startClicked}}{}{}
-restart the rate measurement
+start the rate measurement and write a file
 
 \end{fulllineitems}
 
@@ -1070,10 +1322,48 @@ hold the rate measurement plot till buttion is pushed again
 
 \end{fulllineitems}
 
+\index{StatusWidget (class in muonic.gui.MuonicWidgets)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.StatusWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{StatusWidget}}{\emph{logger}, \emph{parent=None}}{}
+Provide a widget which shows the status informations of the DAQ and the muonic software
+\index{is\_active() (muonic.gui.MuonicWidgets.StatusWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.StatusWidget.is_active}\pysiglinewithargsret{\bfcode{is\_active}}{}{}
+\end{fulllineitems}
+
+\index{on\_refresh\_clicked() (muonic.gui.MuonicWidgets.StatusWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.StatusWidget.on_refresh_clicked}\pysiglinewithargsret{\bfcode{on\_refresh\_clicked}}{}{}
+Refresh the status information
+
+\end{fulllineitems}
+
+\index{on\_save\_clicked() (muonic.gui.MuonicWidgets.StatusWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.StatusWidget.on_save_clicked}\pysiglinewithargsret{\bfcode{on\_save\_clicked}}{}{}
+Refresh the status information
+
+\end{fulllineitems}
+
+\index{update() (muonic.gui.MuonicWidgets.StatusWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.StatusWidget.update}\pysiglinewithargsret{\bfcode{update}}{}{}
+Fill the status information in the widget.
+
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
 \index{VelocityWidget (class in muonic.gui.MuonicWidgets)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{VelocityWidget}}{\emph{logger}}{}~\index{activateVelocityClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicWidgets.}\bfcode{VelocityWidget}}{\emph{logger}, \emph{parent=None}}{}~\index{activateVelocityClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)}
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.activateVelocityClicked}\pysiglinewithargsret{\bfcode{activateVelocityClicked}}{}{}
@@ -1107,6 +1397,14 @@ fit the muon velocity histogram
 
 \end{fulllineitems}
 
+\index{velocityFitRangeClicked() (muonic.gui.MuonicWidgets.VelocityWidget method)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicWidgets.VelocityWidget.velocityFitRangeClicked}\pysiglinewithargsret{\bfcode{velocityFitRangeClicked}}{}{}
+fit the muon velocity histogram
+
+\end{fulllineitems}
+
 
 \end{fulllineitems}
 
@@ -1124,10 +1422,18 @@ QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) -\text
 \subsubsection{\emph{muonic.gui.MuonicDialogs}}
 \label{muonic:module-muonic.gui.MuonicDialogs}\label{muonic:muonic-gui-muonicdialogs}\index{muonic.gui.MuonicDialogs (module)}
 Provide the dialog fields for user interaction
+\index{AdvancedDialog (class in muonic.gui.MuonicDialogs)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.AdvancedDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{AdvancedDialog}}{\emph{gatewidth=100}, \emph{timewindow=5.0}, \emph{nostatus=None}, \emph{*args}}{}
+Set Configuration dialog
+
+\end{fulllineitems}
+
 \index{ConfigDialog (class in muonic.gui.MuonicDialogs)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicDialogs.ConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{ConfigDialog}}{\emph{*args}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.ConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{ConfigDialog}}{\emph{channelcheckbox\_0=True}, \emph{channelcheckbox\_1=True}, \emph{channelcheckbox\_2=True}, \emph{channelcheckbox\_3=True}, \emph{coincidencecheckbox\_0=True}, \emph{coincidencecheckbox\_1=False}, \emph{coincidencecheckbox\_2=False}, \emph{coincidencecheckbox\_3=False}, \emph{vetocheckbox=False}, \emph{vetocheckbox\_0=False}, \emph{vetocheckbox\_1=False}, \emph{vetocheckbox\_2=False}, \emph{*args}}{}
 Set Channel configuration
 
 \end{fulllineitems}
@@ -1138,6 +1444,12 @@ Set Channel configuration
 \phantomsection\label{muonic:muonic.gui.MuonicDialogs.DecayConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{DecayConfigDialog}}{\emph{*args}}{}
 Settings for the muondecay
 
+\end{fulllineitems}
+
+\index{FitRangeConfigDialog (class in muonic.gui.MuonicDialogs)}
+
+\begin{fulllineitems}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.FitRangeConfigDialog}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicDialogs.}\bfcode{FitRangeConfigDialog}}{\emph{upperlim=None}, \emph{lowerlim=None}, \emph{dimension='`}, \emph{*args}}{}
 \end{fulllineitems}
 
 \index{HelpDialog (class in muonic.gui.MuonicDialogs)}
@@ -1170,7 +1482,7 @@ Create a custom button for cancel/apply
 \index{createCheckGroupBox() (muonic.gui.MuonicDialogs.MuonicDialog method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox}\pysiglinewithargsret{\bfcode{createCheckGroupBox}}{\emph{label='Single Pulse', objectname='singlecheckbox', radio=False, leftoffset=20, setchecked=None, checkable=False, itemlabels={[}'Chan0', `Chan1', `Chan2', `Chan3'{]}}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox}\pysiglinewithargsret{\bfcode{createCheckGroupBox}}{\emph{label='Single Pulse', objectname='singlecheckbox', radio=False, leftoffset=20, setchecked=None, checkable=False, checkable\_set=False, itemlabels={[}'Chan0', `Chan1', `Chan2', `Chan3'{]}}}{}
 Create a group of choices
 
 \end{fulllineitems}
@@ -1208,7 +1520,7 @@ Provide the canvases for plots in muonic
 \index{LifetimeCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.LifetimeCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{LifetimeCanvas}}{\emph{parent}, \emph{logger}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.LifetimeCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{LifetimeCanvas}}{\emph{parent}, \emph{logger}, \emph{binning=(0}, \emph{10}, \emph{21)}}{}
 A simple histogram for the use with mu lifetime
 measurement
 
@@ -1237,7 +1549,7 @@ A base class for all canvases with a histogram
 \index{MuonicPlotCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{MuonicPlotCanvas}}{\emph{parent}, \emph{logger}, \emph{ymin=0}, \emph{ymax=10}, \emph{xmin=0}, \emph{xmax=10}, \emph{xlabel='xlabel'}, \emph{ylabel='ylabel'}, \emph{grid=True}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{MuonicPlotCanvas}}{\emph{parent}, \emph{logger}, \emph{ymin=0}, \emph{ymax=10}, \emph{xmin=0}, \emph{xmax=10}, \emph{xlabel='xlabel'}, \emph{ylabel='ylabel'}, \emph{grid=True}, \emph{spacing=(0.1}, \emph{0.9)}}{}
 The base class of all muonic plot canvases
 \index{color() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method)}
 
@@ -1288,7 +1600,7 @@ Matplotlib Figure widget to display Pulses
 \index{ScalarsCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{ScalarsCanvas}}{\emph{parent}, \emph{logger}}{}~\index{reset() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{ScalarsCanvas}}{\emph{parent}, \emph{logger}, \emph{MAXLENGTH=40}}{}~\index{reset() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)}
 
 \begin{fulllineitems}
 \phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas.reset}\pysiglinewithargsret{\bfcode{reset}}{}{}
@@ -1299,7 +1611,7 @@ reseting all data
 \index{update\_plot() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{result}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.ScalarsCanvas.update_plot}\pysiglinewithargsret{\bfcode{update\_plot}}{\emph{result}, \emph{trigger=False}, \emph{channelcheckbox\_0=True}, \emph{channelcheckbox\_1=True}, \emph{channelcheckbox\_2=True}, \emph{channelcheckbox\_3=True}}{}
 \end{fulllineitems}
 
 
@@ -1308,7 +1620,7 @@ reseting all data
 \index{VelocityCanvas (class in muonic.gui.MuonicPlotCanvases)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.VelocityCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{VelocityCanvas}}{\emph{parent}, \emph{logger}}{}
+\phantomsection\label{muonic:muonic.gui.MuonicPlotCanvases.VelocityCanvas}\pysiglinewithargsret{\strong{class }\code{muonic.gui.MuonicPlotCanvases.}\bfcode{VelocityCanvas}}{\emph{parent}, \emph{logger}, \emph{binning=(0.0}, \emph{30}, \emph{15)}}{}
 \end{fulllineitems}
 
 
@@ -1333,7 +1645,7 @@ Should operate for a 10mu sec triggerwindow
 \index{trigger() (muonic.analysis.PulseAnalyzer.DecayTriggerThorough method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{triggerpulses}, \emph{single\_channel=2}, \emph{double\_channel=3}, \emph{veto\_channel=4}, \emph{selfveto=False}, \emph{mindecaytime=0}, \emph{minsinglepulsewidth=0}, \emph{maxsinglepulsewidth=12000}, \emph{mindoublepulsewidth=0}, \emph{maxdoublepulsewidth=12000}}{}
+\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{triggerpulses}, \emph{single\_channel=2}, \emph{double\_channel=3}, \emph{veto\_channel=4}, \emph{mindecaytime=0}, \emph{minsinglepulsewidth=0}, \emph{maxsinglepulsewidth=12000}, \emph{mindoublepulsewidth=0}, \emph{maxdoublepulsewidth=12000}}{}
 Trigger on a certain combination of single and doublepulses
 
 \end{fulllineitems}
@@ -1406,7 +1718,7 @@ otherwise return None
 \phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.VelocityTrigger}\pysiglinewithargsret{\strong{class }\code{muonic.analysis.PulseAnalyzer.}\bfcode{VelocityTrigger}}{\emph{logger}}{}~\index{trigger() (muonic.analysis.PulseAnalyzer.VelocityTrigger method)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.VelocityTrigger.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{pulses}, \emph{upperchannel=1}, \emph{lowerchannel=2}, \emph{omit\_early\_pulses=True}}{}
+\phantomsection\label{muonic:muonic.analysis.PulseAnalyzer.VelocityTrigger.trigger}\pysiglinewithargsret{\bfcode{trigger}}{\emph{pulses}, \emph{upperchannel=1}, \emph{lowerchannel=2}}{}
 Timedifference will be calculated t(upperchannel) - t(lowerchannel)
 
 \end{fulllineitems}
@@ -1425,13 +1737,13 @@ time differences for the use with QNet
 \index{gaussian\_fit() (in module muonic.analysis.fit)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.analysis.fit.gaussian_fit}\pysiglinewithargsret{\code{muonic.analysis.fit.}\bfcode{gaussian\_fit}}{\emph{bincontent}}{}
+\phantomsection\label{muonic:muonic.analysis.fit.gaussian_fit}\pysiglinewithargsret{\code{muonic.analysis.fit.}\bfcode{gaussian\_fit}}{\emph{bincontent}, \emph{binning=(0}, \emph{2}, \emph{10)}, \emph{fitrange=None}}{}
 \end{fulllineitems}
 
 \index{main() (in module muonic.analysis.fit)}
 
 \begin{fulllineitems}
-\phantomsection\label{muonic:muonic.analysis.fit.main}\pysiglinewithargsret{\code{muonic.analysis.fit.}\bfcode{main}}{\emph{bincontent=None}}{}
+\phantomsection\label{muonic:muonic.analysis.fit.main}\pysiglinewithargsret{\code{muonic.analysis.fit.}\bfcode{main}}{\emph{bincontent=None}, \emph{binning=(0}, \emph{10}, \emph{21)}, \emph{fitrange=None}}{}
 \end{fulllineitems}
 
 

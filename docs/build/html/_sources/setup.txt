@@ -20,11 +20,11 @@ muonic needs the following packages to be installed (list may not be complete!)
 installation with the setup.py script
 ---------------------------------------
 
-Run the following command in the muonic main directory
+Run the following command in the directory where you checked out the source code:
 
 `python setup.py install`
 
-This will put the muonic package into your python site-packages directory and alsot the exectuables `muonic` and `which_tty_daq` to your user/bin directory.
+This will install the muonic package into your python site-packages directory and also the exectuables `muonic` and `which_tty_daq` to your usr/bin directory. It also generates a new directory in your home dir: `$HOME/muonic_data`
 
 The use of python-virtualenv is recommended.
 
@@ -41,6 +41,4 @@ while being in the muonic main directory.
 Afterwards you have to create the folder `muonic_data` in your home directory.
 
 `mkdir ~/muonic_data`
-
-
 

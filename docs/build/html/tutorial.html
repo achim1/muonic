@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>How to use muonic &mdash; muonic 1.0.1 documentation</title>
+    <title>How to use muonic &mdash; muonic 2.0.0 documentation</title>
     
     <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '1.0.1',
+        VERSION:     '2.0.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="muonic 1.0.1 documentation" href="index.html" />
+    <link rel="top" title="muonic 2.0.0 documentation" href="index.html" />
     <link rel="next" title="Fermilab DAQ - hardware documentation" href="hardware.html" />
     <link rel="prev" title="muonic setup and installation" href="setup.html" />
 <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
@@ -43,12 +43,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="setup.html" title="muonic setup and installation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">muonic 1.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">muonic 2.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -66,12 +69,13 @@
 <p>where <tt class="docutils literal"><span class="pre">xy</span></tt> are two characters which you can choose freely. You will find this two letters occuring in automatically generated files, so that you can identify them.</p>
 <p>For help you can call</p>
 <p><tt class="docutils literal"><span class="pre">muonic</span> <span class="pre">--help</span></tt></p>
+<p>which gives you also an overview abot the options.</p>
 <p>[OPTIONS]</p>
 <dl class="option">
 <dt id="cmdoption-muonic-s">
 <tt class="descname">-s</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-muonic-s" title="Permalink to this definition">¶</a></dt>
 <dt>
-<tt class="descname">use the simulation mode of muonic. This should only used for testing and developing the software</tt></dt>
+<tt class="descname">use the simulation mode of muonic (no real data, so no physics behind!). This should only used for testing and developing the software</tt></dt>
 <dd></dd></dl>
 
 <dl class="option">
@@ -145,10 +149,10 @@ Please keep this limited precision in mind when adding CPLD and TMC times.</p>
 <p>For DAQ setup it is recommended to use the &#8216;settings&#8217; menu, allthough everything can also be setup via the command line in the DAQ output window (see below.)
 Muonic translates the chosen settings to the corresponding DAQ commands and sends them to the DAQ. So if you want to change things like the coincidence time window, you have to issue the corresponding DAQ command in the DAQ output window.</p>
 <p>Two menu items are of interest here:
-* Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">You have to ensure that the checkboxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.</p>
+* Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.
+*
+.. note:</p>
+<div class="highlight-python"><pre>You have to ensure that the checkboxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.</pre>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -157,19 +161,65 @@ So &#8216;twofold&#8217; means that &#8216;any two of the enabled channels&#8217
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Measurements ad DESY indicated that the veto feature of the DAq might not work properly in all cases.</p>
+<p class="last">Measurements at DESY indicated that the veto feature of the DAQ card might not work properly in all cases.</p>
 </div>
 <ul class="simple">
-<li>Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression.</li>
+<li>Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression. One can use for the calibration the rates in the muon rates tab.</li>
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">A proper calibration of the individual channels is the key to a succesfull measurement!</p>
 </div>
 </div>
-<div class="section" id="looking-at-raw-daq-data">
-<h3>Looking at raw DAQ data<a class="headerlink" href="#looking-at-raw-daq-data" title="Permalink to this headline">¶</a></h3>
-<p>The first tab of muonic displays the raw ASCII DAQ data.
+<div class="section" id="muon-rates">
+<h3>Muon Rates<a class="headerlink" href="#muon-rates" title="Permalink to this headline">¶</a></h3>
+<p>In the first tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
+In the block on the right side of the tab, the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. On the bottom right side is also the maximum rate of the measurment. The plot and the shown values can be reset by clicking on &#8216;Restart&#8217;. The &#8216;Stop&#8217; button can be used to temporarily hold the plot to have a better look at it.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can use the displayed &#8216;max rate&#8217; at the right bottom to check if anything with the measurement went wrong.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the &#8216;R&#8217; file (see above).</p>
+</div>
+</div>
+<div class="section" id="muon-lifetime">
+<h3>Muon Lifetime<a class="headerlink" href="#muon-lifetime" title="Permalink to this headline">¶</a></h3>
+<p>A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on &#8216;Fit!&#8217;. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.</p>
+<dl class="docutils">
+<dt>The measurment can be activated with the checkbox. In the following popup window the measurment has to be configured. It depends mainly on the detector you use and influences the quality of the measurment. The signal is accepted if more than one pulse appears in the single pulse channel or if one pulse appears in the single pulse channel and &gt;= 2 pulses appear in the double pulse channel. The coincidence time is set to ?microseconds for this measurement. The signal are vetoed with the veto channel: only events are accepted if no pulse occurs there. If the selfveto is activated it accepts only events if:</dt>
+<dd><ul class="first last simple">
+<li>more than one pulse appears in the single pulse channel and none pulse is measured in the double pulse channel</li>
+<li>one pulse in the single pulse channel appears and exactly two pulses in the double pulse channel.</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The error of the fit might be wrong!</p>
+</div>
+</div>
+<div class="section" id="muon-velocity">
+<h3>Muon Velocity<a class="headerlink" href="#muon-velocity" title="Permalink to this headline">¶</a></h3>
+<p>In this tab the muon velocity can be measured. The measurement can be started with activating the checkbox. In the following popup window it has to be configured.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The error of the fit might be wrong!</p>
+</div>
+</div>
+<div class="section" id="pulse-analyzer">
+<h3>Pulse Analyzer<a class="headerlink" href="#pulse-analyzer" title="Permalink to this headline">¶</a></h3>
+<p>You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.
+On the left side is an oscilloscope of the pulsewidths shown and on the right side are the pulsewidths collected in an histogram.</p>
+</div>
+<div class="section" id="gps-output">
+<h3>GPS Output<a class="headerlink" href="#gps-output" title="Permalink to this headline">¶</a></h3>
+<p>In this tab you can read out the GPS information of the DAQ card. It requires a connected GPS antenna. The information are summarized on the bottom in a text box, from where they can be copied.</p>
+</div>
+<div class="section" id="raw-daq-data">
+<h3>Raw DAQ data<a class="headerlink" href="#raw-daq-data" title="Permalink to this headline">¶</a></h3>
+<p>The last tab of muonic displays the raw ASCII DAQ data.
 This can be saved to a file. If the DAQ status messages should be supressed in that file, the option <cite>-n</cite> should be given at the start of muonic.
 The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
 To issue such an command periodically, you can use the button &#8216;Periodic Call&#8217;</p>
@@ -177,31 +227,6 @@ To issue such an command periodically, you can use the button &#8216;Periodic Ca
 <p class="first admonition-title">Note</p>
 <p class="last">The two most importand DAQ commands are &#8216;CD&#8217; (&#8216;counter disable&#8217;) and &#8216;CE&#8217; (&#8216;counter enable&#8217;). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.</p>
 </div>
-</div>
-<div class="section" id="muon-rates">
-<h3>Muon Rates<a class="headerlink" href="#muon-rates" title="Permalink to this headline">¶</a></h3>
-<p>In this tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
-In the block on the left side of the tab the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. The measurement can be reset by clicking on &#8216;Restart&#8217;. The &#8216;Stop&#8217; button can be used to temporarily hold the plot to have a better look at it.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">You can use the displayed &#8216;max rate&#8217; at the left bottom to check if anything with the measurement went wrong.</p>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the &#8216;R&#8217; file.(see above)</p>
-</div>
-</div>
-<div class="section" id="muon-lifetime">
-<h3>Muon Lifetime<a class="headerlink" href="#muon-lifetime" title="Permalink to this headline">¶</a></h3>
-<p>A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on &#8216;Fit!&#8217;. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">This feature might not work properly, especially when used with the standard scintilators! Use it with extreme care.</p>
-</div>
-</div>
-<div class="section" id="pulse-analyzer">
-<h3>Pulse Analyzer<a class="headerlink" href="#pulse-analyzer" title="Permalink to this headline">¶</a></h3>
-<p>You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.</p>
 </div>
 </div>
 </div>
@@ -219,10 +244,12 @@ In the block on the left side of the tab the average rates are displayed since t
 <li><a class="reference internal" href="#saving-files-with-muonic">Saving files with muonic</a></li>
 <li><a class="reference internal" href="#performing-measurements-with-muonic">Performing measurements with muonic</a><ul>
 <li><a class="reference internal" href="#setting-up-the-daq">Setting up the DAQ</a></li>
-<li><a class="reference internal" href="#looking-at-raw-daq-data">Looking at raw DAQ data</a></li>
 <li><a class="reference internal" href="#muon-rates">Muon Rates</a></li>
 <li><a class="reference internal" href="#muon-lifetime">Muon Lifetime</a></li>
+<li><a class="reference internal" href="#muon-velocity">Muon Velocity</a></li>
 <li><a class="reference internal" href="#pulse-analyzer">Pulse Analyzer</a></li>
+<li><a class="reference internal" href="#gps-output">GPS Output</a></li>
+<li><a class="reference internal" href="#raw-daq-data">Raw DAQ data</a></li>
 </ul>
 </li>
 </ul>
@@ -259,16 +286,19 @@ In the block on the left side of the tab the average rates are displayed since t
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
              >next</a> |</li>
         <li class="right" >
           <a href="setup.html" title="muonic setup and installation"
              >previous</a> |</li>
-        <li><a href="index.html">muonic 1.0.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">muonic 2.0.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2012, robert.franke,achim.stoessl.
+        &copy; Copyright 2012, robert.franke,achim.stoessl,basho.kaminsky.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

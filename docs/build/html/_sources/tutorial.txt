@@ -14,12 +14,14 @@ For help you can call
 
 ``muonic --help``
 
+which gives you also an overview abot the options.
+
 .. program:: muonic
 
 [OPTIONS]
 
 .. option:: -s
-   use the simulation mode of muonic. This should only used for testing and developing the software
+   use the simulation mode of muonic (no real data, so no physics behind!). This should only used for testing and developing the software
 
 .. option:: -d
    debug mode. Use it to generate more log messages on the console.
@@ -76,7 +78,7 @@ Muonic translates the chosen settings to the corresponding DAQ commands and send
 
 Two menu items are of interest here:
 * Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.
-
+* 
 .. note::
    You have to ensure that the checkboxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.
 
@@ -85,47 +87,63 @@ Two menu items are of interest here:
    So 'twofold' means that 'any two of the enabled channels' must claim signal instead of two specific ones (like 1 and 2).
 
 .. warning::
-   Measurements ad DESY indicated that the veto feature of the DAq might not work properly in all cases.
+   Measurements at DESY indicated that the veto feature of the DAQ card might not work properly in all cases.
 
-* Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression.
+* Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression. One can use for the calibration the rates in the muon rates tab.
 
 .. note::
    A proper calibration of the individual channels is the key to a succesfull measurement!
- 
 
-Looking at raw DAQ data
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The first tab of muonic displays the raw ASCII DAQ data.
-This can be saved to a file. If the DAQ status messages should be supressed in that file, the option `-n` should be given at the start of muonic.
-The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
-To issue such an command periodically, you can use the button 'Periodic Call'
-
-.. note::
-   The two most importand DAQ commands are 'CD' ('counter disable') and 'CE' ('counter enable'). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.
 
 Muon Rates
 ~~~~~~~~~~
 
-In this tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
-In the block on the left side of the tab the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. The measurement can be reset by clicking on 'Restart'. The 'Stop' button can be used to temporarily hold the plot to have a better look at it. 
+In the first tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
+In the block on the right side of the tab, the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. On the bottom right side is also the maximum rate of the measurment. The plot and the shown values can be reset by clicking on 'Restart'. The 'Stop' button can be used to temporarily hold the plot to have a better look at it. 
 
-.. note:: You can use the displayed 'max rate' at the left bottom to check if anything with the measurement went wrong.
+.. note:: You can use the displayed 'max rate' at the right bottom to check if anything with the measurement went wrong.
 
-.. note:: Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the 'R' file.(see above)
+.. note:: Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the 'R' file (see above).
 
 Muon Lifetime
 ~~~~~~~~~~~~~
 
 A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on 'Fit!'. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.
 
+The measurment can be activated with the checkbox. In the following popup window the measurment has to be configured. It depends mainly on the detector you use and influences the quality of the measurment. The signal is accepted if more than one pulse appears in the single pulse channel or if one pulse appears in the single pulse channel and >= 2 pulses appear in the double pulse channel. The coincidence time is set to ?microseconds for this measurement. The signal are vetoed with the veto channel: only events are accepted if no pulse occurs there. If the selfveto is activated it accepts only events if:
+ * more than one pulse appears in the single pulse channel and none pulse is measured in the double pulse channel
+ * one pulse in the single pulse channel appears and exactly two pulses in the double pulse channel.
+
 .. warning::
-   This feature might not work properly, especially when used with the standard scintilators! Use it with extreme care.
+   The error of the fit might be wrong!
+
+Muon Velocity
+~~~~~~~~~~~~~
+
+In this tab the muon velocity can be measured. The measurement can be started with activating the checkbox. In the following popup window it has to be configured.
+
+.. warning::
+   The error of the fit might be wrong!
 
 Pulse Analyzer
 ~~~~~~~~~~~~~~
 
 You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.
+On the left side is an oscilloscope of the pulsewidths shown and on the right side are the pulsewidths collected in an histogram.
 
+GPS Output
+~~~~~~~~~~
 
+In this tab you can read out the GPS information of the DAQ card. It requires a connected GPS antenna. The information are summarized on the bottom in a text box, from where they can be copied.
+
+Raw DAQ data
+~~~~~~~~~~~~
+
+The last tab of muonic displays the raw ASCII DAQ data.
+This can be saved to a file. If the DAQ status messages should be supressed in that file, the option `-n` should be given at the start of muonic.
+The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
+To issue such an command periodically, you can use the button 'Periodic Call'
+
+.. note::
+   The two most importand DAQ commands are 'CD' ('counter disable') and 'CE' ('counter enable'). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.
 
