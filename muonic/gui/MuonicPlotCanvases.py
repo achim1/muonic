@@ -1,14 +1,12 @@
 """
 Provide the canvases for plots in muonic
 """
-
 import matplotlib.pyplot as mp
 import sys
 import pylab as p
 import numpy as n
 from datetime import datetime
 
-# Python Qt4 bindings for GUI objects
 from PyQt4 import QtGui
 
 # Matplotlib Figure object
@@ -27,7 +25,6 @@ class MuonicPlotCanvas(FigureCanvas):
     """
     The base class of all muonic plot canvases
     """
-    
     def __init__(self,parent,logger,ymin=0,ymax=10,xmin=0,xmax=10,xlabel="xlabel",ylabel="ylabel",grid=True, spacing=(0.1,0.9)):
        
         self.logger = logger
@@ -36,11 +33,8 @@ class MuonicPlotCanvas(FigureCanvas):
         self.ax = self.fig.add_subplot(111)
         self.fig.subplots_adjust(left=spacing[0], right=spacing[1])
   
-        # initialization of the canvas
         FigureCanvas.__init__(self, self.fig)
 
-        # set specific limits for X and Y axes
-        #print ymin,ymax
         self.ax.set_ylim(ymin=ymin,ymax=ymax)
         self.ax.set_xlim(xmin=xmin,xmax=xmax)
         self.ax.set_xlabel(xlabel)
@@ -48,7 +42,6 @@ class MuonicPlotCanvas(FigureCanvas):
         self.ax.set_autoscale_on(False)
         self.ax.grid(grid)
         
-        #store the limits for later 
         self.xmin = xmin
         self.xmax = xmax
         self.ymin = ymin
@@ -59,7 +52,6 @@ class MuonicPlotCanvas(FigureCanvas):
         # force a redraw of the Figure
         self.fig.canvas.draw() 
         self.setParent(parent)
-
 
     def color(self, string, color="none"):
         """
@@ -81,7 +73,6 @@ class PulseCanvas(MuonicPlotCanvas):
     """
     Matplotlib Figure widget to display Pulses
     """
-
     def __init__(self,parent,logger):
         super(PulseCanvas,self).__init__(parent,logger,ymin=0,ymax=1.2,xmin=0,xmax=40,xlabel="time in ns",ylabel="ylabel",grid=True)
         self.ax.yaxis.set_visible(False)   
@@ -92,7 +83,6 @@ class PulseCanvas(MuonicPlotCanvas):
         #do a complete redraw of the plot to avoid memory leak!
         self.ax.clear()
 
-        # set specific limits for X and Y axes
         self.ax.set_xlim(0, 100)
         self.ax.set_ylim(ymax=1.5)
         self.ax.grid()
@@ -105,6 +95,7 @@ class PulseCanvas(MuonicPlotCanvas):
         # we have only the information that the pulse is over the threshold,
         # besides that we do not have any information about its height
         # TODO: It would be nice to implement the thresholds as scaling factors
+        # Really? Or does it give a wrong idea that the charge is read out by the DAQ?
 
         self.pulseheight = 1.0
 
@@ -133,20 +124,17 @@ class PulseCanvas(MuonicPlotCanvas):
 
             self.fig.canvas.draw()
         
-        
 class ScalarsCanvas(MuonicPlotCanvas):
     
     def __init__(self,parent,logger, MAXLENGTH = 40):
         
         MuonicPlotCanvas.__init__(self,parent,logger,xlabel="Time (s)",ylabel="Rate (Hz)")
         self.do_not_show_trigger = False
-        #max length of shown = MAXLENGTH*timewindow
         self.MAXLENGTH = MAXLENGTH
         self.reset()
         
     def reset(self):
         """reseting all data"""
-
         self.ax.clear()
         self.ax.grid()
         self.ax.set_xlabel(self.xlabel)
@@ -182,7 +170,6 @@ class ScalarsCanvas(MuonicPlotCanvas):
         #do a complete redraw of the plot to avoid memory leak!
         self.ax.clear()
         self.do_not_show_trigger = trigger
-        # set specific limits for X and Y axes
         #self.ax.set_xlim(0., 5.2)
         #self.ax.set_ylim(0., 100.2)
         self.ax.grid()
@@ -193,7 +180,6 @@ class ScalarsCanvas(MuonicPlotCanvas):
         #self.ax.set_autoscale_on(False)
         self.logger.debug("result : %s" %result.__repr__())
 
-        # update lines data using the lists with new data
         self.chan0.append(result[0])
         self.chan1.append(result[1])
         self.chan2.append(result[2])
@@ -325,14 +311,10 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         # always get rid of unused stuff
         del tmphist
 
-        # some beautification
         self.ax.grid()
 
-        # we now have to pass our new patches 
-        # to the figure we created..            
         self.ax.patches = self.hist_patches 
         self.fig.canvas.draw()
-
 
     def show_fit(self,bin_centers,bincontent,fitx,decay,p,covar,chisquare,nbins):
 
@@ -350,31 +332,34 @@ class MuonicHistCanvas(MuonicPlotCanvas):
                    
         self.fig.canvas.draw()
 
-
 class LifetimeCanvas(MuonicHistCanvas):
     """
     A simple histogram for the use with mu lifetime
     measurement
     """
-    
     def __init__(self,parent,logger,binning = (0,10,21)): 
         MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="Time between Pulses ($\mu$seconds)",ylabel="Events")
 
      
 class VelocityCanvas(MuonicHistCanvas):  
-    
+    """
+    Histogram showing the measured flight time between the upper and lower scinti in units of ns.
+    """
     def __init__(self,parent,logger,binning = (0.,30,15)): 
         MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xmin=0.,xmax=30,ymin=0,ymax=2,ylabel="Events",xlabel="Flight Time (ns)") 
         self.dimension = r"$ns$"
         
 class PulseWidthCanvas(MuonicHistCanvas):     
-
+    """
+    Histogram that shows the pulse widths.
+    """
     def __init__(self,parent,logger,histcolor="r"): 
         MuonicHistCanvas.__init__(self,parent,logger,n.linspace(0.,100,30),histcolor=histcolor,xmin=0.,xmax=100,ymin=0,ymax=2,ylabel="Events",xlabel="Pulse Width (ns)") 
         self.ax.set_title("Pulse widths")
         
     def update_plot(self,data):
+    """
+    update the pulse width histogram with new data.
+    """
         super(PulseWidthCanvas,self).update_plot(data)
         self.ax.set_title("Pulse widths")
-        
-        

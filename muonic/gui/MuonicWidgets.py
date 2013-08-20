@@ -2,8 +2,6 @@
 Provide the different physics widgets
 """
 
-
-# Qt4 imports
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 

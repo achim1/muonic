@@ -2,14 +2,12 @@
 Provide the dialog fields for user interaction
 """
 
-
 from PyQt4 import QtCore, QtGui
 
 class MuonicDialog(QtGui.QDialog):
     """
     Base class of all muonic dialogs
     """
-    
     def __init__(self):
         pass
     
@@ -17,7 +15,6 @@ class MuonicDialog(QtGui.QDialog):
         """
         Create a custom button for cancel/apply
         """
-        
         buttonBox = QtGui.QDialogButtonBox(self)
         buttonBox.setGeometry(QtCore.QRect(leftoffset, topoffset, 300, 32))
         buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -29,7 +26,6 @@ class MuonicDialog(QtGui.QDialog):
         """
         Create a group of choices
         """
-
         groupBox = QtGui.QGroupBox(label)
         groupBox.setCheckable(checkable)
         groupBox.setChecked(checkable_set)
@@ -73,7 +69,6 @@ class DecayConfigDialog(MuonicDialog):
 
         QtGui.QDialog.__init__(self,*args)
 
-        # size of window etc..
         self.setObjectName("Configure")
         #self.resize(480, 360)
         self.setModal(True)
@@ -85,7 +80,6 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Veto Pulse",objectname = "vetocheckbox",leftoffset=300,    setchecked=[3]), 0, 2)
         
         
-        # add line edits to perform cuts on the events
         self.mintime = QtGui.QSpinBox()
         self.mintime_label = QtGui.QLabel("Minimum time between\n two pulses (in ns)")
         self.mintime.setMaximum(2000)
@@ -155,8 +149,11 @@ class DecayConfigDialog(MuonicDialog):
         grid.addWidget(self.buttonBox,4,2)
         self.setLayout(grid)
         self.show()
-class FitRangeConfigDialog(MuonicDialog):
 
+class FitRangeConfigDialog(MuonicDialog):
+"""
+Dialog to configure the fit range. It shows a dialog to change to upper and lower limit of the fit.
+"""
         def __init__(self, upperlim = None, lowerlim = None, dimension = '', *args):
             QtGui.QDialog.__init__(self,*args)
 
@@ -202,6 +199,9 @@ class FitRangeConfigDialog(MuonicDialog):
             self.show()
 
 class VelocityConfigDialog(MuonicDialog):
+"""
+Dialog to configure the velocity measurement. One has to set the upper and lower channel.
+"""
 
     def __init__(self, *args):
 
@@ -229,7 +229,6 @@ class PeriodicCallDialog(MuonicDialog):
     """
     Issue a command periodically
     """
-
     def __init__(self, *args):
         QtGui.QDialog.__init__(self,*args)
         self.setModal(True)
@@ -264,9 +263,8 @@ class PeriodicCallDialog(MuonicDialog):
 
 class ThresholdDialog(MuonicDialog):
     """
-    Set the Thresholds
+    Set the Thresholds in mV.
     """
-
     def __init__(self,thr0,thr1,thr2,thr3, *args):
 
         QtGui.QDialog.__init__(self,*args)
@@ -310,9 +308,8 @@ class ThresholdDialog(MuonicDialog):
 
 class ConfigDialog(MuonicDialog):
     """
-    Set Channel configuration
+    Set Channel configuration: veto, coincidence, active channels.
     """
-    
     def __init__(self,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True,coincidencecheckbox_0 = True,coincidencecheckbox_1 = False,coincidencecheckbox_2 = False,coincidencecheckbox_3 = False,vetocheckbox = False,vetocheckbox_0 = False,vetocheckbox_1 = False,vetocheckbox_2 = False, *args):
 
         QtGui.QDialog.__init__(self,*args)
@@ -322,7 +319,6 @@ class ConfigDialog(MuonicDialog):
         self.setWindowTitle("Channel Configuration")  
         self.buttonBox = self.createButtonBox(leftoffset=30, topoffset=300)
 
-        # used advanced grid layout...
         grid = QtGui.QGridLayout()
         channels = []
         if channelcheckbox_0: channels.append(0)
@@ -350,12 +346,11 @@ class ConfigDialog(MuonicDialog):
         grid.addWidget(self.buttonBox,1,2,1,2)
 
         self.setLayout(grid)
-        
         self.show()
 
 class AdvancedDialog(MuonicDialog):
     """
-    Set Configuration dialog
+    Set Configuration dialog. Set up the readout interval, gatewidth and whether an DAQ status line should be written.
     """
     
     def __init__(self,gatewidth = 100, timewindow = 5.0, nostatus = None, *args):
@@ -367,7 +362,6 @@ class AdvancedDialog(MuonicDialog):
         self.setWindowTitle("Advanced Configurations")  
         self.buttonBox = self.createButtonBox(leftoffset=30, topoffset=300)
 
-        # used advanced grid layout...
         grid = QtGui.QGridLayout()
         self.gatewidth = QtGui.QSpinBox()
         self.gatewidth.setSuffix(' ns')
@@ -413,7 +407,9 @@ class AdvancedDialog(MuonicDialog):
         self.show()
 
 class HelpDialog(MuonicDialog): 
-
+"""
+Shows the help dialog with the DAQ commands.
+"""
     def __init__(self, *args):
         _NAME = 'Help'
         QtGui.QDialog.__init__(self,*args)
@@ -431,7 +427,6 @@ class HelpDialog(MuonicDialog):
                               QtCore.SIGNAL('accepted()'),
                                self.accept
                               )
-
         self.show()
 
     def helptext(self):
@@ -552,7 +547,6 @@ class HelpDialog(MuonicDialog):
      Flash memory display, (Memory Display of Baseline*10) = 0xFFFF
      Flash memory display, (Memory Display of Gain*10) = 0xFFFF"""
 
-
 if __name__ == "__main__":
 
     import sys
@@ -563,5 +557,3 @@ if __name__ == "__main__":
     tdialog = ThresholdDialog(42,42,42,42)
     vdialog = VelocityConfigDialog()
     sys.exit(app.exec_())
-
-

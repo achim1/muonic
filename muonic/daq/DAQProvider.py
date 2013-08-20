@@ -22,7 +22,6 @@ class DAQProvider:
     endApplication could reside in the GUI part, but putting them here
     means that you have all the thread controls in a single place.
     """
-
     def __init__(self,logger=None,sim=False):
 
         self.outqueue = mult.Queue()
@@ -43,7 +42,6 @@ class DAQProvider:
             self.daq = DaqConnection(self.inqueue, self.outqueue, self.logger)
         
         # Set up the thread to do asynchronous I/O
-        # More can be made if necessary
         # Set daemon flag so that the threads finish when the main app finishes
         self.readthread = mult.Process(target=self.daq.read,name="pREADER")
         self.readthread.daemon = True
@@ -57,7 +55,7 @@ class DAQProvider:
         """
         Get something from the daq
         """
-
+        line = None
         try:
             line = self.outqueue.get(*args)
         except Queue.Empty:
@@ -68,10 +66,8 @@ class DAQProvider:
             # then wait until service is restar    ted?
             self.logger.warning("Got garbage from the DAQ: %s"%line.rstrip('\r\n'))
             return None
-        
         return line
         
-
     def put(self,*args):
         """
         Send information to the daq
@@ -80,7 +76,7 @@ class DAQProvider:
 
     def data_available(self):
         """
-        is new data from daq available
+        check if there is new data from daq available
         """
         size = None
         try:
@@ -91,21 +87,23 @@ class DAQProvider:
         return size
 
 class DAQClient(DAQProvider):
-    
-    
+    """
+    ZMQ Client site of the DAQ hadling.
+    """
     def __init__(self,port,logger=None,root=None):
            
         self.running = 1
         self.root = root
         self.good_pattern = re.compile("^[a-zA-Z0-9+-.,:()=$/#?!%_@*|~' ]*[\n\r]*$")
-        # get option parser options
         if logger is None:
             logger = logging.getLogger()
         self.logger = logger
         self.setup_socket(port)
-
      
     def setup_socket(self,port):
+        """
+        Setup the ZMQ socket
+        """
         #port = "5556"
         context = zmq.Context()
         self.socket = context.socket(zmq.PAIR)
@@ -116,7 +114,7 @@ class DAQClient(DAQProvider):
         """
         Get something from the daq
         """
-        
+        line = None
         try:
             line = self.socket.recv_string()
         except Queue.Empty:
@@ -142,5 +140,4 @@ class DAQClient(DAQProvider):
         """
         is new data from daq available
         """
-
         return self.socket.poll(200)

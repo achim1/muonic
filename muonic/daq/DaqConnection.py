@@ -39,7 +39,7 @@ class DaqConnection(object):
 
             try:
                 dev = subprocess.Popen(["which_tty_daq"], stdout=subprocess.PIPE).communicate()[0]
-            except OSError: # using package script
+            except OSError:
                 which_tty_daq = os.path.abspath('./bin/which_tty_daq')
                 if not os.path.exists(which_tty_daq):
                     raise OSError("Can not find binary which_tty_daq")
@@ -134,7 +134,6 @@ class DaqServer(DaqConnection):
     # FIXME make constructors consistent
     def __init__(self, port,logger):
 
-
         self.running = 1
         self.logger = logger
         self.setup_socket(port)
@@ -144,8 +143,6 @@ class DaqServer(DaqConnection):
             self.logger.fatal("SerialException thrown! Value:" + e.message.__repr__())
             raise SystemError, e
 
-    
-    
     def setup_socket(self,port,adress="127.0.0.1"):
         #port = "5556"
         context = zmq.Context()
@@ -163,9 +160,9 @@ class DaqServer(DaqConnection):
         """
         Get data from the DAQ. Read it from the provided Queue.
         """
-        min_sleeptime = 0.01 # seconds
-        max_sleeptime = 0.2 # seconds
-        sleeptime = min_sleeptime #seconds
+        min_sleeptime = 0.01
+        max_sleeptime = 0.2
+        sleeptime = min_sleeptime
         while self.running:
 #            data = self.port.read(1)
 #            n = self.port.inWaiting()
@@ -201,12 +198,10 @@ class DaqServer(DaqConnection):
         """
         Put messages from the inqueue which is filled by the DAQ
         """
-
         while self.running:
             msg = self.socket.recv_string()
             self.port.write(str(msg)+"\r")
             sleep(0.1)
-
 
 
 if __name__ == "__main__":

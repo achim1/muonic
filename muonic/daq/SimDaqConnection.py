@@ -15,15 +15,15 @@ except ImportError:
 from random import choice
 	
 class SimDaq():
+    """
+    Simulation mode reproduces rates from an file, drwan from a Poisson distribution.
+    This routine will increase the scalars variables using predefined rates
+    Rates are drawn from Poisson distributions
+    """
 
     def __init__(self, logger,usefile="simdaq.txt",createfakerates=True):
-        
-        # TODO:
-        # Modify this in such a way that
-        # an arbitrary file can be read and computed...
-        
+                
         self.logger = logger
-        self.ini = True
 
         self._pushed_lines = 0
         self._lines_to_push = 10
@@ -31,6 +31,8 @@ class SimDaq():
         self._daq = open(self._simdaq_file)
         self._inWaiting = True 
         self._return_info = False
+        self._cmd_buffer = None
+        self._cmd_waiting = False
         
         #self._fakerates = createfakerates
         self._scalars_ch0 = 0
@@ -39,16 +41,22 @@ class SimDaq():
         self._scalars_ch3 = 0
         self._scalars_trigger = 0
         self._scalars_to_return = ''
+        self.known_commands = dict({
+            'TL':'T0=42  T1=42  T2=42  T3=42',
+            'HE':'Help page missing',
+            'HE1':'Help page 1 missing',
+            'HE2':'Help page 2 missing',
+            'HE3':'Help page 3 missing',
+            'DC':'DC answer missing',
+            'WC':'WC answer missing',
+            'TC':'TC answer missing',
+            'V1':'V1 answer missing'
+            })
 
     def _physics(self):
-        """
-        This routine will increase the scalars variables using predefined rates
-        Rates are drawn from Poisson distributions
-        """
 
         def format_to_8digits(hexstring):
             return hexstring.zfill(8)
-        
         
         # draw rates from a poisson distribution,
         self._scalars_ch0 += int(choice(n.random.poisson(12,100)))
@@ -65,14 +73,13 @@ class SimDaq():
         read dummy pulses from the simdaq file till
         the configured value is reached
         """
-        if self.ini:
-            self.ini = False
-            return "T0=42  T1=42  T2=42  T3=42"
-
         if self._return_info:
             self._return_info = False
             return self._scalars_to_return
 
+        if self._cmd_waiting:
+            self._cmd_waiting = False
+            return self.known_commands.get(self._cmd_buffer)
         self._pushed_lines += 1
         if self._pushed_lines < self._lines_to_push:
             line = self._daq.readline()
@@ -80,7 +87,6 @@ class SimDaq():
                 self._daq = open(self._simdaq_file)
                 self.logger.debug("File reloaded")
                 line = self._daq.readline()
-
             return line
         else:
             self._pushed_lines = 0
@@ -92,25 +98,37 @@ class SimDaq():
         """
         Trigger a simulated daq response with command
         """
+        if len(command) > 1000:
+            self.logger.warning("Ignoring command - too long. In case of server: might be an attack.")
+            return False
+        command = str(command).strip()
         self.logger.debug("got the following command %s" %command.__repr__())
-        if "DS" in command:
+        if command == "DS":
             self._return_info = True
-
+            return True
+        if self.known_commands.has_key(command.split(' ',1)[0]):
+            self._cmd_buffer = command
+            self._cmd_waiting = True
+            return True
+        else:
+            return False
 
     def inWaiting(self):
         """
         simulate a busy DAQ
         """
         if self._inWaiting:
-            time.sleep(0.1)
+            time.sleep(0.3)
             self._physics()
             return True
-
         else:
             self._inWaiting = True
             return False
         
 class SimDaqConnection(object):
+    """
+    Basic class which provides the simulated DAQ. It can be started via the DAQ server or if not zmq is available as stand alone locally
+    """
 
     def __init__(self, inqueue, outqueue, logger):
 
@@ -129,23 +147,29 @@ class SimDaqConnection(object):
                 self.logger.debug("inqueue size is %d" %self.inqueue.qsize())
                 while self.inqueue.qsize():
                     try:
-                        #print self.inqueue.get(0)
-                        self.port.write(str(self.inqueue.get(0))+"\r")
+                        _msg = str(self.inqueue.get(0))
+                        self.outqueue.put(_msg)
+                        self.port.write(_msg+"\r")
                     except Queue.Empty:
                         self.logger.debug("Queue empty!")
             except NotImplementedError:
                 self.logger.debug("Running Mac version of muonic.")
                 while True:
                     try:
-                        self.port.write(str(self.inqueue.get(timeout=0.01))+"\r")
+                        _msg = str(self.inqueue.get(timeout=0.01))
+                        self.outqueue.put(_msg)                    
+                        self.port.write(_msg+"\r")
                     except Queue.Empty:
                         pass
 
             while self.port.inWaiting():
                 self.outqueue.put(self.port.readline().strip())
-            time.sleep(0.02)
+            time.sleep(0.3)
 
 class SimDaqServer(object):
+    """
+    Server site which simulates the DAQ.
+    """
 
     def __init__(self, port, logger):
 
@@ -156,6 +180,9 @@ class SimDaqServer(object):
         
 
     def setup_socket(self,port,adress="127.0.0.1"):
+        """
+        setup up the socket for the simulated DAQ server
+        """
         #port = "5556"
         context = zmq.Context()
         self.socket = context.socket(zmq.PAIR)
@@ -172,10 +199,8 @@ class SimDaqServer(object):
         Simulate DAQ I/O
         """
         while self.running:
-            
-            #self.logger.debug("inqueue size is %d" %self.inqueue.qsize())
             msg = self.socket.recv_string()
-            print msg
+            #print msg
             try:
                     #print self.inqueue.get(0)
                 self.port.write(str(msg)+"\r")

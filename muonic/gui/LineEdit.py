@@ -32,5 +32,3 @@ class LineEdit(QtGui.QLineEdit):
     def add_hist_item(self,item):
         self.history.append(item)
         self.hist_pointer = len(self.history)
-
-# vim: ai ts=4 sts=4 et sw=4

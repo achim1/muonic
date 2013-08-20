@@ -25,19 +25,13 @@
 
 # python std lib imports
 import sys
-#import os
 import logging
 from optparse import OptionParser
-#import Queue
-#import multiprocessing as mult
 
 # PyQt4 imports
-#from PyQt4 import QtCore
 from PyQt4 import QtGui
 
 # muonic imports
-#from muonic.daq.DaqConnection import DaqConnection
-#from muonic.daq.SimDaqConnection import SimDaqConnection
 from daq.DAQProvider import DAQProvider
 from gui.MainWindow import MainWindow
 
@@ -83,5 +77,4 @@ if __name__ == '__main__':
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    # make it so!
     main(opts,logger)

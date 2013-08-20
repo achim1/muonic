@@ -2,14 +2,11 @@
 Provides the main window for the gui part of muonic
 """
 
-# Qt4 imports
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
-# numpy
 import numpy as n
 
-# stdlib imports
 import datetime
 
 import os
@@ -31,16 +28,12 @@ DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.se
 # if you change here, you have to change in setup.py!
 DATAPATH = os.getenv('HOME') + os.sep + 'muonic_data'
 
-
-#from TabWidget import TabWidget
-
 tr = QtCore.QCoreApplication.translate
 
 class MainWindow(QtGui.QMainWindow):
     """
     The main application
     """
-
     def __init__(self, daq, logger, opts,  win_parent = None):
 
         QtGui.QMainWindow.__init__(self, win_parent)
@@ -56,7 +49,6 @@ class MainWindow(QtGui.QMainWindow):
         self.statusbar = QtGui.QMainWindow.statusBar(self)
         self.logger  = logger
 
-        # put the file in the data directory
         # we chose a global format for naming the files -> decided on 18/01/2012
         # we use GMT times
         # " Zur einheitlichen Datenbezeichnung schlage ich folgendes Format vor:
@@ -64,9 +56,7 @@ class MainWindow(QtGui.QMainWindow):
         # Beendigung der Messung; y: G oder L ausw?hlen, G steht f?r **We add R for rate P for pulses and RW for RAW **
         # Geschwindigkeitsmessung/L f?r Lebensdauermessung; x-Messzeit in Stunden;
         # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
-        # TODO: consistancy....        
  
-        # the time when the rate measurement is started
         self.now = datetime.datetime.now()
         self.date = time.gmtime()
         self.filename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"R",opts.user[0],opts.user[1]) )
@@ -84,9 +74,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
         self.nostatus = False
-        # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
-        self.daq.put('TL') # get the thresholds
+        self.daq.put('TL')
         time.sleep(0.5) #give the daq some time to ract
         self.threshold_ch0 = 300
         self.threshold_ch1 = 300
@@ -116,7 +105,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.coincidence_time = 0.
 
-        self.daq.put('DC') # get the channelconfig
+        self.daq.put('DC')
         time.sleep(0.5) #give the daq some time to ract
         while self.daq.data_available():
             try:
@@ -126,7 +115,6 @@ class MainWindow(QtGui.QMainWindow):
             except DAQIOError:
                 self.logger.debug("Queue empty!")
                 
-        # the pulseextractor for direct analysis
         self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename) 
         self.pulses = None
 
@@ -156,12 +144,10 @@ class MainWindow(QtGui.QMainWindow):
                            QtCore.SIGNAL("timeout()"),
                            self.processIncoming)
         
-        #tab widget to hold the different physics widgets
         self.tabwidget = QtGui.QTabWidget(self)
         #pal = QtGui.QPalette()
         #pal.setColor(QtGui.QPalette.Window, QtGui.QColor(0,222,0))
         #self.tabwidget.setPalette(pal)
-        #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
 
         self.timewindow = 5.0
@@ -253,12 +239,10 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.start(1000)
         self.widgetupdater.start(self.timewindow*1000) 
 
-    #the individual menus
     def threshold_menu(self):
         """
         Shows the threshold dialogue
         """
-        # get the actual Thresholds...
         self.daq.put('TL')
         # wait explicitely till the thresholds get loaded
         self.logger.info("loading threshold information..")
@@ -282,7 +266,6 @@ class MainWindow(QtGui.QMainWindow):
         Show the config dialog
         """
         gatewidth = 0.
-        # get the actual channels...
         self.daq.put('DC')
         # wait explicitely till the channels get loaded
         self.logger.info("loading channel information...")
@@ -330,12 +313,9 @@ class MainWindow(QtGui.QMainWindow):
                     tmp_msg += coincidence[1]
                     coincidence_set = True
             
-            # else case, just in case
             if not coincidence_set:
                 tmp_msg += '00'
     
-            # now calculate the correct expression for the first
-            # four bits
             self.logger.debug("The first four bits are set to %s" %tmp_msg)
             msg = 'WC 00 ' + hex(int(''.join(tmp_msg),2))[-1].capitalize()
     
@@ -348,7 +328,6 @@ class MainWindow(QtGui.QMainWindow):
             
             if not channel_set:
                 msg += '0'
-                
             else:
                 msg += hex(int(''.join(enable),2))[-1].capitalize()
             
@@ -370,7 +349,6 @@ class MainWindow(QtGui.QMainWindow):
         Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the nostatus option
         """
         gatewidth = 0.
-        # get the actual channels...
         self.daq.put('DC')
         # wait explicitely till the channels get loaded
         self.logger.info("loading channel information...")
@@ -441,11 +419,9 @@ class MainWindow(QtGui.QMainWindow):
         if not success:
             self.logger.warning("Can not open PDF reader!")
 
-
-
     def query_daq_for_scalars(self):
         """
-        Send a "DS" message to DAQ and record the time when this is don
+        Send a "DS" message to DAQ and record the time when this is done
         """
         self.lastscalarquery = self.thisscalarquery
         self.daq.put("DS")
@@ -456,7 +432,6 @@ class MainWindow(QtGui.QMainWindow):
         Explicitely scan a message for scalar informatioin
         Returns True if found, else False
         """
-        
         if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
             self.scalars = msg.split()
             time_window = self.thisscalarquery - self.lastscalarquery
@@ -590,7 +565,6 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 self.coincidencecheckbox_3 = False
 
-
             if str(vetoconfig) == '00':
                 self.vetocheckbox = False
             else:
@@ -607,8 +581,6 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
 
-    # this functions gets everything out of the daq
-    # All calculations should happen here
     def processIncoming(self):
         """
         Handle all the messages currently in the daq 
@@ -623,7 +595,6 @@ class MainWindow(QtGui.QMainWindow):
                 self.logger.debug("Queue empty!")
                 return None
 
-            # Check contents of message and do what it says
             self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
             if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
                 if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
@@ -632,7 +603,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.gpswidget.calculate()
                 continue
 
-            if (self.tabwidget.statuswidget.isVisible()):
+            if self.tabwidget.statuswidget.isVisible():
                 self.tabwidget.statuswidget.update()
 
             if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
@@ -657,15 +628,12 @@ class MainWindow(QtGui.QMainWindow):
                 except ValueError:
                     self.logger.warning('Trying to write on closed file, captured!')
 
-            # check for threshold information
             if self.get_thresholds_from_queue(msg):
                 continue
 
             if self.get_channels_from_queue(msg):
                 continue
 
-
-            # status messages
             if msg.startswith('ST') or len(msg) < 50:
                 continue
             
@@ -674,10 +642,6 @@ class MainWindow(QtGui.QMainWindow):
                 rates = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
                 self.tabwidget.ratewidget.calculate(rates)
                 
-                #print self.tabwidget.scalars_result
-                #write the rates to data file
-                # we have to catch IOErrors, can occur if program is 
-                # exited
                 if self.tabwidget.ratewidget.data_file_write:
                     try:
                         self.tabwidget.ratewidget.data_file.write('%f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
@@ -691,9 +655,7 @@ class MainWindow(QtGui.QMainWindow):
                 if self.pulses != None:
                     #self.pulses_to_show = self.pulses
                     self.tabwidget.pulseanalyzerwidget.calculate(self.pulses)
-                    # we have to count the triggers in the time intervall
-                    # FIXME: find a method to calculate rate from 
-                    # previously taken RAW file
+
                     self.channel_counts[0] += 1                         
                     for channel,pulses in enumerate(self.pulses[1:]):
                         if pulses:
@@ -711,7 +673,6 @@ class MainWindow(QtGui.QMainWindow):
         """
         Update the widgets
         """
-    
         # this fct is called every timewindow - so we have to query for scalars
         self.query_daq_for_scalars()
         for widg in self.tabwidget.dynamic_widgets:
@@ -723,16 +684,13 @@ class MainWindow(QtGui.QMainWindow):
         Is triggered when the window is closed, we have to reimplement it
         to provide our special needs for the case the program is ended.
         """
-
         self.logger.info('Attempting to close Window!')
-        # ask kindly if the user is really sure if she/he wants to exit
         reply = QtGui.QMessageBox.question(self, 'Attention!',
                 'Do you really want to exit?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
             now = datetime.datetime.now()
 
-            # close the RAW file (if any)
             if self.tabwidget.daqwidget.write_file:
                 self.tabwidget.daqwidget.write_file = False
                 mtime = now - self.raw_mes_start
@@ -784,5 +742,5 @@ class MainWindow(QtGui.QMainWindow):
             self.emit(QtCore.SIGNAL('lastWindowClosed()'))
             self.close()
 
-        else: # don't close the mainwindow
+        else:
             ev.ignore()
