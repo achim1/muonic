@@ -9,7 +9,6 @@ from datetime import datetime
 
 from PyQt4 import QtGui
 
-# Matplotlib Figure object
 from matplotlib.figure import Figure
 
 # import the Qt4Agg FigureCanvas object, that binds Figure to
@@ -17,7 +16,6 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg \
 import FigureCanvasQTAgg as FigureCanvas
 
-# import the NavigationToolbar Qt4Agg widget
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar
 
@@ -358,8 +356,8 @@ class PulseWidthCanvas(MuonicHistCanvas):
         self.ax.set_title("Pulse widths")
         
     def update_plot(self,data):
-    """
-    update the pulse width histogram with new data.
-    """
+        """
+        update the pulse width histogram with new data.
+        """
         super(PulseWidthCanvas,self).update_plot(data)
         self.ax.set_title("Pulse widths")

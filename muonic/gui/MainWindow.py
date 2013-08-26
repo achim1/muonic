@@ -77,23 +77,18 @@ class MainWindow(QtGui.QMainWindow):
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL')
         time.sleep(0.5) #give the daq some time to ract
-        self.threshold_ch0 = 300
-        self.threshold_ch1 = 300
-        self.threshold_ch2 = 300
-        self.threshold_ch3 = 300
+        self.threshold_ch = []
 
-        self.channelcheckbox_0 = True
-        self.channelcheckbox_1 = True
-        self.channelcheckbox_2 = True
-        self.channelcheckbox_3 = True
-        self.coincidencecheckbox_0 = True
-        self.coincidencecheckbox_1 = False
-        self.coincidencecheckbox_2 = False
-        self.coincidencecheckbox_3 = False
-        self.vetocheckbox = False
-        self.vetocheckbox_0 = False
-        self.vetocheckbox_1 = False
-        self.vetocheckbox_2 = False
+        self.channelcheckbox = []
+        self.vetocheckbox = []
+        self.coincidencecheckbox = []
+        for i in range(4):
+            self.channelcheckbox.append(True)
+            self.vetocheckbox.append(False)
+            self.coincidencecheckbox.append(False)
+            self.threshold_ch.append(300)
+
+        self.coincidencecheckbox[0] = True
         
         while self.daq.data_available():
             try:
@@ -162,7 +157,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.addTab(DecayWidget(logger,parent = self),"Muon Decay")
         self.tabwidget.decaywidget = self.tabwidget.widget(2)
       
-        self.tabwidget.addTab(VelocityWidget(logger),"Muon Velocity")
+        self.tabwidget.addTab(VelocityWidget(logger,parent = self),"Muon Velocity")
         self.tabwidget.velocitywidget = self.tabwidget.widget(3)
 
         self.tabwidget.addTab(StatusWidget(logger,parent=self),"Status")
@@ -247,7 +242,7 @@ class MainWindow(QtGui.QMainWindow):
         # wait explicitely till the thresholds get loaded
         self.logger.info("loading threshold information..")
         time.sleep(1.5)
-        threshold_window = ThresholdDialog(self.threshold_ch0,self.threshold_ch1,self.threshold_ch2,self.threshold_ch3)
+        threshold_window = ThresholdDialog(self.threshold_ch[0],self.threshold_ch[1],self.threshold_ch[2],self.threshold_ch[3])
         rv = threshold_window.exec_()
         if rv == 1:
             commands = []
@@ -271,7 +266,7 @@ class MainWindow(QtGui.QMainWindow):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        config_window = ConfigDialog(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3,self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3,self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2)
+        config_window = ConfigDialog(self.channelcheckbox[0],self.channelcheckbox[1],self.channelcheckbox[2],self.channelcheckbox[3],self.coincidencecheckbox[0],self.coincidencecheckbox[1],self.coincidencecheckbox[2],self.coincidencecheckbox[3],self.vetocheckbox[3],self.vetocheckbox[0],self.vetocheckbox[1],self.vetocheckbox[2])
         rv = config_window.exec_()
         if rv == 1:
             
@@ -477,11 +472,11 @@ class MainWindow(QtGui.QMainWindow):
         """
         if msg.startswith('TL') and len(msg) > 9:
             msg = msg.split('=')
-            self.threshold_ch0 = int(msg[1][:-2])
-            self.threshold_ch1 = int(msg[2][:-2])
-            self.threshold_ch2 = int(msg[3][:-2])
-            self.threshold_ch3 = int(msg[4]     )
-            self.logger.debug("Got Thresholds %i %i %i %i" %(self.threshold_ch0,self.threshold_ch1,self.threshold_ch2,self.threshold_ch3))
+            self.threshold_ch = []
+            for i in range(3):
+                self.threshold_ch.append(int(msg[1][:-2]))
+            self.threshold_ch.append(int(msg[4]     ))
+            self.logger.debug("Got Thresholds %i %i %i %i" %(self.threshold_ch[0],self.threshold_ch[1],self.threshold_ch[2],self.threshold_ch[3]))
             return True
         else:
             return False
@@ -523,59 +518,57 @@ class MainWindow(QtGui.QMainWindow):
             channelconfig = msg[4:8]
 
             self.coincidence_time = int(self.coincidence_time, 16)*10
-            
-            self.vetocheckbox_0 = False
-            self.vetocheckbox_1 = False
-            self.vetocheckbox_2 = False
-            self.vetocheckbox = True
+            for i in range(3):
+                self.vetocheckbox[i] = False
+            self.vetocheckbox[3] = True
 
             if str(channelconfig[3]) == '0':
-                self.channelcheckbox_0 = False
+                self.channelcheckbox[0] = False
             else:
-                self.channelcheckbox_0 = True
+                self.channelcheckbox[0] = True
 
             if str(channelconfig[2]) == '0':
-                self.channelcheckbox_1 = False
+                self.channelcheckbox[1] = False
             else:
-                self.channelcheckbox_1 = True
+                self.channelcheckbox[1] = True
 
             if str(channelconfig[1]) == '0':
-                self.channelcheckbox_2 = False
+                self.channelcheckbox[2] = False
             else:
-                self.channelcheckbox_2 = True
+                self.channelcheckbox[2] = True
             if str(channelconfig[0]) == '0':
-                self.channelcheckbox_3 = False
+                self.channelcheckbox[3] = False
             else:
-                self.channelcheckbox_3 = True
+                self.channelcheckbox[3] = True
             if str(coincidenceconfig) == '00':
-                self.coincidencecheckbox_0 = True
+                self.coincidencecheckbox[0] = True
             else:
-                self.coincidencecheckbox_0 = False
+                self.coincidencecheckbox[0] = False
             if str(coincidenceconfig) == '01':
-                self.coincidencecheckbox_1 = True
+                self.coincidencecheckbox[1] = True
             else:
-                self.coincidencecheckbox_1 = False
+                self.coincidencecheckbox[1] = False
             if str(coincidenceconfig) == '10':
-                self.coincidencecheckbox_2 = True
+                self.coincidencecheckbox[2] = True
             else:
-                self.coincidencecheckbox_2 = False
+                self.coincidencecheckbox[2] = False
 
             if str(coincidenceconfig) == '11':
-                self.coincidencecheckbox_3 = True
+                self.coincidencecheckbox[3] = True
             else:
-                self.coincidencecheckbox_3 = False
+                self.coincidencecheckbox[3] = False
 
             if str(vetoconfig) == '00':
-                self.vetocheckbox = False
+                self.vetocheckbox[3] = False
             else:
-                if str(vetoconfig) == '01': self.vetocheckbox_0 = True
-                if str(vetoconfig) == '10': self.vetocheckbox_1 = True
-                if str(vetoconfig) == '11': self.vetocheckbox_2 = True
+                if str(vetoconfig) == '01': self.vetocheckbox[0] = True
+                if str(vetoconfig) == '10': self.vetocheckbox[1] = True
+                if str(vetoconfig) == '11': self.vetocheckbox[2] = True
             
             self.logger.debug('Coincidence timewindow %s ns' %(str(self.coincidence_time)))
-            self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox_0,self.channelcheckbox_1,self.channelcheckbox_2,self.channelcheckbox_3))
-            self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox_0,self.coincidencecheckbox_1,self.coincidencecheckbox_2,self.coincidencecheckbox_3))
-            self.logger.debug("Got veto configurations: %i %i %i %i" %(self.vetocheckbox,self.vetocheckbox_0,self.vetocheckbox_1,self.vetocheckbox_2))
+            self.logger.debug("Got channel configurations: %i %i %i %i" %(self.channelcheckbox[0],self.channelcheckbox[1],self.channelcheckbox[2],self.channelcheckbox[3]))
+            self.logger.debug("Got coincidence configurations: %i %i %i %i" %(self.coincidencecheckbox[0],self.coincidencecheckbox[1],self.coincidencecheckbox[2],self.coincidencecheckbox[3]))
+            self.logger.debug("Got veto configurations: %i %i %i %i" %(self.vetocheckbox[3],self.vetocheckbox[0],self.vetocheckbox[1],self.vetocheckbox[2]))
 
             return True
         else:
@@ -650,10 +643,9 @@ class MainWindow(QtGui.QMainWindow):
                         self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
                 continue
             
-            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.active):#self.showpulses or self.pulsefilename) :
+            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.is_active()):#self.showpulses or self.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
                 if self.pulses != None:
-                    #self.pulses_to_show = self.pulses
                     self.tabwidget.pulseanalyzerwidget.calculate(self.pulses)
 
                     self.channel_counts[0] += 1                         
@@ -662,7 +654,7 @@ class MainWindow(QtGui.QMainWindow):
                             for pulse in pulses:
                                 self.channel_counts[channel + 1] += 1
                
-                    if self.tabwidget.velocitywidget.active:
+                    if self.tabwidget.velocitywidget.is_active():
                         self.tabwidget.velocitywidget.calculate(self.pulses)
 
                     if self.tabwidget.decaywidget.is_active():
@@ -671,9 +663,8 @@ class MainWindow(QtGui.QMainWindow):
             
     def widgetUpdate(self):
         """
-        Update the widgets
+        Update the widgets every readout interval. It querys for scalers
         """
-        # this fct is called every timewindow - so we have to query for scalars
         self.query_daq_for_scalars()
         for widg in self.tabwidget.dynamic_widgets:
             if widg.is_active():
@@ -724,18 +715,14 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.ratewidget.data_file_write = False
             self.tabwidget.ratewidget.data_file.close()
             mtime = now - self.tabwidget.ratewidget.rate_mes_start
-            #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
             mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-            #print 'new mtime ', mtime, str(mtime)
             self.logger.info("The rate measurement was active for %f hours" % mtime)
             newratefilename = self.filename.replace("HOURS",str(mtime))
-            #print 'new raw name', newratefilename
             shutil.move(self.filename,newratefilename)
             time.sleep(0.5)
             self.tabwidget.writefile = False
             try:
                 self.tabwidget.decaywidget.mu_file.close()
- 
             except AttributeError:
                 pass
 

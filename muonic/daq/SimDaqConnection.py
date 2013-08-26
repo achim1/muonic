@@ -67,6 +67,20 @@ class SimDaq():
         self._scalars_to_return = 'DS S0=' + format_to_8digits(hex(self._scalars_ch0)[2:]) + ' S1=' + format_to_8digits(hex(self._scalars_ch1)[2:]) + ' S2=' + format_to_8digits(hex(self._scalars_ch2)[2:]) + ' S3=' + format_to_8digits(hex(self._scalars_ch3)[2:]) + ' S4=' + format_to_8digits(hex(self._scalars_trigger)[2:])
         self.logger.debug("Scalars to return %s" %self._scalars_to_return)
 
+    def cmd_sim(self, cmd_buffer = None):
+        """
+        Simulate the answer on a command.
+        """
+        if cmd_buffer is None:
+            cmd_buffer = self._cmd_buffer
+        if cmd_buffer is None:
+            return None
+        answer = self.known_commands.get(cmd_buffer)
+        if answer is None:
+            answer = self.known_commands.get(cmd_buffer.split(' ',1)[0])
+        if answer is None:
+            answer = 'Missing command.'
+        return answer
 
     def readline(self):
         """
@@ -79,19 +93,21 @@ class SimDaq():
 
         if self._cmd_waiting:
             self._cmd_waiting = False
-            return self.known_commands.get(self._cmd_buffer)
+            return self.cmd_sim(self._cmd_buffer)
         self._pushed_lines += 1
-        if self._pushed_lines < self._lines_to_push:
+        
+        line = self._daq.readline()
+        if line is None or not line:
+            self._daq = open(self._simdaq_file)
+            self.logger.debug("File reloaded")
             line = self._daq.readline()
-            if not line:
-                self._daq = open(self._simdaq_file)
-                self.logger.debug("File reloaded")
-                line = self._daq.readline()
+
+        if self._pushed_lines < self._lines_to_push:
             return line
         else:
             self._pushed_lines = 0
             self._inWaiting = False
-            return self._daq.readline()
+            return line
             
 
     def write(self,command):

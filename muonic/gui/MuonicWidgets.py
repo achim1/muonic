@@ -5,7 +5,6 @@ Provide the different physics widgets
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 
-#muonic imports
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
@@ -14,27 +13,27 @@ from ..analysis.fit import gaussian_fit
 from ..analysis.PulseAnalyzer import VelocityTrigger,DecayTriggerThorough
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar
+import numpy
 
 import datetime
 
 import os
 import shutil
-import numpy as n
 import time
 
-tr = QtCore.QCoreApplication.translate
+qt_translate = QtCore.QCoreApplication.translate
 
 C = 29979245000 # cm/s
 
 class RateWidget(QtGui.QWidget):
     """
-    Display rate plot
+    Display rate plot and average rates and total scalers
     """
     def __init__(self,logger,parent = None):
         QtGui.QWidget.__init__(self,parent = parent)
         self.mainwindow = self.parentWidget()
         self.logger           = logger
-        self.run              = False
+        self.active           = False
         self.scalers_result   = False
         self.MAXLENGTH = 40
         self.scalers_monitor  = ScalarsCanvas(self, logger, self.MAXLENGTH)
@@ -47,17 +46,17 @@ class RateWidget(QtGui.QWidget):
         self.thisscalerquery = time.time()
         self.do_not_show_trigger = False
 
-        self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
-        self.stop_button = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
-        self.label_mean_rates = QtGui.QLabel(tr('MainWindow','mean rates:'))
-        self.label_total_scalers = QtGui.QLabel(tr('MainWindow','total scalers:'))
-        self.label_started = QtGui.QLabel(tr('MainWindow','started:'))
+        self.start_button = QtGui.QPushButton(qt_translate('MainWindow', 'Start run'))
+        self.stop_button = QtGui.QPushButton(qt_translate('MainWindow', 'Stop run'))
+        self.label_mean_rates = QtGui.QLabel(qt_translate('MainWindow','mean rates:'))
+        self.label_total_scalers = QtGui.QLabel(qt_translate('MainWindow','total scalers:'))
+        self.label_started = QtGui.QLabel(qt_translate('MainWindow','started:'))
         self.rates = dict()
         self.rates['rates']= None
         self.rates['rates_buffer'] = dict()
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
-        self.rates['label_ch0'] = QtGui.QLabel(tr('MainWindow','channel 0:'))
+        self.rates['label_ch0'] = QtGui.QLabel(qt_translate('MainWindow','channel 0:'))
         self.table = QtGui.QTableWidget(5,2,self)
         self.table.setColumnWidth(0,85)
         self.table.setColumnWidth(1,60)
@@ -83,15 +82,15 @@ class RateWidget(QtGui.QWidget):
             self.scalers[cn[1]].setFlags(QtCore.Qt.ItemIsEnabled)
 
         self.general_info = dict()
-        self.general_info['label_date'] = QtGui.QLabel(tr('MainWindow',''))
+        self.general_info['label_date'] = QtGui.QLabel(qt_translate('MainWindow',''))
         self.general_info['edit_date'] = QtGui.QLineEdit(self)
         self.general_info['edit_date'].setReadOnly(True)
         self.general_info['edit_date'].setDisabled(True)
-        self.general_info['label_daq_time'] = QtGui.QLabel(tr('MainWindow','daq time:'))
+        self.general_info['label_daq_time'] = QtGui.QLabel(qt_translate('MainWindow','daq time:'))
         self.general_info['edit_daq_time'] = QtGui.QLineEdit(self)
         self.general_info['edit_daq_time'].setReadOnly(True)
         self.general_info['edit_daq_time'].setDisabled(True)
-        self.general_info['label_max_rate'] = QtGui.QLabel(tr('MainWindow','max rate:'))
+        self.general_info['label_max_rate'] = QtGui.QLabel(qt_translate('MainWindow','max rate:'))
         self.general_info['edit_max_rate'] = QtGui.QLineEdit(self)
         self.general_info['edit_max_rate'].setReadOnly(True)
         self.general_info['edit_max_rate'].setDisabled(True)
@@ -101,7 +100,6 @@ class RateWidget(QtGui.QWidget):
         #self.pulses_to_show = None
         self.data_file = open(self.mainwindow.filename, 'w')
         self.data_file.write('chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
-#        self.data_file.close()
         # always write the rate plot data
         self.data_file_write = False
 
@@ -150,26 +148,21 @@ class RateWidget(QtGui.QWidget):
         self.setLayout(rate_widget)
 
     def calculate(self,rates):
-        #now = time.time()
-        #self.thisscalerquery = now - self.lastscalerquery
-        #self.lastscalerquery = now
+        """
+        Calculate the values shown in the rate widget.
+        """
+
         self.rates['rates'] = rates
         self.timewindow += rates[5]
-        self.rates['rates_buffer']['ch0'].append(rates[0])
-        self.rates['rates_buffer']['ch1'].append(rates[1])
-        self.rates['rates_buffer']['ch2'].append(rates[2])
-        self.rates['rates_buffer']['ch3'].append(rates[3])
-        self.rates['rates_buffer']['trigger'].append(rates[4])
+
+        for ch in enumerate(['ch0','ch1','ch2','ch3','trigger']):
+            self.rates['rates_buffer'][ch[1]].append(rates[ch[0]])
+            self.scalers['scalers_buffer'][ch[1]] += rates[ch[0]+6]
+
         self.rates['rates_buffer']['l_time'].append(self.timewindow)
-        for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
+        for ch in ['ch0','ch1','ch2','ch3','trigger','l_time']:
             if len(self.rates['rates_buffer'][ch]) > self.MAXLENGTH:
                 self.rates['rates_buffer'][ch].remove(self.rates['rates_buffer'][ch][0])
-
-        self.scalers['scalers_buffer']['ch0'] += rates[6]
-        self.scalers['scalers_buffer']['ch1'] += rates[7]
-        self.scalers['scalers_buffer']['ch2'] += rates[8]
-        self.scalers['scalers_buffer']['ch3'] += rates[9]
-        self.scalers['scalers_buffer']['trigger'] += rates[10]
 
         max_rate = max( max(self.rates['rates_buffer']['ch0']), max(self.rates['rates_buffer']['ch1']), max(self.rates['rates_buffer']['ch2']), 
                    max(self.rates['rates_buffer']['ch3']))
@@ -181,33 +174,21 @@ class RateWidget(QtGui.QWidget):
             self.general_info['max_rate'] = min_rate
 
     def update(self):
-        if self.run:
+        """
+        Updates the values shown in the rate widget.
+        """
+        if self.active:
             self.general_info['edit_daq_time'].setText('%.2f s' %(self.timewindow))
             self.general_info['edit_max_rate'].setText('%.2f Hz' %(self.general_info['max_rate']))
-            if self.mainwindow.channelcheckbox_0:
-                self.rates['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']/self.timewindow))
-                self.scalers['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']))
-            else:
-                self.rates['edit_ch0'].setText('off')
-                self.scalers['edit_ch0'].setText('off')
-            if self.mainwindow.channelcheckbox_1:
-                self.rates['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']/self.timewindow))
-                self.scalers['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']))
-            else:
-                self.rates['edit_ch1'].setText('off')
-                self.scalers['edit_ch1'].setText('off')
-            if self.mainwindow.channelcheckbox_2:
-                self.rates['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']/self.timewindow))
-                self.scalers['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']))
-            else:
-                self.rates['edit_ch2'].setText('off')
-                self.scalers['edit_ch2'].setText('off')
-            if self.mainwindow.channelcheckbox_3:
-                self.rates['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']/self.timewindow))
-                self.scalers['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']))
-            else:
-                self.rates['edit_ch3'].setText('off')
-                self.scalers['edit_ch3'].setText('off')
+            for i in range(4):
+                _edit = 'edit_ch'+str(i)
+                _ch = 'ch'+str(i)
+                if self.mainwindow.channelcheckbox[i]:
+                    self.rates[_edit].setText('%.2f' %(self.scalers['scalers_buffer'][_ch]/self.timewindow))
+                    self.scalers[_edit].setText('%.2f' %(self.scalers['scalers_buffer'][_ch]))
+                else:
+                    self.rates[_edit].setText('off')
+                    self.scalers[_edit].setText('off')
 
             if self.do_not_show_trigger:
                 self.rates['edit_trigger'].setText('off')
@@ -216,19 +197,22 @@ class RateWidget(QtGui.QWidget):
                 self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
                 self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
 
-            self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
+            self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox[0],self.mainwindow.channelcheckbox[1],self.mainwindow.channelcheckbox[2],self.mainwindow.channelcheckbox[3])
       
     def is_active(self):
-        return self.run # rate widget is always active    
+        """
+        Returns a bool whether the rate measurment is currently running or not.
+        """
+        return self.active    
 
     def startClicked(self):
         """
-        start the rate measurement and write a file
+        start the rate measurement and write a file, leaves comment about the started data taking in the rate file.
         """
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
         self.mainwindow.query_daq_for_scalars()
-        self.mainwindow.daq.put('DC') # FIXME:  why is this necessary
+        self.mainwindow.daq.put('DC')
         time.sleep(0.2)
         self.table.setEnabled(True)
 
@@ -246,25 +230,17 @@ class RateWidget(QtGui.QWidget):
         if self.mainwindow.tabwidget.velocitywidget.is_active():
             comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
 
-
         self.data_file = open(self.mainwindow.filename, 'a')        
         self.data_file.write(comment_file)
-        self.run = True
+        self.active = True
         self.data_file_write = True
         self.now = datetime.datetime.now()
         
-        if not self.mainwindow.channelcheckbox_0:
-            self.rates['edit_ch0'].setText('off')
-            self.scalers['edit_ch0'].setText('off')
-        if not self.mainwindow.channelcheckbox_1:
-            self.rates['edit_ch1'].setText('off')
-            self.scalers['edit_ch1'].setText('off')
-        if not self.mainwindow.channelcheckbox_2:
-            self.rates['edit_ch2'].setText('off')
-            self.scalers['edit_ch2'].setText('off')
-        if not self.mainwindow.channelcheckbox_3:
-            self.rates['edit_ch3'].setText('off')
-            self.scalers['edit_ch3'].setText('off')
+        for i in range(4):
+            _edit = 'edit_ch'+str(i)            
+            if not self.mainwindow.channelcheckbox[i]:
+                self.rates[_edit].setText('off')
+                self.scalers[_edit].setText('off')
         self.general_info['edit_date'].setDisabled(False)
         self.general_info['edit_daq_time'].setDisabled(False)
         self.general_info['edit_max_rate'].setDisabled(False)
@@ -281,7 +257,7 @@ class RateWidget(QtGui.QWidget):
         
     def stopClicked(self):
         """
-        hold the rate measurement plot till buttion is pushed again
+        Stops data taking. Stops rate widgets calculations and stops to write in the rate file. Leaves a comment about the stopped writing in the rate file.
         """
         self.start_button.setEnabled(True)
         self.stop_button.setEnabled(False)
@@ -291,7 +267,7 @@ class RateWidget(QtGui.QWidget):
         self.general_info['edit_daq_time'].setDisabled(True)
         self.general_info['edit_max_rate'].setDisabled(True)
 
-        self.run = False
+        self.active = False
         self.data_file_write = False
         date = time.gmtime()        
         comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
@@ -310,7 +286,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.mainwindow = self.parentWidget()
         self.pulsefile = self.mainwindow.pulseextractor.pulsefile
         self.activatePulseanalyzer = QtGui.QCheckBox(self)
-        self.activatePulseanalyzer.setText(tr("Dialog", "Show Oscilloscope and Pulse Width Distribution", None, QtGui.QApplication.UnicodeUTF8))
+        self.activatePulseanalyzer.setText(qt_translate("Dialog", "Show Oscilloscope and Pulse Width Distribution", None, QtGui.QApplication.UnicodeUTF8))
         self.activatePulseanalyzer.setToolTip(QtCore.QString("The oscilloscope will show the last triggered pulses in the selected time window"))
         self.activatePulseanalyzer.setObjectName("activate_pulseanalyzer")
         grid = QtGui.QGridLayout(self)
@@ -335,10 +311,15 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.active = False
 
     def is_active(self):
+        """
+        Returns a bool whether the pulseanlyzer measurment is currently running or not.
+        """
         return self.active
 
-
     def calculate(self,pulses):
+        """
+        Calculate the pulse widths, take in consideration that the falling edge might be missing.
+        """
         self.pulses = pulses
         # pulsewidths changed because falling edge can be None.
         # pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]
@@ -352,15 +333,18 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.pulsewidths += pulsewidths
         
     def update(self):
+        """
+        Updates the pulse width histogram and oscilloscope.
+        """
         self.pulsecanvas.update_plot(self.pulses)
         self.pulsewidthcanvas.update_plot(self.pulsewidths)
         self.pulsewidths = []
 
     def activatePulseanalyzerClicked(self):
         """
-        Perform extra actions when the checkbox is clicked
+        Activates the pulse analyszer widget measurement: oscilloscope and pulse width histogram is recorded and measured.
         """
-        if not self.active:
+        if not self.is_active():
             self.pulsefile = self.mainwindow.pulseextractor.pulsefile
             self.activatePulseanalyzer.setChecked(True)
             self.active = True
@@ -386,7 +370,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
                 self.mainwindow.pulseextractor.pulsefile = False
 
 
-class StatusWidget(QtGui.QWidget): # not used yet
+class StatusWidget(QtGui.QWidget):
     """
     Provide a widget which shows the status informations of the DAQ and the muonic software
     """
@@ -397,18 +381,14 @@ class StatusWidget(QtGui.QWidget): # not used yet
 
         self.active = True
 
-        # more functional objects
-
         self.muonic_stats = dict()
         self.daq_stats = dict()
 
         self.daq_stats['thresholds'] = list()
+        self.daq_stats['active_channel'] = list()
         for cnt in range(4):
             self.daq_stats['thresholds'].append('not set yet - click on Refresh.')
-        self.daq_stats['active_channel_0'] = None
-        self.daq_stats['active_channel_1'] = None
-        self.daq_stats['active_channel_2'] = None
-        self.daq_stats['active_channel_3'] = None
+            self.daq_stats['active_channel'].append(None)
         self.daq_stats['coincidences'] = 'not set yet - click on Refresh.'
         self.daq_stats['coincidence_timewindow'] = 'not set yet - click on Refresh.'
         self.daq_stats['veto'] = 'not set yet - click on Refresh.'
@@ -416,36 +396,24 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.muonic_stats['start_params'] = 'not set yet - click on Refresh.'
         self.muonic_stats['refreshtime'] = 'not set yet - click on Refresh.'
         self.muonic_stats['open_files'] = 'not set yet - click on Refresh.'
-        self.muonic_stats['last_path'] = 'not set yet - click on Refresh.'
 
-        self.label_daq = QtGui.QLabel(tr('MainWindow','Status of the DAQ card:'))
-        self.label_thresholds = QtGui.QLabel(tr('MainWindow','Threshold:'))
-        self.label_active_channels = QtGui.QLabel(tr('MainWindow','Active channels:'))
-        self.label_coincidences = QtGui.QLabel(tr('MainWindow','Trigger condition:'))
-        self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Time window for trigger condition:'))
-        self.label_veto = QtGui.QLabel(tr('MainWindow','Veto:'))
+        self.label_daq = QtGui.QLabel(qt_translate('MainWindow','Status of the DAQ card:'))
+        self.label_thresholds = QtGui.QLabel(qt_translate('MainWindow','Threshold:'))
+        self.label_active_channels = QtGui.QLabel(qt_translate('MainWindow','Active channels:'))
+        self.label_coincidences = QtGui.QLabel(qt_translate('MainWindow','Trigger condition:'))
+        self.label_coincidence_timewindow = QtGui.QLabel(qt_translate('MainWindow','Time window for trigger condition:'))
+        self.label_veto = QtGui.QLabel(qt_translate('MainWindow','Veto:'))
         self.thresholds = []
+        self.active_channel = []
         for cnt in range(4):
             self.thresholds.append(QtGui.QLineEdit(self))
             self.thresholds[cnt].setReadOnly(True)
             self.thresholds[cnt].setText(self.daq_stats['thresholds'][cnt])
             self.thresholds[cnt].setDisabled(True)
-        self.active_channel_0 = QtGui.QLineEdit(self)
-        self.active_channel_1 = QtGui.QLineEdit(self)
-        self.active_channel_2 = QtGui.QLineEdit(self)
-        self.active_channel_3 = QtGui.QLineEdit(self)
-        self.active_channel_0.setText('Channel 0')
-        self.active_channel_1.setText('Channel 1')
-        self.active_channel_2.setText('Channel 2')
-        self.active_channel_3.setText('Channel 3')
-        self.active_channel_0.setReadOnly(True)
-        self.active_channel_0.setEnabled(False)
-        self.active_channel_1.setReadOnly(True)
-        self.active_channel_1.setEnabled(False)
-        self.active_channel_2.setReadOnly(True)
-        self.active_channel_2.setEnabled(False)
-        self.active_channel_3.setReadOnly(True)
-        self.active_channel_3.setEnabled(False)
+            self.active_channel.append(QtGui.QLineEdit(self))
+            self.active_channel[cnt].setText('Channel 0')
+            self.active_channel[cnt].setReadOnly(True)
+            self.active_channel[cnt].setEnabled(False)
         self.coincidences = QtGui.QLineEdit(self)
         self.coincidences.setReadOnly(True)
         self.coincidences.setDisabled(True)
@@ -459,12 +427,11 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.veto.setDisabled(True)
         self.veto.setText(self.daq_stats['veto'])
 
-        self.label_muonic = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))
-        self.label_measurements = QtGui.QLabel(tr('MainWindow','Active measurements:'))
-        self.label_start_params = QtGui.QLabel(tr('MainWindow','Start parameter:'))
-        self.label_refreshtime = QtGui.QLabel(tr('MainWindow','Measurement intervals:'))
-        self.label_open_files = QtGui.QLabel(tr('MainWindow','Currently opened files:'))
-        self.label_last_path = QtGui.QLabel(tr('MainWindow','Last saved files:'))
+        self.label_muonic = QtGui.QLabel(qt_translate('MainWindow','Status of Muonic:'))
+        self.label_measurements = QtGui.QLabel(qt_translate('MainWindow','Active measurements:'))
+        self.label_start_params = QtGui.QLabel(qt_translate('MainWindow','Start parameter:'))
+        self.label_refreshtime = QtGui.QLabel(qt_translate('MainWindow','Measurement intervals:'))
+        self.label_open_files = QtGui.QLabel(qt_translate('MainWindow','Currently opened files:'))
         self.start_params = QtGui.QPlainTextEdit()
         self.start_params.setReadOnly(True)
         self.start_params.setDisabled(True)
@@ -483,19 +450,15 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.open_files.setDisabled(True)
         self.open_files.setPlainText(self.muonic_stats['open_files'])
         self.open_files.document().setMaximumBlockCount(10)
-        #self.last_path = QtGui.QLineEdit(self)
-        #self.last_path.setReadOnly(True)
-        #self.last_path.setDisabled(True)
-        #self.last_path.setText(self.muonic_stats['last_path'])
 
-        self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Refresh'))
+        self.refresh_button  = QtGui.QPushButton(qt_translate('MainWindow','Refresh'))
         self.refresh_button.setDisabled(True)
         QtCore.QObject.connect(self.refresh_button,
                               QtCore.SIGNAL("clicked()"),
                               self.on_refresh_clicked
                               )
 
-        self.save_button  = QtGui.QPushButton(tr('MainWindow','Save to file'))
+        self.save_button  = QtGui.QPushButton(qt_translate('MainWindow','Save to file'))
         QtCore.QObject.connect(self.save_button,
                               QtCore.SIGNAL("clicked()"),
                               self.on_save_clicked
@@ -504,15 +467,10 @@ class StatusWidget(QtGui.QWidget): # not used yet
         status_layout = QtGui.QGridLayout(self)
         status_layout.addWidget(self.label_daq,0,0)
         status_layout.addWidget(self.label_active_channels,1,0)
-        status_layout.addWidget(self.active_channel_0,1,1)
-        status_layout.addWidget(self.active_channel_1,1,2)
-        status_layout.addWidget(self.active_channel_2,1,3)
-        status_layout.addWidget(self.active_channel_3,1,4)
-        status_layout.addWidget(self.thresholds[0],2,1)
+        for i in range(4):
+            status_layout.addWidget(self.active_channel[i],1,i+1)
+            status_layout.addWidget(self.thresholds[i],2,i+1)
         status_layout.addWidget(self.label_thresholds,2,0)
-        status_layout.addWidget(self.thresholds[1],2,2)
-        status_layout.addWidget(self.thresholds[2],2,3)
-        status_layout.addWidget(self.thresholds[3],2,4)
         status_layout.addWidget(self.label_coincidences,3,0)
         status_layout.addWidget(self.coincidences,3,1,1,2)
         status_layout.addWidget(self.label_coincidence_timewindow,3,3)
@@ -530,8 +488,6 @@ class StatusWidget(QtGui.QWidget): # not used yet
         status_layout.addWidget(self.start_params,8,1,2,4)
         status_layout.addWidget(self.label_open_files,10,0)
         status_layout.addWidget(self.open_files,10,1,2,4)
-        #status_layout.addWidget(self.label_last_path,11,1)
-        #status_layout.addWidget(self.last_path,11,2,1,8)
 
         status_layout.addWidget(self.refresh_button,12,0,1,6)
         #status_layout.addWidget(self.save_button,11,2,1,2)
@@ -557,6 +513,9 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.logger.warning('Currently not available!')
 
     def is_active(self):
+        """
+        Returns a bool whether the status widget is active or not
+        """
         return self.active
         
     def update(self):
@@ -567,46 +526,37 @@ class StatusWidget(QtGui.QWidget): # not used yet
         if (self.mainwindow.tabwidget.statuswidget.isVisible()):
             self.muonic_stats['start_params'] = str(self.mainwindow.opts).replace('{', '').replace('}','')
             self.muonic_stats['refreshtime'] = str(self.mainwindow.timewindow)+ ' s'
-            self.muonic_stats['last_path'] = 'too'
             
-            self.daq_stats['thresholds'][0] = str(self.mainwindow.threshold_ch0)+ ' mV'
-            self.daq_stats['thresholds'][1] = str(self.mainwindow.threshold_ch1)+ ' mV'
-            self.daq_stats['thresholds'][2] = str(self.mainwindow.threshold_ch2)+ ' mV'
-            self.daq_stats['thresholds'][3] = str(self.mainwindow.threshold_ch3)+ ' mV'
-            if not self.mainwindow.vetocheckbox:
+            for i in range(4):
+                self.daq_stats['thresholds'][i] = str(self.mainwindow.threshold_ch[i])+ ' mV'
+            if not self.mainwindow.vetocheckbox[3]:
                 self.daq_stats['veto'] = 'no veto set'
             else:
-                if self.mainwindow.vetocheckbox_0:
+                if self.mainwindow.vetocheckbox[0]:
                     self.daq_stats['veto'] = 'veto with channel 0'
-                if self.mainwindow.vetocheckbox_1:
+                if self.mainwindow.vetocheckbox[1]:
                     self.daq_stats['veto'] = 'veto with channel 1'
-                if self.mainwindow.vetocheckbox_2:
+                if self.mainwindow.vetocheckbox[2]:
                     self.daq_stats['veto'] = 'veto with channel 2'
 
             self.daq_stats['coincidence_timewindow'] = str(self.mainwindow.coincidence_time) + ' ns'
 
-            self.daq_stats['active_channel_0'] = self.mainwindow.channelcheckbox_0
-            self.daq_stats['active_channel_1'] = self.mainwindow.channelcheckbox_1
-            self.daq_stats['active_channel_2'] = self.mainwindow.channelcheckbox_2
-            self.daq_stats['active_channel_3'] = self.mainwindow.channelcheckbox_3
-            if self.mainwindow.coincidencecheckbox_0:
+            for i in range(4):
+                self.daq_stats['active_channel'][i] = self.mainwindow.channelcheckbox[i]
+            if self.mainwindow.coincidencecheckbox[0]:
                 self.daq_stats['coincidences'] = 'Single Coincidence.'
-            elif self.mainwindow.coincidencecheckbox_1:
+            elif self.mainwindow.coincidencecheckbox[1]:
                 self.daq_stats['coincidences'] = 'Twofold Coincidence.'
-            elif self.mainwindow.coincidencecheckbox_2:
+            elif self.mainwindow.coincidencecheckbox[2]:
                 self.daq_stats['coincidences'] = 'Threefold Coincidence.'
-            elif self.mainwindow.coincidencecheckbox_3:
+            elif self.mainwindow.coincidencecheckbox[3]:
                 self.daq_stats['coincidences'] = 'Fourfold Coincidence.'
 
             for cnt in range(4):
                 self.thresholds[cnt].setDisabled(False)                
                 self.thresholds[cnt].setText(self.daq_stats['thresholds'][cnt])
                 self.thresholds[cnt].setEnabled(True)
-
-            self.active_channel_0.setEnabled(self.daq_stats['active_channel_0'])
-            self.active_channel_1.setEnabled(self.daq_stats['active_channel_1'])
-            self.active_channel_2.setEnabled(self.daq_stats['active_channel_2'])
-            self.active_channel_3.setEnabled(self.daq_stats['active_channel_3'])
+                self.active_channel[cnt].setEnabled(self.daq_stats['active_channel'][cnt])
             self.coincidences.setText(self.daq_stats['coincidences'])
             self.coincidences.setEnabled(True)
             self.coincidence_timewindow.setText(self.daq_stats['coincidence_timewindow'])
@@ -625,8 +575,6 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.refreshtime.setEnabled(True)
             self.open_files.setPlainText(self.muonic_stats['open_files'])
             self.open_files.setEnabled(True)
-            #self.last_path.setText(self.muonic_stats['last_path'])
-            #self.last_path.setEnabled(True)
             measurements = ''
             if self.mainwindow.tabwidget.ratewidget.is_active():
                 measurements = 'Muon Rates'
@@ -648,10 +596,13 @@ class StatusWidget(QtGui.QWidget): # not used yet
 
 
 class VelocityWidget(QtGui.QWidget):
-
+    """
+    Provides a widget, with which one can measure time differences dt between two scintillator plates, thus one can measure the velocity of muons.
+    """
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent)
         self.logger = logger
+        self.mainwindow = self.parentWidget()
         self.upper_channel = 0
         self.lower_channel = 1
         self.trigger = VelocityTrigger(logger)
@@ -661,10 +612,10 @@ class VelocityWidget(QtGui.QWidget):
         self.fitrange = (self.binning[0],self.binning[1])
 
         self.activateVelocity = QtGui.QCheckBox(self)
-        self.activateVelocity.setText(tr("Dialog", "Measure Flight Time", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateVelocity.setText(qt_translate("Dialog", "Measure Flight Time", None, QtGui.QApplication.UnicodeUTF8))
         self.activateVelocity.setObjectName("activate_velocity")
-        self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
-        self.velocityfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Fit Range')) 
+        self.velocityfit_button = QtGui.QPushButton(qt_translate('MainWindow', 'Fit!')) 
+        self.velocityfitrange_button = QtGui.QPushButton(qt_translate('MainWindow', 'Fit Range')) 
         layout = QtGui.QGridLayout(self)
         layout.addWidget(self.activateVelocity,0,0,1,3)
         self.velocitycanvas = VelocityCanvas(self,logger,binning = self.binning)
@@ -692,27 +643,33 @@ class VelocityWidget(QtGui.QWidget):
                               )
         
     def calculate(self,pulses):
+        """
+        Calculates the flight time and discards dt s below 0 and which are none (might happen if trigger time window was exceeded).
+        """
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
         if flighttime != None and flighttime > 0:
             #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             self.logger.info("measured flighttime %s" %flighttime.__repr__())
             self.times.append(flighttime)
-                
         
-    #FIXME: we should not name this update
-    #since update is already a member
     def update(self):
+        """
+        Updates the velocity plot canvas
+        """
         self.velocityfitrange_button.setEnabled(True)    
         self.velocityfit_button.setEnabled(True)
         self.findChild(VelocityCanvas,QtCore.QString("velocity_plot")).update_plot(self.times)
         self.times = []
 
     def is_active(self):
+        """
+        Returns a bool whether the velocity measurement is active or not
+        """
         return self.active
     
     def velocityFitRangeClicked(self):
         """
-        fit the muon velocity histogram
+        Change the fit range of the dt fit
         """
         config_dialog = FitRangeConfigDialog(upperlim = (0.,60.,self.fitrange[1]), lowerlim = (-1.,60.,self.fitrange[0]), dimension = 'ns')
         rv = config_dialog.exec_()
@@ -723,17 +680,16 @@ class VelocityWidget(QtGui.QWidget):
 
     def velocityFitClicked(self):
         """
-        fit the muon velocity histogram
+        fit the muon time of flight histogram
         """
-        print 'That is it ', self.fitrange
-        fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
+        fitresults = gaussian_fit(bincontent=numpy.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
 
     def activateVelocityClicked(self):
         """
-        Perform extra actions when the checkbox is clicked
+        Activate the flight time measurement. Perform extra actions when the checkbox is clicked.
         """
         if not self.active:
             config_dialog = VelocityConfigDialog()
@@ -750,27 +706,31 @@ class VelocityWidget(QtGui.QWidget):
                         self.lower_channel = chan + 1 #
             
                 self.logger.info("Switching off decay measurement if running!")
-                if self.parentWidget().parentWidget().decaywidget.is_active():
-                    self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
+                if self.mainwindow.tabwidget.decaywidget.is_active():
+                    self.mainwindow.tabwidget.decaywidget.activateMuondecayClicked()
                 self.active = True
-                self.parentWidget().parentWidget().parentWidget().daq.put("CE")
-                self.parentWidget().parentWidget().ratewidget.startClicked()
+                self.mainwindow.daq.put("CE")
+                self.mainwindow.tabwidget.ratewidget.startClicked()
             else:
                 self.activateVelocity.setChecked(False)
                 self.active = False
         else:
             self.activateVelocity.setChecked(False)            
             self.active = False
-            self.parentWidget().parentWidget().ratewidget.stopClicked()            
+            self.mainwindow.tabwidget.ratewidget.stopClicked()            
 
 class DecayWidget(QtGui.QWidget):
+    """
+    Widget which can be used to measure the muon decay. Checks for an single pulse in the upper scintillator, followed by a double pulse in the second scinti from the electron and vetos it with the 3rd scintillator plate.
+    """
     
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent) 
-        self.logger = logger 
-        self.mufit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!'))
+        self.logger = logger
+        self.mainwindow = self.parentWidget()
+        self.mufit_button = QtGui.QPushButton(qt_translate('MainWindow', 'Fit!'))
         self.mufit_button.setEnabled(False)
-        self.decayfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Fit Range')) 
+        self.decayfitrange_button = QtGui.QPushButton(qt_translate('MainWindow', 'Fit Range')) 
         self.decayfitrange_button.setEnabled(False)
         self.lifetime_monitor = LifetimeCanvas(self,logger)
         self.minsinglepulsewidth = 0
@@ -805,10 +765,9 @@ class DecayWidget(QtGui.QWidget):
 
         ntb1 = NavigationToolbar(self.lifetime_monitor, self)
 
-        # activate Muondecay mode with a checkbox
         self.activateMuondecay = QtGui.QCheckBox(self)
         self.activateMuondecay.setObjectName("activate_mudecay")
-        self.activateMuondecay.setText(tr("Dialog", "Check for Decayed Muons", None, QtGui.QApplication.UnicodeUTF8))
+        self.activateMuondecay.setText(qt_translate("Dialog", "Check for Decayed Muons", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QObject.connect(self.activateMuondecay,
                               QtCore.SIGNAL("clicked()"),
                               self.activateMuondecayClicked
@@ -826,16 +785,19 @@ class DecayWidget(QtGui.QWidget):
         decay_tab.addWidget(ntb1,4,0)
         decay_tab.addWidget(self.mufit_button,4,2)
         decay_tab.addWidget(self.decayfitrange_button,4,1)
-        self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
-        self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
+        self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(qt_translate("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
+        self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(qt_translate("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
         
-        #self.decaywidget = self.widget(1)
-
     def is_active(self):
+        """
+        Returns a bool whether the decay measurment is active or not.
+        """
         return self.active
      
     def calculate(self,pulses):
-        #single_channel = self.singlepulsechannel, double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel,mindecaytime = self.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth):
+        """
+        Calculates the time between the first pulse and the last pulse. This can be fitted with an exp decay to get the muon life time.
+        """
         decay =  self.trigger.trigger(pulses,single_channel = self.singlepulsechannel,double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel, mindecaytime= self.decay_mintime,minsinglepulsewidth = self.minsinglepulsewidth,maxsinglepulsewidth = self.maxsinglepulsewidth, mindoublepulsewidth = self.mindoublepulsewidth, maxdoublepulsewidth = self.maxdoublepulsewidth )
         if decay != None:
             when = time.asctime()
@@ -848,21 +810,24 @@ class DecayWidget(QtGui.QWidget):
       
     def mufitClicked(self):
         """
-        fit the muon decay histogram
+        Fit the muon decay histogram
         """
-        fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights),binning = self.binning, fitrange = self.fitrange)
+        fitresults = fit(bincontent=numpy.asarray(self.lifetime_monitor.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
     def update(self):
+        """
+        Update the muon decay plot and widget.
+        """
         if self.decay:
             self.mufit_button.setEnabled(True)
             self.decayfitrange_button.setEnabled(True)
 
             decay_times =  [decay_time[0] for decay_time in self.decay]
             self.lifetime_monitor.update_plot(decay_times)
-            self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
-            self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
+            self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(qt_translate("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
+            self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(qt_translate("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
             for muondecay in self.decay:
                 #muondecay = self.decay[0] 
                 muondecay_time = muondecay[1].replace(' ','_')
@@ -889,113 +854,111 @@ class DecayWidget(QtGui.QWidget):
         """
         What should be done if we are looking for mu-decays?
         """
- 
         now = datetime.datetime.now()
-        #if not self.mainwindow.mudecaymode:
-        if not self.active:
+        if not self.is_active():
+            self.activateMuondecay.setChecked(False)
+            config_window = DecayConfigDialog()
+            rv = config_window.exec_()
+            if rv == 1:
+                self.activateMuondecay.setChecked(True)
+                chan0_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_0")).isChecked()
+                chan1_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_1")).isChecked()
+                chan2_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_2")).isChecked()
+                chan3_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_3")).isChecked()
+                chan0_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_0")).isChecked()
+                chan1_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_1")).isChecked()
+                chan2_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_2")).isChecked()
+                chan3_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_3")).isChecked()
+                chan0_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
+                chan1_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
+                chan2_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
+                chan3_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_3")).isChecked()
+                self.decay_mintime   = int(config_window.mintime.value())
+                if config_window.findChild(QtGui.QGroupBox,QtCore.QString("pulsewidthgroupbox")).isChecked():
+                    self.minsinglepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("minsinglepulsewidth")).value())
+                    self.maxsinglepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("maxsinglepulsewidth")).value())
+                    self.mindoublepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("mindoublepulsewidth")).value())
+                    self.maxdoublepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("maxdoublepulsewidth")).value())
+                
+                for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
+                    if channel[1]:
+                        self.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+            # FIXME! 
+                for channel in enumerate([chan0_double,chan1_double,chan2_double,chan3_double]):
+                    if channel[1]:
+                        self.doublepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+
+                for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
+                    if channel[1]:
+                        self.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
+                self.logger.info("Switching off velocity measurement if running!")
+                if self.mainwindow.tabwidget.velocitywidget.is_active():
+                    self.mainwindow.tabwidget.velocitywidget.activateVelocityClicked()
+
+                self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
+
+                self.logger.warning("Changing gate width and enabeling pulses") 
+                self.logger.info("Looking for single pulse in Channel %i" %(self.singlepulsechannel - 1))
+                self.logger.info("Looking for double pulse in Channel %i" %(self.doublepulsechannel - 1 ))
+                self.logger.info("Using veto pulses in Channel %i"        %(self.vetopulsechannel - 1 ))
+
+                self.mu_label = QtGui.QLabel(qt_translate('MainWindow','Muon Decay measurement active!'))
+                self.mainwindow.statusbar.addPermanentWidget(self.mu_label)
+
+                self.mainwindow.daq.put("DC")
+
+                self.mainwindow.daq.put("CE") 
+                self.mainwindow.daq.put("WC 03 04")
+                self.mainwindow.daq.put("WC 02 0A")
+              
+                self.mu_file = open(self.mainwindow.decayfilename,'w')        
+                self.dec_mes_start = now
+                #self.decaywidget.findChild("activate_mudecay").setChecked(True)
+                self.active = True
+                self.mainwindow.tabwidget.ratewidget.startClicked()            
+
+            else:
                 self.activateMuondecay.setChecked(False)
-                # launch the settings window
-                config_window = DecayConfigDialog()
-                rv = config_window.exec_()
-                if rv == 1:
-                    self.activateMuondecay.setChecked(True)
-                    chan0_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_0")).isChecked()
-                    chan1_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_1")).isChecked()
-                    chan2_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_2")).isChecked()
-                    chan3_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_3")).isChecked()
-                    chan0_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_0")).isChecked()
-                    chan1_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_1")).isChecked()
-                    chan2_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_2")).isChecked()
-                    chan3_double = config_window.findChild(QtGui.QRadioButton,QtCore.QString("doublecheckbox_3")).isChecked()
-                    chan0_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
-                    chan1_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
-                    chan2_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
-                    chan3_veto   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_3")).isChecked()
-                    self.decay_mintime   = int(config_window.mintime.value())
-                    if config_window.findChild(QtGui.QGroupBox,QtCore.QString("pulsewidthgroupbox")).isChecked():
-                        self.minsinglepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("minsinglepulsewidth")).value())
-                        self.maxsinglepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("maxsinglepulsewidth")).value())
-                        self.mindoublepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("mindoublepulsewidth")).value())
-                        self.maxdoublepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("maxdoublepulsewidth")).value())
-                    
-                    for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
-                        if channel[1]:
-                            self.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
-                # FIXME! 
-                    for channel in enumerate([chan0_double,chan1_double,chan2_double,chan3_double]):
-                        if channel[1]:
-                            self.doublepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
-
-                    for channel in enumerate([chan0_veto,chan1_veto,chan2_veto,chan3_veto]):
-                        if channel[1]:
-                            self.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
-                    self.logger.info("Switching off velocity measurement if running!")
-                    if self.parentWidget().parentWidget().velocitywidget.is_active():
-                        self.parentWidget().parentWidget().velocitywidget.activateVelocityClicked()
-
-                    self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
-
-                    self.logger.warning("Changing gate width and enabeling pulses") 
-                    self.logger.info("Looking for single pulse in Channel %i" %(self.singlepulsechannel - 1))
-                    self.logger.info("Looking for double pulse in Channel %i" %(self.doublepulsechannel - 1 ))
-                    self.logger.info("Using veto pulses in Channel %i"        %(self.vetopulsechannel - 1 ))
-
-                    self.mu_label = QtGui.QLabel(tr('MainWindow','Muon Decay measurement active!'))
-                    self.parentWidget().parentWidget().parentWidget().statusbar.addPermanentWidget(self.mu_label)
-
-                    self.parentWidget().parentWidget().parentWidget().daq.put("DC")
-
-                    self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
-                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
-                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 02 0A")
-                  
-                    self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
-                    self.dec_mes_start = now
-                    #self.decaywidget.findChild("activate_mudecay").setChecked(True)
-                    self.active = True
-                    self.parentWidget().parentWidget().ratewidget.startClicked()            
-
-                else:
-                    self.activateMuondecay.setChecked(False)
-                    self.active = False
+                self.active = False
 
         else:
             reset_time = "WC 03 " + self.previous_coinc_time_03
-            self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
+            self.mainwindow.daq.put(reset_time)
             reset_time = "WC 02 " + self.previous_coinc_time_02
-            self.parentWidget().parentWidget().parentWidget().daq.put(reset_time)
+            self.mainwindow.daq.put(reset_time)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
-            self.parentWidget().parentWidget().parentWidget().statusbar.removeWidget(self.mu_label)
-            #self.parentWidget().parentWidget().parentWidget().mudecaymode = False
+            self.mainwindow.statusbar.removeWidget(self.mu_label)
             mtime = now - self.dec_mes_start
             mtime = round(mtime.seconds/(3600.),2) + mtime.days *86400
             self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-            newmufilename = self.parentWidget().parentWidget().parentWidget().decayfilename.replace("HOURS",str(mtime))
-            shutil.move(self.parentWidget().parentWidget().parentWidget().decayfilename,newmufilename)
-            #self.parentWidget().parentWidget().parentWidget().daq.put("CD")
+            newmufilename = self.mainwindow.decayfilename.replace("HOURS",str(mtime))
+            shutil.move(self.mainwindow.decayfilename,newmufilename)
+            #self.mainwindow.daq.put("CD")
             self.active = False
             self.activateMuondecay.setChecked(False)
-            self.parentWidget().parentWidget().ratewidget.stopClicked()            
+            self.mainwindow.tabwidget.ratewidget.stopClicked()            
 
 class DAQWidget(QtGui.QWidget):
-
+    """
+    Widget which provides an interface to communicate via DAQ commands with the DAQ and to read the direct DAQ output.
+    """
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent)
         self.mainwindow = self.parentWidget()
         
         self.write_file      = False
-        self.label           = QtGui.QLabel(tr('MainWindow','Command'))
-        self.hello_edit      = LineEdit()
-        self.hello_button    = QtGui.QPushButton(tr('MainWindow','Send'))
-        self.file_button     = QtGui.QPushButton(tr('MainWindow', 'Save RAW-File'))
-        self.periodic_button = QtGui.QPushButton(tr('MainWindow', 'Periodic Call'))
-        QtCore.QObject.connect(self.hello_button,
+        self.label           = QtGui.QLabel(qt_translate('MainWindow','Command'))
+        self.message_edit      = LineEdit()
+        self.send_button    = QtGui.QPushButton(qt_translate('MainWindow','Send'))
+        self.file_button     = QtGui.QPushButton(qt_translate('MainWindow', 'Save RAW-File'))
+        self.periodic_button = QtGui.QPushButton(qt_translate('MainWindow', 'Periodic Call'))
+        QtCore.QObject.connect(self.send_button,
                               QtCore.SIGNAL("clicked()"),
-                              self.on_hello_clicked
+                              self.on_send_clicked
                               )
-        QtCore.QObject.connect(self.hello_edit,
+        QtCore.QObject.connect(self.message_edit,
                               QtCore.SIGNAL("returnPressed()"),
-                              self.on_hello_clicked
+                              self.on_send_clicked
                               )
         
         QtCore.QObject.connect(self.file_button,
@@ -1009,27 +972,25 @@ class DAQWidget(QtGui.QWidget):
         
         self.text_box = QtGui.QPlainTextEdit()
         self.text_box.setReadOnly(True)
-        # only 500 lines history
         self.text_box.document().setMaximumBlockCount(500)
         
         daq_layout = QtGui.QGridLayout(self)
         daq_layout.addWidget(self.text_box,0,0,1, 4)
         daq_layout.addWidget(self.label,1,0)
-        daq_layout.addWidget(self.hello_edit,1,1)
-        daq_layout.addWidget(self.hello_button,1,2) 
+        daq_layout.addWidget(self.message_edit,1,1)
+        daq_layout.addWidget(self.send_button,1,2) 
         daq_layout.addWidget(self.file_button,1,2) 
         daq_layout.addWidget(self.periodic_button,1,3)   
 
-    def on_hello_clicked(self):
-
+    def on_send_clicked(self):
         """
         send a message to the daq
         """
-        text = str(self.hello_edit.displayText())
+        text = str(self.message_edit.displayText())
         if len(text) > 0:
-            self.mainwindow.daq.put(str(self.hello_edit.displayText()))
-            self.hello_edit.add_hist_item(text)
-        self.hello_edit.clear()
+            self.mainwindow.daq.put(str(self.message_edit.displayText()))
+            self.message_edit.add_hist_item(text)
+        self.message_edit.clear()
 
     def on_file_clicked(self):
         """
@@ -1037,7 +998,7 @@ class DAQWidget(QtGui.QWidget):
         """
         self.mainwindow.daq.put("CE")        
         self.outputfile = open(self.mainwindow.rawfilename,"w")
-        self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
+        self.file_label = QtGui.QLabel(qt_translate('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
         self.write_file = True
         self.mainwindow.raw_mes_start = datetime.datetime.now()
         self.mainwindow.statusbar.addPermanentWidget(self.file_label)
@@ -1046,7 +1007,6 @@ class DAQWidget(QtGui.QWidget):
         """
         issue a command periodically
         """
-
         periodic_window = PeriodicCallDialog()
         rv = periodic_window.exec_()
         if rv == 1:
@@ -1063,7 +1023,7 @@ class DAQWidget(QtGui.QWidget):
                                self.periodic_put)
             self.periodic_put()
             self.periodic_call_timer.start(period)
-            self.periodic_status_label = QtGui.QLabel(tr('MainWindow','%s every %s sec'%(command,period/1000)))
+            self.periodic_status_label = QtGui.QLabel(qt_translate('MainWindow','%s every %s sec'%(command,period/1000)))
             self.mainwindow.statusbar.addPermanentWidget(self.periodic_status_label)
         else:
             try:
@@ -1073,7 +1033,9 @@ class DAQWidget(QtGui.QWidget):
                 pass
 
 class GPSWidget(QtGui.QWidget):
-
+    """
+    Provides a widget to show the GPS informations from DAQ
+    """
     def __init__(self,logger,parent=None):
 
         QtGui.QWidget.__init__(self,parent=parent)
@@ -1083,9 +1045,9 @@ class GPSWidget(QtGui.QWidget):
         self.gps_dump = []
         self.read_lines = 13
 
-        self.label           = QtGui.QLabel(tr('MainWindow','GPS Display:'))
-        self.refresh_button  = QtGui.QPushButton(tr('MainWindow','Show GPS'))
-        self.save_button     = QtGui.QPushButton(tr('MainWindow', 'Save to File'))
+        self.label           = QtGui.QLabel(qt_translate('MainWindow','GPS Display:'))
+        self.refresh_button  = QtGui.QPushButton(qt_translate('MainWindow','Show GPS'))
+        self.save_button     = QtGui.QPushButton(qt_translate('MainWindow', 'Save to File'))
 
         QtCore.QObject.connect(self.refresh_button,
                               QtCore.SIGNAL("clicked()"),
@@ -1097,24 +1059,23 @@ class GPSWidget(QtGui.QWidget):
                                 )
         self.text_box = QtGui.QPlainTextEdit()
         self.text_box.setReadOnly(True)
-        # only 500 lines history
         self.text_box.document().setMaximumBlockCount(500)
-        self.status_label = QtGui.QLabel(tr('MainWindow','Status: '))
-        self.time_label = QtGui.QLabel(tr('MainWindow','GPS time: '))
-        self.satellites_label = QtGui.QLabel(tr('MainWindow','#Satellites: '))
-        self.chksum_label = QtGui.QLabel(tr('MainWindow','Checksum: '))
-        self.latitude_label = QtGui.QLabel(tr('MainWindow','Latitude: '))
-        self.longitude_label = QtGui.QLabel(tr('MainWindow','Longitude: '))
-        self.altitude_label = QtGui.QLabel(tr('MainWindow','Altitude: '))
-        self.posfix_label = QtGui.QLabel(tr('MainWindow','PosFix: '))
-        self.status_box = QtGui.QLabel(tr('MainWindow',' Not read out'))
-        self.time_box = QtGui.QLabel(tr('MainWindow','--'))
-        self.satellites_box = QtGui.QLabel(tr('MainWindow','--'))
-        self.chksum_box = QtGui.QLabel(tr('MainWindow','--'))
-        self.latitude_box = QtGui.QLabel(tr('MainWindow','--'))
-        self.longitude_box = QtGui.QLabel(tr('MainWindow','--'))
-        self.altitude_box = QtGui.QLabel(tr('MainWindow','--'))
-        self.posfix_box = QtGui.QLabel(tr('MainWindow','--'))
+        self.status_label = QtGui.QLabel(qt_translate('MainWindow','Status: '))
+        self.time_label = QtGui.QLabel(qt_translate('MainWindow','GPS time: '))
+        self.satellites_label = QtGui.QLabel(qt_translate('MainWindow','#Satellites: '))
+        self.chksum_label = QtGui.QLabel(qt_translate('MainWindow','Checksum: '))
+        self.latitude_label = QtGui.QLabel(qt_translate('MainWindow','Latitude: '))
+        self.longitude_label = QtGui.QLabel(qt_translate('MainWindow','Longitude: '))
+        self.altitude_label = QtGui.QLabel(qt_translate('MainWindow','Altitude: '))
+        self.posfix_label = QtGui.QLabel(qt_translate('MainWindow','PosFix: '))
+        self.status_box = QtGui.QLabel(qt_translate('MainWindow',' Not read out'))
+        self.time_box = QtGui.QLabel(qt_translate('MainWindow','--'))
+        self.satellites_box = QtGui.QLabel(qt_translate('MainWindow','--'))
+        self.chksum_box = QtGui.QLabel(qt_translate('MainWindow','--'))
+        self.latitude_box = QtGui.QLabel(qt_translate('MainWindow','--'))
+        self.longitude_box = QtGui.QLabel(qt_translate('MainWindow','--'))
+        self.altitude_box = QtGui.QLabel(qt_translate('MainWindow','--'))
+        self.posfix_box = QtGui.QLabel(qt_translate('MainWindow','--'))
 
         gps_layout = QtGui.QGridLayout(self)
         gps_layout.addWidget(self.label,0,0,1,4)
@@ -1164,7 +1125,7 @@ class GPSWidget(QtGui.QWidget):
         Save the GPS data to an extra file
         """
         #self.outputfile = open(self.mainwindow.rawfilename,"w")
-        #self.file_label = QtGui.QLabel(tr('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
+        #self.file_label = QtGui.QLabel(qt_translate('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
         #self.write_file = True
         #self.mainwindow.raw_mes_start = datetime.datetime.now()
         #self.mainwindow.statusbar.addPermanentWidget(self.file_label)
