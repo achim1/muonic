@@ -217,18 +217,18 @@ class RateWidget(QtGui.QWidget):
         self.table.setEnabled(True)
 
         self.logger.debug("Start Button Clicked")
-        date = time.gmtime()
+        date = datetime.now()
 
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
             self.scalers['scalers_buffer'][ch] = 0
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
 
-        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         if self.mainwindow.tabwidget.decaywidget.is_active():
-            comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+            comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         if self.mainwindow.tabwidget.velocitywidget.is_active():
-            comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+            comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
 
         self.data_file = open(self.mainwindow.filename, 'a')        
         self.data_file.write(comment_file)
@@ -269,8 +269,8 @@ class RateWidget(QtGui.QWidget):
 
         self.active = False
         self.data_file_write = False
-        date = time.gmtime()        
-        comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        date = datetime.now()
+        comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.data_file.write(comment_file)
 
         self.data_file.close()
