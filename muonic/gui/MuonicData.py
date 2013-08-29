@@ -301,3 +301,145 @@ class MuonicRawFile(MuonicFile):
         _newfilename = self.filename.replace("HOURS",str(__mtime))
         shutil.move(self.filename,_newfilename)
         return True
+
+
+class MuonicPulses(object):
+    """
+    Stores the pulses. pulses are appended, so 0 position is the oldest, -1 the newest
+    """
+    def __init__(self, triggertime, pulses):
+        # pulses format: pulses_container =list containing:
+        #                   --> poistion 0 containing:
+        #                           --> channel[0], .....channel[n] with channel[i] containing:
+        #                               --> pulse[0], ....
+        # all in lists
+        self._container_length = 1
+        self._triggers = list()
+        self._pulsesseries = list()
+        self.__dummy_pulse_keys = None
+        if not isinstance(pulses, list) and not isinstance(pulses, dict):
+            raise ValueError, "Initializing pulses have no valid type"
+        if not self.__checktime(pulses):
+            raise ValueError, "Invalid pulses"
+        if isinstance(pulses, dict):
+            self._pulsesseries.append(pulses.values())
+            self.__dummy_pulse_keys = pulses.keys()
+        else:
+            self._pulsesseries.append(pulses)
+        if not self.__checktime(triggertime):
+            raise ValueError, "Invalid _triggers"
+        if isinstance(triggertime, list) or isinstance(triggertime, tuple):
+            self._triggers = list(triggertime)
+        else:
+            self._triggers.append(triggertime)
+        self._channels = len(self._pulsesseries[0])
+        self.__check_length()
+     
+    def __checktime(self, timestamp):
+        """
+        Check the validity of a timestamp
+        """
+        if isinstance(timestamp, list) or isinstance(timestamp, tuple):
+            for value in timestamp:
+                if (not isinstance(value, int)) and (not isinstance(value, float)):
+                    return False
+        else:
+            if (not isinstance(timestamp, int)) and (not isinstance(timestamp, float)):
+                return False
+        return True
+   
+    def trigger_time(self, position = -1, triggertime = None):
+        """
+        Returns the trigger time in the pulses or writes a new one (if given triggertime), at a position (default: latest, if None: all)
+        """
+        self.__check_length()
+        if triggertime is None:
+            if position is None:
+                return self._triggers
+            return self._triggers[position]
+        if self.__checktime(triggertime):
+            if position is None or position == -1:
+                self._triggers.append(triggertime)
+                self._pulsesseries.append([None]*self._channels)
+            else:
+                self._triggers[position] = triggertime
+            self.__check_length()
+            return True
+        return False
+    
+    def pulses(self, channel = None, position = -1, pulses = None):
+        """
+        Returns a pulse time of a channel, or if no channel given of all channels, at a position (default: first in the list, if None: all), or writes new pulses
+        """
+        self.__check_length()
+        if pulses is None:
+            if channel is None:
+                if position is None:
+                    if self.__dummy_pulse_keys is None:
+                        return self._pulsesseries
+                    pulsesdictseries = list()
+                    for pulsseries in self._pulsesseries:
+                        pulsesdictseries.append(dict(zip(self.__dummy_pulse_keys,pulsseries)))
+                    return pulsesdictseries
+                if not self.__dummy_pulse_keys is None:
+                    return dict(zip(self.__dummy_pulse_keys,self._pulsesseries[position]))
+                return self._pulsesseries[position]
+            if position is None:
+                pulsseries = list()
+                if not self.__dummy_pulse_keys is None:
+                    channel = self.__dummy_pulse_keys.index(channel)
+                for pulses in self._pulsesseries:
+                    pulsseries.append(pulses[channel])
+                return pulsseries
+        if position is None:
+            position = -1
+        if channel is None:
+            if isinstance(pulses, dict):
+                if not self.__dummy_pulse_keys == pulses.keys():
+                    return False
+                pulses = pulses.values()
+            else:
+                if not self._channels == len(pulses):
+                    return False
+            if self.__checktime(pulses):
+                if position == -1:
+                    self._triggers.append(None)
+                    self._pulsesseries.append(pulses)
+                else:
+                    self._pulsesseries[position] = pulses
+                self.__check_length()
+                return True
+            return False
+        else:
+            pulsseries = list()
+            if not self.__dummy_pulse_keys is None:
+                channel = self.__dummy_pulse_keys.index(channel)
+            if isinstance(pulses, dict):
+                pulses = pulses.values()
+            if not self.__checktime(pulses):
+                return False
+            for k in range(self._channels):
+                if not k == channel:
+                    pulsseries.append([])
+                else:
+                    pulsseries.append(pulses)
+            if position == -1:
+                self._triggers.append(None)
+                self._pulsesseries.append(pulsseries)
+            else:
+                self._pulsesseries[position] = pulsseries
+            self.__check_length()
+            return True
+        return False
+    
+    def __check_length(self):
+        """
+        Checks the container length and cuts the overhead of the container away
+        """
+        while len(self._pulsesseries) > self._container_length:
+            del(self._pulsesseries[0])
+        while len(self._triggers) > self._container_length:
+            del(self._triggers[0])
+        if len(self._triggers) != len(self._pulsesseries):
+            raise ValueError, "Pulses container got inconsistent!"
+        return True
