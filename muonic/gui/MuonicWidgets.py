@@ -217,7 +217,7 @@ class RateWidget(QtGui.QWidget):
         self.table.setEnabled(True)
 
         self.logger.debug("Start Button Clicked")
-        date = datetime.now()
+        date = datetime.datetime.now()
 
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
             self.scalers['scalers_buffer'][ch] = 0
@@ -269,7 +269,7 @@ class RateWidget(QtGui.QWidget):
 
         self.active = False
         self.data_file_write = False
-        date = datetime.now()
+        date = datetime.datetime.now()
         comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.data_file.write(comment_file)
 
@@ -507,7 +507,7 @@ class StatusWidget(QtGui.QWidget):
 
     def on_save_clicked(self):
         """
-        Refresh the status information
+        Saves the status information - currently disabled!
         """
         self.logger.debug("Saving status information to file.")
         self.logger.warning('Currently not available!')
@@ -565,8 +565,10 @@ class StatusWidget(QtGui.QWidget):
             self.veto.setEnabled(True)
             
             self.muonic_stats['open_files'] = str(self.mainwindow.filename)
-            self.muonic_stats['open_files'] += ', ' + self.mainwindow.rawfilename
-            self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
+            if self.mainwindow.tabwidget.daqwidget.write_file:
+                self.muonic_stats['open_files'] += ', ' + self.mainwindow.rawfilename
+            if self.mainwindow.tabwidget.decaywidget.is_active():
+                self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
             if self.mainwindow.writepulses:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.pulsefilename
             self.start_params.setPlainText(self.muonic_stats['start_params'])

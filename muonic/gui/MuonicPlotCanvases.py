@@ -84,7 +84,7 @@ class PulseCanvas(MuonicPlotCanvas):
         self.ax.set_xlim(0, 100)
         self.ax.set_ylim(ymax=1.5)
         self.ax.grid()
-        self.ax.set_xlabel('time in ns')
+        self.ax.set_xlabel('Time (ns)')
         self.ax.yaxis.set_visible(False)
         self.ax.set_title("Oscilloscope")
         # and disable figure-wide autoscale
@@ -254,7 +254,7 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.heights = []
         self.underflow = 0 #FIXME the current implementation does not know about outliers
         self.overflow  = 0 #FIXME the current implementation does not know about outliers
-        self.dimension = r"$\mu$s"
+        self.dimension = r"$\large \mu $s"
         
         
     def update_plot(self,data):    
@@ -336,8 +336,10 @@ class LifetimeCanvas(MuonicHistCanvas):
     measurement
     """
     def __init__(self,parent,logger,binning = (0,10,21)): 
-        MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="Time between Pulses ($\mu$seconds)",ylabel="Events")
-
+        try:
+            MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel=r"Time between Pulses ($\mu$s)", ylabel="Events")
+        except:
+            MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="Time between Pulses (microseconds)", ylabel="Events")
      
 class VelocityCanvas(MuonicHistCanvas):  
     """

@@ -45,7 +45,7 @@ class MainWindow(QtGui.QMainWindow):
         # any automatic status reports every x seconds
         self.daq.put('ST 0')
 
-        self.setWindowTitle(QtCore.QString("muonic") )
+        self.setWindowTitle(QtCore.QString("muonic"))
         self.statusbar = QtGui.QMainWindow.statusBar(self)
         self.logger  = logger
 
@@ -58,17 +58,16 @@ class MainWindow(QtGui.QMainWindow):
         # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
  
         self.now = datetime.datetime.now()
-        self.date = time.gmtime()
-        self.filename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"R",opts.user[0],opts.user[1]) )
-        self.rawfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"RAW",opts.user[0],opts.user[1]) )
+        self.filename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1]) )
+        self.rawfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",opts.user[0],opts.user[1]) )
         self.raw_mes_start = False
 
-        self.decayfilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"L",opts.user[0],opts.user[1]) )
+        self.decayfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"L",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
         self.writepulses = False
         if self.writepulses:
                 self.daq.put('CE')
-                self.pulsefilename = os.path.join(DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.date.tm_year,self.date.tm_mon,self.date.tm_mday,self.date.tm_hour,self.date.tm_min,self.date.tm_sec,"P",opts.user[0],opts.user[1]) )
+                self.pulsefilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
                 self.pulse_mes_start = self.now
         else:
                 self.pulsefilename = ''
@@ -596,7 +595,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.gpswidget.calculate()
                 continue
 
-            if self.tabwidget.statuswidget.isVisible():
+            if self.tabwidget.statuswidget.isVisible() and self.tabwidget.statuswidget.is_active():
                 self.tabwidget.statuswidget.update()
 
             if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
