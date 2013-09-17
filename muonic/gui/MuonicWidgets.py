@@ -218,7 +218,9 @@ class RateWidget(QtGui.QWidget):
 
         self.logger.debug("Start Button Clicked")
         date = datetime.datetime.now()
-
+        
+        self.timewindow = 0
+        
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
             self.scalers['scalers_buffer'][ch] = 0
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
@@ -271,9 +273,9 @@ class RateWidget(QtGui.QWidget):
         self.data_file_write = False
         date = datetime.datetime.now()
         comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
-        self.data_file.write(comment_file)
-
-        self.data_file.close()
+        if not self.data_file.closed:
+            self.data_file.write(comment_file)
+            self.data_file.close()
 
 
 class PulseanalyzerWidget(QtGui.QWidget):

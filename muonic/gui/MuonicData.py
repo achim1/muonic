@@ -77,17 +77,17 @@ class MuonicRateFile(MuonicFile):
     Class which holds rate files. Contains rates in the format:
 
     """
-    def __init__(self, filename, logger, mode = 'a'):
+    def __init__(self, filename, logger, mode = 'a', **kwargs):
         self.filename = str(filename)
         self.logger = logger
         self._rate_mes_start = datetime.datetime.now()
-        MuonicFile.__init__(self,self.filename, mode)
+        MuonicFile.__init__(self,self.filename, mode, **kwargs)
 
     def start_run(self, measurement = 'rate'):
         """
         Writes a comment about the measurment run start with date and time
         """
-        date = datetime.now()        
+        date = datetime.datetime.now()        
         __comment_file = '# new %s measurement run from: %i-%i-%i %i-%i-%i\n' %(measurement, date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -96,7 +96,7 @@ class MuonicRateFile(MuonicFile):
         """
         Writes a comment about the measurment run stop with date and time
         """
-        date = datetime.now()
+        date = datetime.datetime.now()
         __comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -129,17 +129,17 @@ class MuonicPulseFile(MuonicFile):
     Class which holds pulse files. Contains pulses in the format:
     lasttriggertime,pulses["ch0"],pulses["ch1"],pulses["ch2"],pulses["ch3"]
     """
-    def __init__(self, filename, logger, mode = 'a'):
+    def __init__(self, filename, logger, mode = 'a', **kwargs):
         self.filename = str(filename)
         self.logger = logger
         self._pulse_mes_start = datetime.datetime.now()
-        MuonicFile.__init__(self,self.filename, mode)
+        MuonicFile.__init__(self,self.filename, mode, **kwargs)
 
     def start_run(self, measurement = 'rate'):
         """
         Writes a comment about the measurment run start with date and time
         """
-        date = datetime.now()        
+        date = datetime.datetime.now()        
         __comment_file = '# new %s measurement run from: %i-%i-%i %i-%i-%i\n' %(measurement, date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -148,7 +148,7 @@ class MuonicPulseFile(MuonicFile):
         """
         Writes a comment about the measurment run stop with date and time
         """
-        date = datetime.now()
+        date = datetime.datetime.now()
         __comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -182,10 +182,10 @@ class MuonicVelocityFile(MuonicFile):
     Class which holds velocity files. Contains dt values in ns in the format:
 
     """
-    def __init__(self, filename, mode = 'r'):
+    def __init__(self, filename, mode = 'r', **kwargs):
         self.filename = filename
         # magic file renaming here
-        MuonicFile.__init__(self.filename, mode)
+        MuonicFile.__init__(self.filename, mode, **kwargs)
     def close(self):
         # magic close moves here
         pass
@@ -196,17 +196,17 @@ class MuonicDecayFile(MuonicFile):
     Class which holds decay measurment files. Decay dts in the format:
 
     """
-    def __init__(self, filename, logger, mode = 'a'):
+    def __init__(self, filename, logger, mode = 'a', **kwargs):
         self.filename = str(filename)
         self.logger = logger
         self._pulse_mes_start = datetime.datetime.now()
-        MuonicFile.__init__(self,self.filename, mode)
+        MuonicFile.__init__(self,self.filename, mode, **kwargs)
 
     def start_run(self, measurement = 'rate'):
         """
         Writes a comment about the measurment run start with date and time
         """
-        date = datetime.now()        
+        date = datetime.datetime.now()        
         __comment_file = '# new %s measurement run from: %i-%i-%i %i-%i-%i\n' %(measurement, date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -215,7 +215,7 @@ class MuonicDecayFile(MuonicFile):
         """
         Writes a comment about the measurment run stop with date and time
         """
-        date = datetime.now()
+        date = datetime.datetime.now()
         __comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -249,17 +249,17 @@ class MuonicRawFile(MuonicFile):
     Class which holds raw data files. Raw data stream saved in the format:
 
     """
-    def __init__(self, filename, logger, mode = 'a'):
+    def __init__(self, filename, logger, mode = 'a', **kwargs):
         self.filename = str(filename)
         self.logger = logger
         self._pulse_mes_start = datetime.datetime.now()
-        MuonicFile.__init__(self,self.filename, mode)
+        MuonicFile.__init__(self,self.filename, mode, **kwargs)
 
     def start_run(self, measurement = 'rate'):
         """
         Writes a comment about the measurment run start with date and time
         """
-        date = datetime.now()        
+        date = datetime.datetime.now()
         __comment_file = '# new %s measurement run from: %i-%i-%i %i-%i-%i\n' %(measurement, date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -268,7 +268,7 @@ class MuonicRawFile(MuonicFile):
         """
         Writes a comment about the measurment run stop with date and time
         """
-        date = datetime.now()
+        date = datetime.datetime.now()
         __comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
@@ -302,10 +302,130 @@ class MuonicRawFile(MuonicFile):
         shutil.move(self.filename,_newfilename)
         return True
 
-
-class MuonicPulses(object):
+class MuonicRate(object):
     """
-    Stores the pulses. pulses are appended, so 0 position is the oldest, -1 the newest
+    Stores rates Rates are appended, so 0 position is the oldest, -1 the newest.
+    Rates must be initialist with a list holding rates. Longer lists when adding new values will be rejected, shorter filled with ``-''
+    Can be feed with dicts or lists
+    """
+    def __init__(self, rates):
+        # rates format: rates container: list with:
+        #                                   --> position 0, n, n+1 containing:
+        #                                           --> trigger_rate, rate_channel[0], ......, rate_channel[k]
+        self._container_length = 10
+        self._rates = list()
+        self.__dummy_rate_keys = None
+        if not (isinstance(rates, dict) or isinstance(rates, list) or isinstance(rates, tuple)):
+            raise TypeError, "Initializing rates have no valid type"
+        if isinstance(rates, dict):
+            self._rates.append(rates.values())
+            self.__dummy_rate_keys = rates.keys()
+        else:
+            self._rates.append(list(rates))
+            if set(rates) == set([0]):
+                self._rates.append([0]*len(rates))
+        for rate in self._rates:
+            if not self.__checkrate(rate):
+                raise ValueError, "Invalid rates"
+        self.__check_length()
+
+    def __checkrate(self, rate):
+        """
+        Check the validity of a rate
+        """
+        if isinstance(rate, list) or isinstance(rate, tuple):
+            for value in rate:
+                if (not isinstance(value, int)) and (not isinstance(value, float)):
+                    return False
+        else:
+            if (not isinstance(rate, int)) and (not isinstance(rate, float)):
+                return False
+        return True
+
+    def __check_length(self):
+        """
+        Checks the container length and cuts the overhead of the container away
+        """
+        while len(self._rates) > self._container_length:
+            del(self._rates[0])
+        return True
+
+    def trigger_rate(self, position = -1, triggerrate = None):
+        """
+        Returns the trigger rate as list or writes a new one (if given triggerrate), at a position (default: latest, if None: all)
+        """
+        self.__check_length()
+        if triggerrate is None:
+            if position is None:
+                triggerlist = list()
+                for val in self._rates:
+                    triggerlist.append(val[0])
+                return triggerlist
+            return self._rates[position][0]
+        triggerrate = float(triggerrate)
+        if position is None:
+            self._rates.append([triggerrate] + [None]*(len(self._rates)-1))
+        else:
+            self._rates[position] = [triggerrate] + self._rates[position][1:]
+        self.__check_length()
+        return True
+
+    def rates(self, position = -1, rates = None):
+        """
+        Returns the rates at a given position (default: latest, if None: all) or enters it at a given position
+        """
+        self.__check_length()
+        if rates is None:
+            if self.__dummy_rate_keys is None:
+                if not position is None:
+                    return self._rates[position]
+                return self._rates
+            ratesdictseries = list()
+            for rateseries in self._rates:
+                ratesdictseries.append(dict(zip(self.__dummy_rate_keys,rateseries)))
+            if position is None:
+                return ratesdictseries
+            else:
+                return ratesdictseries[position]
+        if not self.__checkrate(rates):
+            return False
+        if isinstance(rates, str) or isinstance(rates, int) or isinstance(rates, float):
+                return self.trigger_rate(position, rates)
+        if len(rates) > len(self._rates[0]):
+            return False
+        if len(rates) <= len(self._rates[0]):
+            if isinstance(rates, dict):
+                if position is None:
+                    self.__dummy_rate_keys = rates.keys()
+                    self._rates = rates.values()
+                    return True
+                if self.__dummy_rate_keys is None:
+                    return False
+                dummy_dict = rates.keys()
+                if dummy_dict == self.__dummy_rate_keys:
+                    self._rates.append(rates.values())
+                else:
+                    return False
+            elif isinstance(rates, list) or isinstance(rates, tuple):
+                rates = list(rates)
+                if position is None:
+                    new_rates =  list()
+                    for rateseries in rates:
+                        if len(rateseries) > len(self._rates[0]):
+                            return False
+                        new_rates.append(rateseries + [None]*(len(self._rates[0])-len(rateseries)))
+                    self._rates = new_rates
+                if len(rates) < len(self._rates[0]):
+                    rates = rates + [None]*(len(self._rates[0])-len(rates))
+            else:
+                return False
+        self.__check_length()
+        return True
+
+
+class MuonicPulse(object):
+    """
+    Stores the pulses. Pulses are appended, so 0 position is the oldest, -1 the newest
     """
     def __init__(self, triggertime, pulses):
         # pulses format: pulses_container =list containing:
@@ -318,7 +438,7 @@ class MuonicPulses(object):
         self._pulsesseries = list()
         self.__dummy_pulse_keys = None
         if not isinstance(pulses, list) and not isinstance(pulses, dict):
-            raise ValueError, "Initializing pulses have no valid type"
+            raise TypeError, "Initializing pulses have no valid type"
         if not self.__checktime(pulses):
             raise ValueError, "Invalid pulses"
         if isinstance(pulses, dict):

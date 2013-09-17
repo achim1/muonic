@@ -38,7 +38,6 @@ class MainWindow(QtGui.QMainWindow):
 
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
-        self.opts = opts
         self.DATAPATH = DATAPATH
 
         # we have to ensure that the DAQcard does not sent
