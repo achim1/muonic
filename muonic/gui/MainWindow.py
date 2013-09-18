@@ -39,6 +39,8 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
         self.DATAPATH = DATAPATH
+        self.daq_frequency = 25*1e6
+        self.tmc_ticks = 1.25
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
@@ -107,8 +109,32 @@ class MainWindow(QtGui.QMainWindow):
 
             except DAQIOError:
                 self.logger.debug("Queue empty!")
-                
-        self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename) 
+
+        self.daq.put('V3')
+#TODO : Move the acquisition of the V3 data to process incoming. Will accelerate the muonic start
+        time.sleep(0.2) #give the daq some time to ract
+        __v3_counter = 0
+        __msg_buf = False
+        while __v3_counter <= 15:
+            while self.daq.data_available():
+                try:
+                    msg = self.daq.get(0)
+                    if msg.startswith('V3'):
+                        __msg_buf = True
+                    if __msg_buf:
+                        if not isinstance(__msg_buf, list):
+                            __msg_buf = list()
+                        __msg_buf.append(msg)
+                    __v3_counter += 1
+                except DAQIOError:
+                    self.logger.debug("Queue empty!")
+            if __msg_buf and len(__msg_buf) >= 3:
+                break
+
+        
+        self.get_daq_freq_from_queue(__msg_buf)
+
+        self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename, tmc_ticks = self.tmc_ticks, daq_freq = self.daq_frequency)
         self.pulses = None
 
         # prepare fields for scalars 
@@ -478,7 +504,54 @@ class MainWindow(QtGui.QMainWindow):
             return True
         else:
             return False
-        
+
+    def get_daq_freq_from_queue(self,msg):
+        """
+        Explicitely scan message for DAQ frequency information
+        Return True if found and set it, else False
+        """
+#V3
+#10 Second Accumulation of 1PPS Latched 25MHz Counter. (20 line buffer)
+#Buffer     Now (hex)     Prev-Now (dec) (25e6*10)
+#1              0               0
+#2              0               0
+#3              0               0
+#4              0               0
+#5              0               0
+#6              0               0
+#7              0               0
+#8              0               0
+#9              0               0
+#10              0               0
+#11              0               0
+#12              0               0
+#13              0               0
+#14              0               0
+#15              0               0
+#16              0               0
+#17              0               0
+#18              0               0
+#19              0               0
+#20              0               0
+        if isinstance(msg, list):
+            if msg[0].startswith('V3'):
+                if str(msg[1]).find('25MHz') != -1:
+                    self.daq_frequency = 25.*1e6
+                    self.tmc_ticks = 1.25
+                elif str(msg[1]).find('42MHz') != -1:
+                    self.daq_frequency = 41.6666666667*1e6
+                    self.tmc_ticks = 0.75
+                else:
+                    self.logger.warning('Cannot read out DAQ frequency, setting to the default 25MHz version!')
+                    self.daq_frequency = 25.*1e6
+                    self.tmc_ticks = 1.25
+                self.logger.info("Set the DAQ frequency from readout to: %.2f MHz"%self.daq_frequency)
+                return True
+            else:
+                self.logger.info("Set the DAQ frequency to the default of: %.2f MHz because it can't be read from the daq."%self.daq_frequency)
+                return False
+        return False
+
     def get_channels_from_queue(self,msg):
         """
         Explicitely scan message for channel information
@@ -597,13 +670,14 @@ class MainWindow(QtGui.QMainWindow):
             if self.tabwidget.statuswidget.isVisible() and self.tabwidget.statuswidget.is_active():
                 self.tabwidget.statuswidget.update()
 
-            if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
-                try:
-                    split_msg = msg.split(" ")
-                    self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]
-                    self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
-                except:
-                    self.logger.debug('Wrong DC command.')
+            if not msg is None:
+                if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
+                    try:
+                        split_msg = msg.split(" ")
+                        self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]
+                        self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
+                    except:
+                        self.logger.debug('Wrong DC command.')
 
             if self.tabwidget.daqwidget.write_file:
                 try:

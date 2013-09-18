@@ -1114,8 +1114,8 @@ class GPSWidget(QtGui.QWidget):
         self.refresh_button.setEnabled(False)
         self.gps_dump = [] 
         self.logger.info('Reading GPS.')
-        self.mainwindow.processIncoming()
         self.switch_active(True)        
+        self.mainwindow.processIncoming()
         self.mainwindow.daq.put('DG')
         self.mainwindow.processIncoming()
         #for count in range(self.read_lines):

@@ -64,6 +64,7 @@ class DAQProvider:
         if self.good_pattern.match(line) is None:
             # Do something more sensible here,     like stopping the DAQ
             # then wait until service is restar    ted?
+            print 'LINE',line
             self.logger.warning("Got garbage from the DAQ: %s"%line.rstrip('\r\n'))
             return None
         return line

@@ -23,7 +23,7 @@ BIT2 = 1 << 2 # GPS data possible corrupted
 BIT3 = 1 << 3 # Current or last 1PPS rate not within range
 
 # ticksize of tmc internal clock
-# documentation says 0.75, measurement says 1.25
+# 42Mhz card: 0.75, 25MHz version of daq card 1.25
 # TODO: find out if tmc is coupled to cpld!
 TMC_TICK = 1.25 #nsec
 #MAX_TRIGGERWINDOW = 60.0 #nsec
@@ -37,14 +37,15 @@ class PulseExtractor:
     speed is important here
     """
 
-    def __init__(self,pulsefile=''):
+    def __init__(self,pulsefile='', tmc_ticks = TMC_TICK, daq_freq = DEFAULT_FREQUENCY):
         """
         if a pulsefile is given, all the extracte pulses
         will be written into it
         """
  
-        #TODO change to dictionaries, they might allthoug be faster
-        
+        self.tmc_ticks = tmc_ticks
+        self.daq_freq = daq_freq
+
         self.re      = {"ch0" : [], "ch1" : [], "ch2" : [], "ch3" : [] }
         self.fe      = {"ch0" : [], "ch1" : [], "ch2" : [], "ch3" : [] }
         self.last_re = {"ch0" : [], "ch1" : [], "ch2" : [], "ch3" : [] }
@@ -71,7 +72,7 @@ class PulseExtractor:
         # variables for DAQ frequency calculation
         self.lastfrequencypolltime = 0
         self.lastfrequencypolltriggers = 0
-        self.calculatedfrequency = DEFAULT_FREQUENCY
+        self.calculatedfrequency = self.daq_freq
         self.lastoneppspoll      = 0
         self.passedonepps        = 0 
         self.prevlast_onepps     = 0
@@ -193,8 +194,8 @@ class PulseExtractor:
                 self.lastoneppspoll = onepps
                 # check if calculatedfrequency is sane,
                 # assuming the daq frequency is somewhat stable
-                if not 0.5*self.calculatedfrequency < DEFAULT_FREQUENCY < 1.5*self.calculatedfrequency:
-                    self.calculatedfrequency = DEFAULT_FREQUENCY
+                if not 0.5*self.calculatedfrequency < self.daq_freq < 1.5*self.calculatedfrequency:
+                    self.calculatedfrequency = self.daq_freq
 
        
             if time == self.lasttime: 

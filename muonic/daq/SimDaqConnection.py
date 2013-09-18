@@ -50,8 +50,10 @@ class SimDaq():
             'DC':'DC answer missing',
             'WC':'WC answer missing',
             'TC':'TC answer missing',
-            'V1':'V1 answer missing'
+            'V1':'V1 answer missing',
+            'V3':['V3','10 Second Accumulation of 1PPS Latched 25MHz Counter. (20 line buffer)','Buffer     Now (hex)     Prev-Now (dec) (25e6*10)']
             })
+        self.cmd_cnt = 0
 
     def _physics(self):
 
@@ -80,6 +82,17 @@ class SimDaq():
             answer = self.known_commands.get(cmd_buffer.split(' ',1)[0])
         if answer is None:
             answer = 'Missing command.'
+        if isinstance(answer, list):
+            self._cmd_waiting = True
+            self.cmd_cnt += 1
+            if self.cmd_cnt <= len(answer):
+                position = self.cmd_cnt-1
+                if self.cmd_cnt == len(answer):
+                    self._cmd_waiting = False
+                    self.cmd_cnt = 0
+                return answer[position]
+            else:
+                return None
         return answer
 
     def readline(self):
