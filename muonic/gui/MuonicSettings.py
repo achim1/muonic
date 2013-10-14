@@ -153,7 +153,7 @@ class MuonicSettings(object):
                 pseudoreturn = False
         return pseudoreturn
 
-    def self.__write_settings(self, daq_check, key, value):
+    def __write_settings(self, daq_check, key, value):
         if isinstance(value, dict):
             for keys, vals in value.iteritems():
                 if not isinstance(key, str) or not isinstance(vals, tuple):
@@ -182,5 +182,23 @@ class MuonicSettings(object):
                 self._muonic_setting[key] = (value[0],bool(value[1]))
         return False
 
-    def __write_settings_file(self):
-
+    def write_settings_file(self):
+        """
+        Writes the settings into a settings file
+        """
+# TODO: writes complete settings back, change to: reads and rewrites only changed settings
+        __settings_file = None
+        try:
+            __settings_file = open(self._muonic_setting['settings_path'], 'wU')
+        except IOError:
+            self.logger.warning("Cannot write settings to %s!" %str(self._muonic_setting['settings_path']))
+            __settings_file.close()
+            return False
+        for key, value in self._daq_setting.iteritems():
+            __writeback = ('DAQ',str(key),(str(value[0]),bool(value[1])))
+            __settings_file.write(__writeback)
+        for key, value in self._muonic_setting.iteritems():
+            __writeback = ('DAQ',str(key),(str(value[0]),bool(value[1])))
+            __settings_file.write(__writeback)
+        __settings_file.close()
+        return True

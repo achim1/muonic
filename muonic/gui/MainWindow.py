@@ -19,7 +19,8 @@ import webbrowser
 from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 
-from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
+from MuonicDialogs import ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
+from MuonicMenus import MuonicMenus
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
 
@@ -39,8 +40,6 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
         self.DATAPATH = DATAPATH
-        self.daq_frequency = 25*1e6
-        self.tmc_ticks = 1.25
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
@@ -49,6 +48,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle(QtCore.QString("muonic"))
         self.statusbar = QtGui.QMainWindow.statusBar(self)
         self.logger  = logger
+        self.muonic_menus = MuonicMenus(parent=self)
 
         # we chose a global format for naming the files -> decided on 18/01/2012
         # we use GMT times
@@ -109,32 +109,8 @@ class MainWindow(QtGui.QMainWindow):
 
             except DAQIOError:
                 self.logger.debug("Queue empty!")
-
-        self.daq.put('V3')
-#TODO : Move the acquisition of the V3 data to process incoming. Will accelerate the muonic start
-        time.sleep(0.2) #give the daq some time to ract
-        __v3_counter = 0
-        __msg_buf = False
-        while __v3_counter <= 15:
-            while self.daq.data_available():
-                try:
-                    msg = self.daq.get(0)
-                    if msg.startswith('V3'):
-                        __msg_buf = True
-                    if __msg_buf:
-                        if not isinstance(__msg_buf, list):
-                            __msg_buf = list()
-                        __msg_buf.append(msg)
-                    __v3_counter += 1
-                except DAQIOError:
-                    self.logger.debug("Queue empty!")
-            if __msg_buf and len(__msg_buf) >= 3:
-                break
-
-        
-        self.get_daq_freq_from_queue(__msg_buf)
-
-        self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename, tmc_ticks = self.tmc_ticks, daq_freq = self.daq_frequency)
+                
+        self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename) 
         self.pulses = None
 
         # prepare fields for scalars 
@@ -211,33 +187,33 @@ class MainWindow(QtGui.QMainWindow):
         # prepare the config menu
         config = QtGui.QAction(QtGui.QIcon(''),'Channel Configuration', self)
         config.setStatusTip('Configure the Coincidences and channels')
-        self.connect(config, QtCore.SIGNAL('triggered()'), self.config_menu)
+        self.connect(config, QtCore.SIGNAL('triggered()'), self.muonic_menus.config_menu)
 
         # prepare the advanced config menu
         advanced = QtGui.QAction(QtGui.QIcon(''),'Advanced Configurations', self)
         advanced.setStatusTip('Advanced configurations')
-        self.connect(advanced, QtCore.SIGNAL('triggered()'), self.advanced_menu)       
+        self.connect(advanced, QtCore.SIGNAL('triggered()'), self.muonic_menus.advanced_menu)       
 
         # prepare the threshold menu
         thresholds = QtGui.QAction(QtGui.QIcon(''),'Thresholds', self)
         thresholds.setStatusTip('Set trigger thresholds')
-        self.connect(thresholds, QtCore.SIGNAL('triggered()'), self.threshold_menu)
+        self.connect(thresholds, QtCore.SIGNAL('triggered()'), self.muonic_menus.threshold_menu)
                
         # helpmenu
         helpdaqcommands = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'DAQ Commands', self)
-        self.connect(helpdaqcommands, QtCore.SIGNAL('triggered()'), self.help_menu)
+        self.connect(helpdaqcommands, QtCore.SIGNAL('triggered()'), self.muonic_menus.help_menu)
 
         # sphinx-documentation
         sphinxdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Technical documentation', self)
-        self.connect(sphinxdocs,QtCore.SIGNAL('triggered()'),self.sphinxdoc_menu)
+        self.connect(sphinxdocs,QtCore.SIGNAL('triggered()'),self.muonic_menus.sphinxdoc_menu)
         
         # manual
         manualdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Manual', self)
-        self.connect(manualdocs,QtCore.SIGNAL('triggered()'),self.manualdoc_menu)
+        self.connect(manualdocs,QtCore.SIGNAL('triggered()'),self.muonic_menus.manualdoc_menu)
    
         # about
         aboutmuonic = QtGui.QAction(QtGui.QIcon('icons/blah.png'),'About muonic', self)
-        self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.about_menu)
+        self.connect(aboutmuonic, QtCore.SIGNAL('triggered()'), self.muonic_menus.about_menu)
         
         # create the menubar and fill it with the submenus
         menubar  = self.menuBar()
@@ -257,186 +233,6 @@ class MainWindow(QtGui.QMainWindow):
         self.processIncoming()
         self.timer.start(1000)
         self.widgetupdater.start(self.timewindow*1000) 
-
-    def threshold_menu(self):
-        """
-        Shows the threshold dialogue
-        """
-        self.daq.put('TL')
-        # wait explicitely till the thresholds get loaded
-        self.logger.info("loading threshold information..")
-        time.sleep(1.5)
-        threshold_window = ThresholdDialog(self.threshold_ch[0],self.threshold_ch[1],self.threshold_ch[2],self.threshold_ch[3])
-        rv = threshold_window.exec_()
-        if rv == 1:
-            commands = []
-            for ch in ["0","1","2","3"]:
-                val = threshold_window.findChild(QtGui.QSpinBox,QtCore.QString("thr_ch_" + ch)).value()
-                commands.append("TL " + ch + " " + str(val))
-                
-            for cmd in commands:
-                self.daq.put(cmd)
-                self.logger.info("Set threshold of channel %s to %s" %(cmd.split()[1],cmd.split()[2]))
-
-        self.daq.put('TL')
-  
-    def config_menu(self):
-        """
-        Show the config dialog
-        """
-        gatewidth = 0.
-        self.daq.put('DC')
-        # wait explicitely till the channels get loaded
-        self.logger.info("loading channel information...")
-        time.sleep(1)
-
-        config_window = ConfigDialog(self.channelcheckbox[0],self.channelcheckbox[1],self.channelcheckbox[2],self.channelcheckbox[3],self.coincidencecheckbox[0],self.coincidencecheckbox[1],self.coincidencecheckbox[2],self.coincidencecheckbox[3],self.vetocheckbox[3],self.vetocheckbox[0],self.vetocheckbox[1],self.vetocheckbox[2])
-        rv = config_window.exec_()
-        if rv == 1:
-            
-            chan0_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_0")).isChecked() 
-            chan1_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_1")).isChecked() 
-            chan2_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_2")).isChecked() 
-            chan3_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_3")).isChecked() 
-            singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
-            if singles:
-                self.tabwidget.ratewidget.do_not_show_trigger = True
-            else:             
-                self.tabwidget.ratewidget.do_not_show_trigger = False
-            
-            twofold   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_1")).isChecked() 
-            threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 
-            fourfold  = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_3")).isChecked() 
-
-            veto    = config_window.findChild(QtGui.QGroupBox,QtCore.QString("vetocheckbox")).isChecked()
-            vetochan1 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_0")).isChecked()
-            vetochan2 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_1")).isChecked()
-            vetochan3 = config_window.findChild(QtGui.QRadioButton,QtCore.QString("vetocheckbox_2")).isChecked()
-            
-            tmp_msg = ''
-            if veto:
-                if vetochan1:
-                    tmp_msg += '01'
-                elif vetochan2:
-                    tmp_msg += '10'
-                elif vetochan3:
-                    tmp_msg += '11'
-                else:
-                    tmp_msg += '00' 
-            else:
-                tmp_msg += '00'
-    
-            coincidence_set = False
-            for coincidence in [(singles,'00'),(twofold,'01'),(threefold,'10'),(fourfold,'11')]:
-                if coincidence[0]:
-                    tmp_msg += coincidence[1]
-                    coincidence_set = True
-            
-            if not coincidence_set:
-                tmp_msg += '00'
-    
-            self.logger.debug("The first four bits are set to %s" %tmp_msg)
-            msg = 'WC 00 ' + hex(int(''.join(tmp_msg),2))[-1].capitalize()
-    
-            channel_set = False
-            enable = ['0','0','0','0']
-            for channel in enumerate([chan3_active,chan2_active,chan1_active,chan0_active]):
-                if channel[1]:
-                    enable[channel[0]] = '1'
-                    channel_set = True
-            
-            if not channel_set:
-                msg += '0'
-            else:
-                msg += hex(int(''.join(enable),2))[-1].capitalize()
-            
-            self.daq.put(msg)
-            self.logger.info('The following message was sent to DAQ: %s' %msg)
-
-            self.logger.debug('channel0 selected %s' %chan0_active)
-            self.logger.debug('channel1 selected %s' %chan1_active)
-            self.logger.debug('channel2 selected %s' %chan2_active)
-            self.logger.debug('channel3 selected %s' %chan3_active)
-            self.logger.debug('coincidence singles %s' %singles)
-            self.logger.debug('coincidence twofold %s' %twofold)
-            self.logger.debug('coincidence threefold %s' %threefold)
-            self.logger.debug('coincidence fourfold %s' %fourfold)
-        self.daq.put('DC')
-           
-    def advanced_menu(self):
-        """
-        Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the nostatus option
-        """
-        gatewidth = 0.
-        self.daq.put('DC')
-        # wait explicitely till the channels get loaded
-        self.logger.info("loading channel information...")
-        time.sleep(1)
-
-        adavanced_window = AdvancedDialog(self.coincidence_time,self.timewindow,self.nostatus)
-        rv = adavanced_window.exec_()
-        if rv == 1:
-            _timewindow = float(adavanced_window.findChild(QtGui.QDoubleSpinBox,QtCore.QString("timewindow")).value())
-            _gatewidth = bin(int(adavanced_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())/10).replace('0b','').zfill(16)
-            _nostatus = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("nostatus")).isChecked()
-            
-            _03 = format(int(_gatewidth[0:8],2),'x').zfill(2)
-            _02 = format(int(_gatewidth[8:16],2),'x').zfill(2)
-            tmp_msg = 'WC 03 '+str(_03)
-            self.daq.put(tmp_msg)
-            tmp_msg = 'WC 02 '+str(_02)
-            self.daq.put(tmp_msg)
-            if _timewindow < 0.01 or _timewindow > 10000.:
-                      self.logger.warning("Timewindow too small or too big, resetting to 5 s.")
-                      self.timewindow = 5.0
-            else:
-                self.timewindow = _timewindow
-            self.widgetupdater.start(self.timewindow*1000)
-            self.nostatus = not _nostatus
-
-            self.logger.debug('Writing gatewidth WC 02 %s WC 03 %s' %(_02,_03))
-            self.logger.debug('Setting timewindow to %.2f ' %(_timewindow))
-            self.logger.debug('Switching nostatus option to %s' %(_nostatus))
-
-        self.daq.put('DC')
-             
-    def help_menu(self):
-        """
-        Show a simple help menu
-        """
-        help_window = HelpDialog()
-        help_window.exec_()
-        
-    def about_menu(self):
-        """
-        Show a link to the online documentation
-        """
-        QtGui.QMessageBox.information(self,
-                  "about muonic",
-                  "for information see\n http://code.google.com/p/muonic/")
-
-    def sphinxdoc_menu(self):
-        """
-        Show the sphinx documentation that comes with muonic in a
-        browser
-        """
-        docs = (os.path.join(DOCPATH,"index.html"))
-
-        self.logger.info("opening docs from %s" %docs)
-        success = webbrowser.open(docs)
-        if not success:
-            self.logger.warning("Can not open webbrowser!")
-
-    def manualdoc_menu(self):
-        """
-        Show the manual that comes with muonic in a pdf viewer
-        """
-        docs = (os.path.join(DOCPATH,"manual.pdf"))
-
-        self.logger.info("opening docs from %s" %docs)
-        success = webbrowser.open(docs)
-        if not success:
-            self.logger.warning("Can not open PDF reader!")
 
     def query_daq_for_scalars(self):
         """
@@ -504,54 +300,7 @@ class MainWindow(QtGui.QMainWindow):
             return True
         else:
             return False
-
-    def get_daq_freq_from_queue(self,msg):
-        """
-        Explicitely scan message for DAQ frequency information
-        Return True if found and set it, else False
-        """
-#V3
-#10 Second Accumulation of 1PPS Latched 25MHz Counter. (20 line buffer)
-#Buffer     Now (hex)     Prev-Now (dec) (25e6*10)
-#1              0               0
-#2              0               0
-#3              0               0
-#4              0               0
-#5              0               0
-#6              0               0
-#7              0               0
-#8              0               0
-#9              0               0
-#10              0               0
-#11              0               0
-#12              0               0
-#13              0               0
-#14              0               0
-#15              0               0
-#16              0               0
-#17              0               0
-#18              0               0
-#19              0               0
-#20              0               0
-        if isinstance(msg, list):
-            if msg[0].startswith('V3'):
-                if str(msg[1]).find('25MHz') != -1:
-                    self.daq_frequency = 25.*1e6
-                    self.tmc_ticks = 1.25
-                elif str(msg[1]).find('42MHz') != -1:
-                    self.daq_frequency = 41.6666666667*1e6
-                    self.tmc_ticks = 0.75
-                else:
-                    self.logger.warning('Cannot read out DAQ frequency, setting to the default 25MHz version!')
-                    self.daq_frequency = 25.*1e6
-                    self.tmc_ticks = 1.25
-                self.logger.info("Set the DAQ frequency from readout to: %.2f MHz"%self.daq_frequency)
-                return True
-            else:
-                self.logger.info("Set the DAQ frequency to the default of: %.2f MHz because it can't be read from the daq."%self.daq_frequency)
-                return False
-        return False
-
+        
     def get_channels_from_queue(self,msg):
         """
         Explicitely scan message for channel information
@@ -670,14 +419,13 @@ class MainWindow(QtGui.QMainWindow):
             if self.tabwidget.statuswidget.isVisible() and self.tabwidget.statuswidget.is_active():
                 self.tabwidget.statuswidget.update()
 
-            if not msg is None:
-                if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
-                    try:
-                        split_msg = msg.split(" ")
-                        self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]
-                        self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
-                    except:
-                        self.logger.debug('Wrong DC command.')
+            if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
+                try:
+                    split_msg = msg.split(" ")
+                    self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]
+                    self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
+                except:
+                    self.logger.debug('Wrong DC command.')
 
             if self.tabwidget.daqwidget.write_file:
                 try:

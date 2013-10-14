@@ -6,16 +6,16 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 import time
 
-#from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
+from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 
-class MuonicMenus(MainWindow):
+class MuonicMenus(object):
     """
     Provide the different menus for the gui
     """
     def __init__(self, parent):
         self.mainwindow = parent
-        #self.daq = self.mainwindow.daq
-        #self.logger = self.mainwindow.logger
+        self.daq = self.mainwindow.daq
+        self.logger = self.mainwindow.logger
 
     def threshold_menu(self):
         """
@@ -25,7 +25,7 @@ class MuonicMenus(MainWindow):
         # wait explicitely till the thresholds get loaded
         self.logger.info("loading threshold information..")
         time.sleep(1.5)
-        threshold_window = ThresholdDialog(self.threshold_ch[0],self.threshold_ch[1],self.threshold_ch[2],self.threshold_ch[3])
+        threshold_window = ThresholdDialog(self.mainwindow.threshold_ch[0],self.mainwindow.threshold_ch[1],self.mainwindow.threshold_ch[2],self.mainwindow.threshold_ch[3])
         rv = threshold_window.exec_()
         if rv == 1:
             commands = []
@@ -49,7 +49,7 @@ class MuonicMenus(MainWindow):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        config_window = ConfigDialog(self.channelcheckbox[0],self.channelcheckbox[1],self.channelcheckbox[2],self.channelcheckbox[3],self.coincidencecheckbox[0],self.coincidencecheckbox[1],self.coincidencecheckbox[2],self.coincidencecheckbox[3],self.vetocheckbox[3],self.vetocheckbox[0],self.vetocheckbox[1],self.vetocheckbox[2])
+        config_window = ConfigDialog(self.mainwindow.channelcheckbox[0],self.mainwindow.channelcheckbox[1],self.mainwindow.channelcheckbox[2],self.mainwindow.channelcheckbox[3],self.mainwindow.coincidencecheckbox[0],self.mainwindow.coincidencecheckbox[1],self.mainwindow.coincidencecheckbox[2],self.mainwindow.coincidencecheckbox[3],self.mainwindow.vetocheckbox[3],self.mainwindow.vetocheckbox[0],self.mainwindow.vetocheckbox[1],self.mainwindow.vetocheckbox[2])
         rv = config_window.exec_()
         if rv == 1:
             
@@ -59,9 +59,9 @@ class MuonicMenus(MainWindow):
             chan3_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_3")).isChecked() 
             singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
             if singles:
-                self.tabwidget.ratewidget.do_not_show_trigger = True
+                self.mainwindow.tabwidget.ratewidget.do_not_show_trigger = True
             else:             
-                self.tabwidget.ratewidget.do_not_show_trigger = False
+                self.mainwindow.tabwidget.ratewidget.do_not_show_trigger = False
             
             twofold   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_1")).isChecked() 
             threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 
@@ -132,7 +132,7 @@ class MuonicMenus(MainWindow):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        adavanced_window = AdvancedDialog(self.coincidence_time,self.timewindow,self.nostatus)
+        adavanced_window = AdvancedDialog(self.mainwindow.coincidence_time,self.mainwindow.timewindow,self.mainwindow.nostatus)
         rv = adavanced_window.exec_()
         if rv == 1:
             _timewindow = float(adavanced_window.findChild(QtGui.QDoubleSpinBox,QtCore.QString("timewindow")).value())
@@ -147,11 +147,11 @@ class MuonicMenus(MainWindow):
             self.daq.put(tmp_msg)
             if _timewindow < 0.01 or _timewindow > 10000.:
                       self.logger.warning("Timewindow too small or too big, resetting to 5 s.")
-                      self.timewindow = 5.0
+                      self.mainwindow.timewindow = 5.0
             else:
-                self.timewindow = _timewindow
-            self.widgetupdater.start(self.timewindow*1000)
-            self.nostatus = not _nostatus
+                self.mainwindow.timewindow = _timewindow
+            self.mainwindow.widgetupdater.start(self.mainwindow.timewindow*1000)
+            self.mainwindow.nostatus = not _nostatus
 
             self.logger.debug('Writing gatewidth WC 02 %s WC 03 %s' %(_02,_03))
             self.logger.debug('Setting timewindow to %.2f ' %(_timewindow))
@@ -170,7 +170,7 @@ class MuonicMenus(MainWindow):
         """
         Show a link to the online documentation
         """
-        QtGui.QMessageBox.information(self,
+        QtGui.QMessageBox.information(self.mainwindow,
                   "about muonic",
                   "for information see\n http://code.google.com/p/muonic/")
 
