@@ -57,15 +57,15 @@ class MuonicSettings(object):
     """
     Holds the settings, changes them, dumps them to a settings file if required, reads them from there if available
     """
-    def __init__(self, settings_file = '', logger):
+    def __init__(self, logger, settings_file = ''):
         self.logger = logger
         # each dict value is a tuple holding the value and a bool, allowing the user to change it or not
         self._muonic_setting = dict()
-        self._muonic_setting['muonic_filenames'] = (%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1])",True)
+        self._muonic_setting['muonic_filenames'] = ("%s_%s_HOURS_%s%s" ,True)
         self._muonic_setting['data_folder'] = ('muonic_data',True)
-        self._muonic_setting['data_path'] = (os.getenv('HOME') + os.sep + self._setting['data_folder'], False)
+        self._muonic_setting['data_path'] = (os.getenv('HOME') + os.sep + self._muonic_setting['data_folder'][0], False)
         self._muonic_setting['doc_folder'] = ('docs', True)
-        self._muonic_setting['doc_path'] = (os.getenv('HOME') + os.sep + self._setting['data_folder'] + os.sep + self._setting['doc_folder'] + os.sep + 'html',False)
+        self._muonic_setting['doc_path'] = (os.getenv('HOME') + os.sep + self._muonic_setting['data_folder'][0] + os.sep + self._muonic_setting['doc_folder'][0] + os.sep + 'html',False)
         self._muonic_setting['status_line'] = (True, True)
         self._muonic_setting['time_window'] = (5.0, True)
         self._muonic_setting['widget_order'] = ({'Muon Rates':0,
@@ -74,17 +74,19 @@ class MuonicSettings(object):
                                         'Muon Velocity':3,
                                         'Status':4,
                                         'DAQ Output':5}, True)
-        self._muonic_setting['settings_path'] = (os.getenv('HOME') + os.sep + self._setting['data_folder'] + os.sep + '.muonicsettings',False)
+        self._muonic_setting['settings_path'] = (os.getenv('HOME') + os.sep + self._muonic_setting['data_folder'][0] + os.sep + '.muonicsettings',False)
         self._daq_setting = dict()
         self._daq_setting['channels'] = (4,False)
-        self._daq_setting['threshold'] = ([300]*self._daq_setting['channels'],True)
-        self._daq_setting['active_channel'] = ([True]*self._daq_setting['channels'],True)
-        self._daq_setting['veto'] = ([False]*self._daq_setting['channels'],True)
-        self._daq_setting['coincidence'] = ([False]*self._daq_setting['channels'],True)
+        self._daq_setting['threshold'] = ([300]*self._daq_setting['channels'][0],True)
+        self._daq_setting['active_channel'] = ([True]*self._daq_setting['channels'][0],True)
+        self._daq_setting['veto'] = ([False]*self._daq_setting['channels'][0],True)
+        self._daq_setting['coincidence'] = ([False]*self._daq_setting['channels'][0],True)
         self._daq_setting['gatewidth'] = (100,True)
-        self._daw_setting['setup_card'] = (False, False)
-        if len(settings_file) > 0 and self.read_settings(settings_file):
+        self._daq_setting['setup_card'] = (False, False)
+        if len(settings_file) > 0 and self.read_settings_file(settings_file):
             self._muonic_setting['settings_path'] = (settings_file,False)
+        else:
+            self.read_settings_file(self._muonic_setting['settings_path'][0])
 
     def read_settings_file(self,settings_file):
         """
@@ -97,23 +99,23 @@ class MuonicSettings(object):
             self.logger.warning("Cannot read settings from %s. Fallback to the default settings." %str(settings_file))
             __settings_file.close()
             return False
-        for line in __settings_file;
+        for line in __settings_file:
             try:
                 line = eval(line)
-            SyntaxError:
+            except SyntaxError:
                 self.logger.warning("Cannot read setting ''%s'' from %s. Fallback to the default setting if existing." %(line,str(settings_file)))
             if str(line[0]) == 'DAQ' or str(line[0]) == 'daq':
                 if self._daq_setting.has_key(line[1]):
-                    self._daq_setting[line[1]] = (line[2][0],bool(line[2][1]))
+                    self._daq_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
                 else:
-                    self.logger.debug("Adding yet unknown DAQ setting: %s with values: %s", %(line[1], str(line[2])))
-                    self._daq_setting[line[1]] = (line[2][0],bool(line[2][1]))
+                    self.logger.debug("Adding yet unknown DAQ setting: %s with values: %s" %(line[1], str(line[2])))
+                    self._daq_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
             elif str(line[0]) == 'MUONIC' or str(line[0]) == 'muonic':
                 if self._muonic_setting.has_key(line[0]):
-                    self._muonic_setting[line[1]] = (line[2][0],bool(line[2][1]))
+                    self._muonic_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
                 else:
-                    self.logger.debug("Adding yet unknown MUONIC setting: %s with values: %s", %(line[1], str(line[2])))
-                    self._muonic_setting[line[1]] = (line[2][0],bool(line[2][1]))
+                    self.logger.debug("Adding yet unknown MUONIC setting: %s with values: %s" %(line[1], str(line[2])))
+                    self._muonic_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
             else:
                 self.logger.warning("Cannot evaluate a setting from ''%s'' in %s." %(line,str(settings_file)))
         __settings_file.close()
@@ -189,16 +191,19 @@ class MuonicSettings(object):
 # TODO: writes complete settings back, change to: reads and rewrites only changed settings
         __settings_file = None
         try:
-            __settings_file = open(self._muonic_setting['settings_path'], 'wU')
+            __settings_file = open(self._muonic_setting['settings_path'][0], 'w')
         except IOError:
-            self.logger.warning("Cannot write settings to %s!" %str(self._muonic_setting['settings_path']))
+            self.logger.warning("Cannot write settings to %s!" %str(self._muonic_setting['settings_path'][0]))
             __settings_file.close()
             return False
         for key, value in self._daq_setting.iteritems():
             __writeback = ('DAQ',str(key),(str(value[0]),bool(value[1])))
-            __settings_file.write(__writeback)
+            __settings_file.write(str(__writeback)+"\n")
         for key, value in self._muonic_setting.iteritems():
-            __writeback = ('DAQ',str(key),(str(value[0]),bool(value[1])))
-            __settings_file.write(__writeback)
+            __writeback = ('MUONIC',str(key),(str(value[0]),bool(value[1])))
+            __settings_file.write(str(__writeback)+"\n")
         __settings_file.close()
         return True
+
+    def __del__(self):
+        self.write_settings_file()

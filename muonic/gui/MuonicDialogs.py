@@ -353,7 +353,7 @@ class AdvancedDialog(MuonicDialog):
     Set Configuration dialog. Set up the readout interval, gatewidth and whether an DAQ status line should be written.
     """
     
-    def __init__(self,gatewidth = 100, timewindow = 5.0, nostatus = None, *args):
+    def __init__(self,gatewidth = 100, timewindow = 5.0, status = None, *args):
 
         QtGui.QDialog.__init__(self,*args)
 
@@ -389,14 +389,13 @@ class AdvancedDialog(MuonicDialog):
         grid.addWidget(self.timewindow_label,1,0)
 
 
-        self.nostatus_label = QtGui.QLabel("Write DAQ status lines to RAW file: ")
-        self.nostatus = QtGui.QCheckBox()
-        self.nostatus.setObjectName("nostatus")
-        self.nostatus.setChecked(nostatus)
-        self.nostatus.setToolTip(QtCore.QString("Write DAQ status lines to RAW file, same as option -n."))
-        self.nostatus.setChecked(True)
-        grid.addWidget(self.nostatus,2,1)
-        grid.addWidget(self.nostatus_label,2,0)
+        self.status_label = QtGui.QLabel("Write DAQ status lines to RAW file: ")
+        self.status = QtGui.QCheckBox()
+        self.status.setObjectName("status")
+        self.status.setChecked(status)
+        self.status.setToolTip(QtCore.QString("Write DAQ status lines to RAW file, same as option -n."))
+        grid.addWidget(self.status,2,1)
+        grid.addWidget(self.status_label,2,0)
 
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)

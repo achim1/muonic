@@ -5,6 +5,8 @@ Provide the different menus for the gui
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 import time
+import os.path
+import webbrowser
 
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 
@@ -124,7 +126,7 @@ class MuonicMenus(object):
            
     def advanced_menu(self):
         """
-        Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the nostatus option
+        Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the statusline option
         """
         gatewidth = 0.
         self.daq.put('DC')
@@ -132,12 +134,12 @@ class MuonicMenus(object):
         self.logger.info("loading channel information...")
         time.sleep(1)
 
-        adavanced_window = AdvancedDialog(self.mainwindow.coincidence_time,self.mainwindow.timewindow,self.mainwindow.nostatus)
+        adavanced_window = AdvancedDialog(self.mainwindow.coincidence_time,self.mainwindow.timewindow,self.mainwindow.statusline)
         rv = adavanced_window.exec_()
         if rv == 1:
             _timewindow = float(adavanced_window.findChild(QtGui.QDoubleSpinBox,QtCore.QString("timewindow")).value())
             _gatewidth = bin(int(adavanced_window.findChild(QtGui.QSpinBox,QtCore.QString("gatewidth")).value())/10).replace('0b','').zfill(16)
-            _nostatus = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("nostatus")).isChecked()
+            _status = adavanced_window.findChild(QtGui.QCheckBox,QtCore.QString("statusline")).isChecked()
             
             _03 = format(int(_gatewidth[0:8],2),'x').zfill(2)
             _02 = format(int(_gatewidth[8:16],2),'x').zfill(2)
@@ -151,11 +153,11 @@ class MuonicMenus(object):
             else:
                 self.mainwindow.timewindow = _timewindow
             self.mainwindow.widgetupdater.start(self.mainwindow.timewindow*1000)
-            self.mainwindow.nostatus = not _nostatus
+            self.mainwindow.status = _status
 
             self.logger.debug('Writing gatewidth WC 02 %s WC 03 %s' %(_02,_03))
             self.logger.debug('Setting timewindow to %.2f ' %(_timewindow))
-            self.logger.debug('Switching nostatus option to %s' %(_nostatus))
+            self.logger.debug('Switching statusline option to %s' %(_nostatus))
 
         self.daq.put('DC')
              
@@ -179,7 +181,7 @@ class MuonicMenus(object):
         Show the sphinx documentation that comes with muonic in a
         browser
         """
-        docs = (os.path.join(DOCPATH,"index.html"))
+        docs = (os.path.join(self.mainwindow.settings.muonic_setting('doc_path'),"index.html"))
 
         self.logger.info("opening docs from %s" %docs)
         success = webbrowser.open(docs)
@@ -190,7 +192,7 @@ class MuonicMenus(object):
         """
         Show the manual that comes with muonic in a pdf viewer
         """
-        docs = (os.path.join(DOCPATH,"manual.pdf"))
+        docs = (os.path.join(self.mainwindow.settings.muonic_setting('doc_path'),"manual.pdf"))
 
         self.logger.info("opening docs from %s" %docs)
         success = webbrowser.open(docs)

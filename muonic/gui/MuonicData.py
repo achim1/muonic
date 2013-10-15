@@ -273,13 +273,13 @@ class MuonicRawFile(MuonicFile):
         self.comment_file(__comment_file)
         return True
 
-    def write(self, msg, nostatus = False):
+    def write(self, msg, status = False):
         """
         Replace the default write method
         """
         if msg is None:
             raise ValueError, "Missing something to write to the file."
-        if nostatus:
+        if not status:
             fields = msg.rstrip("\n").split(" ")
             if ((len(fields) == 16) and (len(fields[0]) == 8)):
                 self.muonic_file.write(str(msg)+'\n')

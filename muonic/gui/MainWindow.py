@@ -12,22 +12,17 @@ import datetime
 import os
 import shutil
 import time
-import webbrowser
 
 
 # muonic imports
 from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 
+from MuonicSettings import MuonicConstants, MuonicSettings
 from MuonicDialogs import ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 from MuonicMenus import MuonicMenus
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
 from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
-
-DOCPATH  = (os.getenv('HOME') + os.sep + 'muonic_data' + os.sep + 'docs' + os.sep + 'html')
-# this is hard-coded! There must be a better solution...
-# if you change here, you have to change in setup.py!
-DATAPATH = os.getenv('HOME') + os.sep + 'muonic_data'
 
 tr = QtCore.QCoreApplication.translate
 
@@ -39,7 +34,9 @@ class MainWindow(QtGui.QMainWindow):
 
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
-        self.DATAPATH = DATAPATH
+        self.logger  = logger
+        self.settings = MuonicSettings(self.logger)
+        self.constants = MuonicConstants()
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
@@ -47,7 +44,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setWindowTitle(QtCore.QString("muonic"))
         self.statusbar = QtGui.QMainWindow.statusBar(self)
-        self.logger  = logger
         self.muonic_menus = MuonicMenus(parent=self)
 
         # we chose a global format for naming the files -> decided on 18/01/2012
@@ -59,21 +55,21 @@ class MainWindow(QtGui.QMainWindow):
         # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
  
         self.now = datetime.datetime.now()
-        self.filename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1]) )
-        self.rawfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",opts.user[0],opts.user[1]) )
+        self.filename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1]) )
+        self.rawfilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",opts.user[0],opts.user[1]) )
         self.raw_mes_start = False
 
-        self.decayfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"L",opts.user[0],opts.user[1]) )
+        self.decayfilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"L",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
         self.writepulses = False
         if self.writepulses:
                 self.daq.put('CE')
-                self.pulsefilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
+                self.pulsefilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
                 self.pulse_mes_start = self.now
         else:
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
-        self.nostatus = False
+        self.statusline = self.settings.muonic_setting('status_line')
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL')
         time.sleep(0.5) #give the daq some time to ract
@@ -429,7 +425,7 @@ class MainWindow(QtGui.QMainWindow):
 
             if self.tabwidget.daqwidget.write_file:
                 try:
-                    if self.nostatus:
+                    if not self.statusline:
                         fields = msg.rstrip("\n").split(" ")
                         if ((len(fields) == 16) and (len(fields[0]) == 8)):
                             self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
