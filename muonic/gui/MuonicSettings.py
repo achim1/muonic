@@ -3,6 +3,7 @@ Provides the settings and constants handling for muonic
 """
 import os
 import datetime
+from ast import literal_eval
 
 class MuonicConstants(object):
     """
@@ -101,23 +102,23 @@ class MuonicSettings(object):
             return False
         for line in __settings_file:
             try:
-                line = eval(line)
+                line = literal_eval(line)
             except SyntaxError:
                 self.logger.warning("Cannot read setting ''%s'' from %s. Fallback to the default setting if existing." %(line,str(settings_file)))
             if str(line[0]) == 'DAQ' or str(line[0]) == 'daq':
                 if self._daq_setting.has_key(line[1]):
-                    self._daq_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
+                    self._daq_setting[line[1]] = (literal_eval(line[2][0]),bool(line[2][1]))
                 else:
                     self.logger.debug("Adding yet unknown DAQ setting: %s with values: %s" %(line[1], str(line[2])))
-                    self._daq_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
+                    self._daq_setting[line[1]] = (literal_eval(line[2][0]),bool(line[2][1]))
             elif str(line[0]) == 'MUONIC' or str(line[0]) == 'muonic':
                 if self._muonic_setting.has_key(line[0]):
-                    self._muonic_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
+                    self._muonic_setting[line[1]] = (literal_eval(line[2][0]),bool(line[2][1]))
                 else:
                     self.logger.debug("Adding yet unknown MUONIC setting: %s with values: %s" %(line[1], str(line[2])))
-                    self._muonic_setting[line[1]] = (eval(line[2][0]),bool(line[2][1]))
+                    self._muonic_setting[line[1]] = (literal_eval(line[2][0]),bool(line[2][1]))
             else:
-                self.logger.warning("Cannot evaluate a setting from ''%s'' in %s." %(line,str(settings_file)))
+                self.logger.warning("Cannot literal_evaluate a setting from ''%s'' in %s." %(line,str(settings_file)))
         __settings_file.close()
         return True
 
@@ -197,10 +198,16 @@ class MuonicSettings(object):
             __settings_file.close()
             return False
         for key, value in self._daq_setting.iteritems():
-            __writeback = ('DAQ',str(key),(str(value[0]),bool(value[1])))
+            if not isinstance(value[0], int) and not isinstance(value[0], tuple) and not isinstance(value[0], list) and not isinstance(value[0], dict) and not isinstance(value[0], bool) and not isinstance(value[0], float) and not value[0] is None:
+                __writeback = ('DAQ',str(key),(str('\''+value[0]+'\''),bool(value[1])))
+            else:
+                __writeback = ('DAQ',str(key),(str(value[0]),bool(value[1])))
             __settings_file.write(str(__writeback)+"\n")
         for key, value in self._muonic_setting.iteritems():
-            __writeback = ('MUONIC',str(key),(str(value[0]),bool(value[1])))
+            if not isinstance(value[0], int) and not isinstance(value[0], tuple) and not isinstance(value[0], list) and not isinstance(value[0], dict) and not isinstance(value[0], bool) and not isinstance(value[0], float) and not value[0] is None:
+                __writeback = ('DAQ',str(key),(str('\''+value[0]+'\''),bool(value[1])))
+            else:
+                __writeback = ('MUONIC',str(key),(str(value[0]),bool(value[1])))
             __settings_file.write(str(__writeback)+"\n")
         __settings_file.close()
         return True

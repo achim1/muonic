@@ -166,7 +166,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.gpswidget = self.tabwidget.widget(6)
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
-        self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,self.tabwidget.pulseanalyzerwidget,self.tabwidget.velocitywidget,self.tabwidget.ratewidget]
+        self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,self.tabwidget.pulseanalyzerwidget,self.tabwidget.velocitywidget,self.tabwidget.ratewidget, self.tabwidget.statuswidget]
         self.widgetupdater = QtCore.QTimer()
         QtCore.QObject.connect(self.widgetupdater,
                            QtCore.SIGNAL("timeout()"),
@@ -404,16 +404,13 @@ class MainWindow(QtGui.QMainWindow):
                 self.logger.debug("Queue empty!")
                 return None
 
-            self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
+            self.tabwidget.daqwidget.calculate(str(msg))
             if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
                 if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
                     self.tabwidget.gpswidget.gps_dump.append(msg)
                 if len(self.tabwidget.gpswidget.gps_dump) == self.tabwidget.gpswidget.read_lines:
                     self.tabwidget.gpswidget.calculate()
                 continue
-
-            if self.tabwidget.statuswidget.isVisible() and self.tabwidget.statuswidget.is_active():
-                self.tabwidget.statuswidget.update()
 
             if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
                 try:
@@ -422,20 +419,6 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
                 except:
                     self.logger.debug('Wrong DC command.')
-
-            if self.tabwidget.daqwidget.write_file:
-                try:
-                    if not self.statusline:
-                        fields = msg.rstrip("\n").split(" ")
-                        if ((len(fields) == 16) and (len(fields[0]) == 8)):
-                            self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
-                        else:
-                            self.logger.debug("Not writing line '%s' to file because it does not contain trigger data" %msg)
-                    else:
-                        self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
-
-                except ValueError:
-                    self.logger.warning('Trying to write on closed file, captured!')
 
             if self.get_thresholds_from_queue(msg):
                 continue
@@ -447,18 +430,9 @@ class MainWindow(QtGui.QMainWindow):
                 continue
             
             if self.get_scalars_from_queue(msg):
-                time_window = self.thisscalarquery - self.lastscalarquery
-                rates = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
-                self.tabwidget.ratewidget.calculate(rates)
+                scalers = (self.thisscalarquery, self.lastscalarquery, self.scalars_diff_ch0, self.scalars_diff_ch1,self.scalars_diff_ch2,self.scalars_diff_ch3, self.scalars_diff_trigger)
+                self.tabwidget.ratewidget.calculate(scalers)
                 
-                if self.tabwidget.ratewidget.data_file_write:
-                    try:
-                        self.tabwidget.ratewidget.data_file.write('%f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window,self.scalars_diff_trigger/time_window,time_window))
-                        self.logger.debug("Rate plot data was written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
-                    except ValueError:
-                        self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
-                continue
-            
             elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.is_active()):#self.showpulses or self.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
                 if self.pulses != None:
@@ -498,14 +472,11 @@ class MainWindow(QtGui.QMainWindow):
         if reply == QtGui.QMessageBox.Yes:
             now = datetime.datetime.now()
 
-            if self.tabwidget.daqwidget.write_file:
-                self.tabwidget.daqwidget.write_file = False
-                mtime = now - self.raw_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-                self.logger.info("The raw data was written for %f hours" % mtime)
-                newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
-                shutil.move(self.rawfilename,newrawfilename)
-                self.tabwidget.daqwidget.outputfile.close()
+            if self.tabwidget.daqwidget.write_daq_file:
+                self.tabwidget.daqwidget.write_daq_file = False
+                self.tabwidget.daqwidget.daq_file.close()
+            
+            self.tabwidget.ratewidget.rate_file.close()
 
             if self.tabwidget.decaywidget.is_active():
 
@@ -528,15 +499,6 @@ class MainWindow(QtGui.QMainWindow):
                 newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
                 shutil.move(old_pulsefilename,newpulsefilename)
               
-            self.tabwidget.ratewidget.data_file_write = False
-            self.tabwidget.ratewidget.data_file.close()
-            mtime = now - self.tabwidget.ratewidget.rate_mes_start
-            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-            self.logger.info("The rate measurement was active for %f hours" % mtime)
-            newratefilename = self.filename.replace("HOURS",str(mtime))
-            shutil.move(self.filename,newratefilename)
-            time.sleep(0.5)
-            self.tabwidget.writefile = False
             try:
                 self.tabwidget.decaywidget.mu_file.close()
             except AttributeError:

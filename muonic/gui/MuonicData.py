@@ -51,7 +51,7 @@ class MuonicFile(object):
             raise IOError, "File not writeable!"
         if not isinstance(comment, str):
             raise ValueError, "Comment is not a valid string!"
-        self.muonic_file.write(comment.strip())
+        self.muonic_file.write(comment.strip()+'\n')
         return True
     
     def flush(self):
@@ -82,13 +82,14 @@ class MuonicRateFile(MuonicFile):
         self.logger = logger
         self._rate_mes_start = datetime.datetime.now()
         MuonicFile.__init__(self,self.filename, mode, **kwargs)
+        self.muonic_file.write('chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
 
     def start_run(self, measurement = 'rate'):
         """
         Writes a comment about the measurment run start with date and time
         """
         date = datetime.datetime.now()        
-        __comment_file = '# new %s measurement run from: %i-%i-%i %i-%i-%i\n' %(measurement, date.year,date.month,date.day,date.hour,date.minute,date.second)
+        __comment_file = '# new %s measurement run from: %i-%i-%i %i-%i-%i' %(measurement, date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
 
@@ -97,7 +98,7 @@ class MuonicRateFile(MuonicFile):
         Writes a comment about the measurment run stop with date and time
         """
         date = datetime.datetime.now()
-        __comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
+        __comment_file = '# stopped run on: %i-%i-%i %i-%i-%i' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
         self.comment_file(__comment_file)
         return True
 
@@ -107,7 +108,7 @@ class MuonicRateFile(MuonicFile):
         """
         if msg is None:
             raise ValueError, "Missing something to write to the file."
-        self.muonic_file.write(str(msg)+'\n')
+        self.muonic_file.write(str(msg)+' \n')
         return True
 
     def close(self):

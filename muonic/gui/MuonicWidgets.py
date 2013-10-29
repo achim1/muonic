@@ -7,6 +7,7 @@ from PyQt4 import QtCore
 
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
+from MuonicData import MuonicRawFile, MuonicRateFile
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
 from ..analysis.fit import main as fit
 from ..analysis.fit import gaussian_fit
@@ -98,10 +99,9 @@ class RateWidget(QtGui.QWidget):
         self.general_info['min_rate'] = 0
 
         #self.pulses_to_show = None
-        self.data_file = open(self.mainwindow.filename, 'w')
-        self.data_file.write('chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
+        self.rate_file = MuonicRateFile(self.mainwindow.filename, self.logger)
         # always write the rate plot data
-        self.data_file_write = False
+        self.rate_file_write = False
 
         QtCore.QObject.connect(self.start_button,
                               QtCore.SIGNAL("clicked()"),
@@ -147,17 +147,18 @@ class RateWidget(QtGui.QWidget):
         rate_widget.addWidget(buttomlineBox,4,0,1,3)
         self.setLayout(rate_widget)
 
-    def calculate(self,rates):
+    def calculate(self,scalers):
         """
-        Calculate the values shown in the rate widget.
+        Calculate the values shown in the rate widget and writes values to a file. Started via Processincoming in Mainwindow
         """
+        time_window = scalers[0] - scalers[1]
+        self.rates['rates'] = (scalers[2]/time_window,scalers[3]/time_window,scalers[4]/time_window,scalers[5]/time_window, scalers[6]/time_window, time_window,scalers[2],scalers[3], scalers[4], scalers[5], scalers[6])
 
-        self.rates['rates'] = rates
-        self.timewindow += rates[5]
+        self.timewindow += self.rates['rates'][5]
 
         for ch in enumerate(['ch0','ch1','ch2','ch3','trigger']):
-            self.rates['rates_buffer'][ch[1]].append(rates[ch[0]])
-            self.scalers['scalers_buffer'][ch[1]] += rates[ch[0]+6]
+            self.rates['rates_buffer'][ch[1]].append(self.rates['rates'][ch[0]])
+            self.scalers['scalers_buffer'][ch[1]] += self.rates['rates'][ch[0]+6]
 
         self.rates['rates_buffer']['l_time'].append(self.timewindow)
         for ch in ['ch0','ch1','ch2','ch3','trigger','l_time']:
@@ -173,6 +174,11 @@ class RateWidget(QtGui.QWidget):
         if min_rate < self.general_info['min_rate']:
             self.general_info['max_rate'] = min_rate
 
+        # file'ish part:
+        if self.rate_file_write:
+            self.rate_file.write('%f %f %f %f %f %f %f %f %f %f' % (scalers[2], scalers[3], scalers[4], scalers[5], scalers[2]/time_window,scalers[3]/time_window,scalers[4]/time_window,scalers[5]/time_window,scalers[6]/time_window,time_window))
+ 
+
     def update(self):
         """
         Updates the values shown in the rate widget.
@@ -184,7 +190,8 @@ class RateWidget(QtGui.QWidget):
                 _edit = 'edit_ch'+str(i)
                 _ch = 'ch'+str(i)
                 if self.mainwindow.channelcheckbox[i]:
-                    self.rates[_edit].setText('%.2f' %(self.scalers['scalers_buffer'][_ch]/self.timewindow))
+                    if self.timewindow != 0:
+                        self.rates[_edit].setText('%.2f' %(self.scalers['scalers_buffer'][_ch]/self.timewindow))
                     self.scalers[_edit].setText('%.2f' %(self.scalers['scalers_buffer'][_ch]))
                 else:
                     self.rates[_edit].setText('off')
@@ -194,7 +201,8 @@ class RateWidget(QtGui.QWidget):
                 self.rates['edit_trigger'].setText('off')
                 self.scalers['edit_trigger'].setText('off')
             else:
-                self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
+                if self.timewindow != 0:
+                    self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
                 self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
 
             self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox[0],self.mainwindow.channelcheckbox[1],self.mainwindow.channelcheckbox[2],self.mainwindow.channelcheckbox[3])
@@ -217,7 +225,6 @@ class RateWidget(QtGui.QWidget):
         self.table.setEnabled(True)
 
         self.logger.debug("Start Button Clicked")
-        date = datetime.datetime.now()
         
         self.timewindow = 0
         
@@ -225,17 +232,15 @@ class RateWidget(QtGui.QWidget):
             self.scalers['scalers_buffer'][ch] = 0
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
-
-        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
+        
+        measurement = 'rate'
         if self.mainwindow.tabwidget.decaywidget.is_active():
-            comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
+            measurement = 'decay'
         if self.mainwindow.tabwidget.velocitywidget.is_active():
-            comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
-
-        self.data_file = open(self.mainwindow.filename, 'a')        
-        self.data_file.write(comment_file)
+            measurement = 'velocity'
+        self.rate_file.start_run(measurement)
         self.active = True
-        self.data_file_write = True
+        self.rate_file_write = True
         self.now = datetime.datetime.now()
         
         for i in range(4):
@@ -270,13 +275,8 @@ class RateWidget(QtGui.QWidget):
         self.general_info['edit_max_rate'].setDisabled(True)
 
         self.active = False
-        self.data_file_write = False
-        date = datetime.datetime.now()
-        comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.year,date.month,date.day,date.hour,date.minute,date.second)
-        if not self.data_file.closed:
-            self.data_file.write(comment_file)
-            self.data_file.close()
-
+        self.rate_file_write = False
+        self.rate_file.stop_run()
 
 class PulseanalyzerWidget(QtGui.QWidget):
     """
@@ -949,11 +949,13 @@ class DAQWidget(QtGui.QWidget):
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent)
         self.mainwindow = self.parentWidget()
+        self.logger = logger
         
-        self.write_file      = False
+        self.write_daq_file  = False
+        self.daq_file        = None
         self.label           = QtGui.QLabel(qt_translate('MainWindow','Command'))
-        self.message_edit      = LineEdit()
-        self.send_button    = QtGui.QPushButton(qt_translate('MainWindow','Send'))
+        self.message_edit    = LineEdit()
+        self.send_button     = QtGui.QPushButton(qt_translate('MainWindow','Send'))
         self.file_button     = QtGui.QPushButton(qt_translate('MainWindow', 'Save RAW-File'))
         self.periodic_button = QtGui.QPushButton(qt_translate('MainWindow', 'Periodic Call'))
         QtCore.QObject.connect(self.send_button,
@@ -1001,9 +1003,9 @@ class DAQWidget(QtGui.QWidget):
         save the raw daq data to a automatically named file
         """
         self.mainwindow.daq.put("CE")        
-        self.outputfile = open(self.mainwindow.rawfilename,"w")
+        self.daq_file = MuonicRawFile(self.mainwindow.rawfilename, self.logger)
         self.file_label = QtGui.QLabel(qt_translate('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
-        self.write_file = True
+        self.write_daq_file = True
         self.mainwindow.raw_mes_start = datetime.datetime.now()
         self.mainwindow.statusbar.addPermanentWidget(self.file_label)
 
@@ -1035,6 +1037,15 @@ class DAQWidget(QtGui.QWidget):
                 self.mainwindow.statusbar.removeWidget(self.periodic_status_label)
             except AttributeError:
                 pass
+    
+    def calculate(self, msg):
+        """
+        Function that is called via processincoming. It does:
+        - starts file writing stuff
+        """
+        self.text_box.appendPlainText(str(msg))
+        if self.write_daq_file:
+            self.daq_file.write(msg, status = self.mainwindow.statusline)
 
 class GPSWidget(QtGui.QWidget):
     """
