@@ -1,0 +1,228 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic.gui.LifetimeCanvas &mdash; muonic 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="muonic 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for muonic.gui.LifetimeCanvas</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">p</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">n</span>
+
+
+<span class="c"># Python Qt4 bindings for GUI objects</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtGui</span>
+
+<span class="c"># Matplotlib Figure object</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
+
+<span class="c"># import the Qt4Agg FigureCanvas object, that binds Figure to</span>
+<span class="c"># Qt4Agg backend. It also inherits from QWidget</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_qt4agg</span> \
+<span class="kn">import</span> <span class="n">FigureCanvasQTAgg</span> <span class="k">as</span> <span class="n">FigureCanvas</span>
+
+<span class="c"># import the NavigationToolbar Qt4Agg widget</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_qt4agg</span> \
+<span class="kn">import</span> <span class="n">NavigationToolbar2QTAgg</span> <span class="k">as</span> <span class="n">NavigationToolbar</span>
+
+
+<div class="viewcode-block" id="LifetimeCanvas"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.LifetimeCanvas.LifetimeCanvas">[docs]</a><span class="k">class</span> <span class="nc">LifetimeCanvas</span><span class="p">(</span><span class="n">FigureCanvas</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A simple histogram for the use with mu lifetime</span>
+<span class="sd">    measurement</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+       
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Lifetimemonitor started&quot;</span><span class="p">)</span>
+
+        <span class="c"># first image setup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+        <span class="c"># initialization of the canvas</span>
+        <span class="n">FigureCanvas</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="p">)</span>
+
+
+        <span class="c"># set specific limits for X and Y axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time between pulses (microsec)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;events&#39;</span><span class="p">)</span>
+
+        <span class="c"># make a fixed binning from 0 to 20 microseconds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binning</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">84</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bincontent</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">binning</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">array</span><span class="p">([]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">binning</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+         
+        <span class="c"># force a redraw of the Figure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+ 
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<div class="viewcode-block" id="LifetimeCanvas.update_plot"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.LifetimeCanvas.LifetimeCanvas.update_plot">[docs]</a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decaytimes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        decaytimes must be a list of the last decays</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># avoid memory leak</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="c"># we have to do some bad hacking here,</span>
+        <span class="c"># because the p histogram is rather</span>
+        <span class="c"># simple and it is not possible to add</span>
+        <span class="c"># two of them...</span>
+        <span class="c"># however, since we do not want to run into a memory leak</span>
+        <span class="c"># and we also be not dependent on dashi (but maybe</span>
+        <span class="c"># sometimes in the future?) we have to do it</span>
+        <span class="c"># by manipulating rectangles...</span>
+
+        <span class="c"># we want to find the non-empty bins</span>
+        <span class="c"># tmphist is compatible with the decaytime hist...</span>
+
+
+        <span class="n">tmphist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">decaytimes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">binning</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">histbin</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tmphist</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">histbin</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span><span class="p">[</span><span class="n">histbin</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">set_height</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span><span class="p">[</span><span class="n">histbin</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span> <span class="o">+</span> <span class="n">histbin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c"># we want to get the maximum for the ylims</span>
+
+        <span class="c"># self.heights contains the bincontent!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">heights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">patch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">patch</span><span class="o">.</span><span class="n">get_height</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;lifetimemonitor heights </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymax</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">)</span><span class="o">*</span><span class="mf">1.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&#39;time between pulses (microsec)&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&#39;events&#39;</span><span class="p">)</span>
+        
+        <span class="c"># always get rid of unused stuff</span>
+        <span class="k">del</span> <span class="n">tmphist</span>
+
+        <span class="c"># some beautification</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+ 
+        <span class="c"># we now have to pass our new patches </span>
+        <span class="c"># to the figure we created..            </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist_patches</span>      
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="LifetimeCanvas.show_fit"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.LifetimeCanvas.LifetimeCanvas.show_fit">[docs]</a>    <span class="k">def</span> <span class="nf">show_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bin_centers</span><span class="p">,</span><span class="n">bincontent</span><span class="p">,</span><span class="n">fitx</span><span class="p">,</span><span class="n">decay</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">covar</span><span class="p">,</span><span class="n">chisquare</span><span class="p">,</span><span class="n">nbins</span><span class="p">):</span>
+
+        <span class="c">#self.ax.clear()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bin_centers</span><span class="p">,</span><span class="n">bincontent</span><span class="p">,</span><span class="s">&quot;b^&quot;</span><span class="p">,</span><span class="n">fitx</span><span class="p">,</span><span class="n">decay</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">fitx</span><span class="p">),</span><span class="s">&quot;b-&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">max</span><span class="p">(</span><span class="n">bincontent</span><span class="p">)</span><span class="o">*</span><span class="mf">1.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s">&quot;Decay time in microseconds&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s">&quot;Events in time bin&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">((</span><span class="s">&quot;Data&quot;</span><span class="p">,</span><span class="s">&quot;Fit: (</span><span class="si">%4.2f</span><span class="s"> +- </span><span class="si">%4.2f</span><span class="s">) $\mu$s </span><span class="se">\n</span><span class="s"> chisq/ndf=</span><span class="si">%4.2f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">n</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covar</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span><span class="n">chisquare</span><span class="o">/</span><span class="p">(</span><span class="n">nbins</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)))),</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&#39;Covariance Matrix is None, could not calculate fit error!&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">((</span><span class="s">&quot;Data&quot;</span><span class="p">,</span><span class="s">&quot;Fit: (</span><span class="si">%4.2f</span><span class="s">) $\mu$s </span><span class="se">\n</span><span class="s"> chisq/ndf=</span><span class="si">%4.2f</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">chisquare</span><span class="o">/</span><span class="p">(</span><span class="n">nbins</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)))),</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl,basho.kaminsky.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

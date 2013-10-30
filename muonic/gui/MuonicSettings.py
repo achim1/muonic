@@ -65,6 +65,9 @@ class MuonicSettings(object):
         self._muonic_setting['muonic_filenames'] = ("%s_%s_HOURS_%s%s" ,True)
         self._muonic_setting['data_folder'] = ('muonic_data',True)
         self._muonic_setting['data_path'] = (os.getenv('HOME') + os.sep + self._muonic_setting['data_folder'][0], False)
+        if not self.__check_create_folder(self._muonic_setting['data_path']):
+            self.logger.warning('The previous warning means it can not save muonic data! All Muonic data will be thrown away!')
+            self._muonic_setting['data_path'] = os.devnull
         self._muonic_setting['doc_folder'] = ('docs', True)
         self._muonic_setting['doc_path'] = (os.getenv('HOME') + os.sep + self._muonic_setting['data_folder'][0] + os.sep + self._muonic_setting['doc_folder'][0] + os.sep + 'html',False)
         self._muonic_setting['status_line'] = (True, True)
@@ -88,6 +91,20 @@ class MuonicSettings(object):
             self._muonic_setting['settings_path'] = (settings_file,False)
         else:
             self.read_settings_file(self._muonic_setting['settings_path'][0])
+
+    def __check_create_folder(self, path):
+        """
+        Checks whether a folder with the given path exists. If not is tries to create it.
+        """
+        if os.path.isdir(path):
+            return True
+        else:
+            try:
+                os.mkdir(path, 761)
+            except OSError:
+                self.logger.warning("Cannot create folder with the path: %s. Maybe because the permission was denied or it is an existing file." %str(path))
+                return False
+            return True
 
     def read_settings_file(self,settings_file):
         """

@@ -179,9 +179,13 @@ class MuonicMenus(object):
     def sphinxdoc_menu(self):
         """
         Show the sphinx documentation that comes with muonic in a
-        browser
+        web browser
         """
         docs = (os.path.join(self.mainwindow.settings.muonic_setting('doc_path'),"index.html"))
+        if not os.path.exists(docs):
+            docs = (os.path.join((os.path.dirname(os.path.abspath(__file__)) + os.sep + '..' + os.sep + self.mainwindow.settings.muonic_setting('doc_folder') + os.sep + 'html'),"index.html"))
+            if not os.path.exists(docs):
+                docs = (os.path.join((os.path.dirname(os.path.abspath(__file__)) + os.sep + '..' + os.sep + 'docs' + os.sep + 'html'),"index.html"))
 
         self.logger.info("opening docs from %s" %docs)
         success = webbrowser.open(docs)

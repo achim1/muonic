@@ -1,0 +1,1293 @@
+.TH "MUONIC" "1" "August 14, 2013" "2.0" "muonic"
+.SH NAME
+muonic \- muonic Documentation
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.\" Man page generated from reStructeredText.
+.
+.SH DOCUMENTATION FOR RELEASE 2.0.0, DOCUMENTATION BUILT ON AUGUST 14, 2013
+.sp
+Contents:
+.SS muonic \- a python gui for QNET experiments
+.sp
+The muonic project provides an interface to communicate with QuarkNet DAQ cards and to perform simple analysis of the generated data.
+Its goal is to ensure easy and stable access to the QuarkNet cards and visualize some of the features of the cards. It is meant to be used in school projects, so it should be easy to use even by people who do not have lots LINUX backround or experience with scientific software. Automated data taking can be used to ensure no valuable data is lost.
+.SS Licence and terms of agreement
+.sp
+Muonic is ditributed under the terms of GPL (Gnu Public License). With the use of the software you accept the condidions of the GPL. This means also that the authors can not be made responsible for any damage of any kind to hard\- or software.
+.SS muonic setup and installation
+.sp
+Muonic consists of two main parts:
+1. the python package \fImuonic\fP
+2. a python executable
+.SS prerequesitories
+.sp
+muonic needs the following packages to be installed (list may not be complete!)
+.INDENT 0.0
+.IP \(bu 2
+python\-scipy
+.IP \(bu 2
+python\-matplotlib
+.IP \(bu 2
+python\-numpy
+.IP \(bu 2
+python\-qt4
+.IP \(bu 2
+python\-serial
+.UNINDENT
+.SS installation with the setup.py script
+.sp
+Run the following command in the directory where you checked out the source code:
+.sp
+\fIpython setup.py install\fP
+.sp
+This will install the muonic package into your python site\-packages directory and also the exectuables \fImuonic\fP and \fIwhich_tty_daq\fP to your usr/bin directory. It also generates a new directory in your home dir: \fI$HOME/muonic_data\fP
+.sp
+The use of python\-virtualenv is recommended.
+.SS installing muonic without the setup script
+.sp
+You just need the script \fI./bin/muonic\fP to the upper directory and rename it to \fImuonic.py\fP.
+You can do this by typing
+.sp
+\fImv bin/muonic muonic.py\fP
+.sp
+while being in the muonic main directory.
+.sp
+Afterwards you have to create the folder \fImuonic_data\fP in your home directory.
+.sp
+\fImkdir ~/muonic_data\fP
+.SS How to use muonic
+.SS start muonic
+.sp
+If you have setup muonic via the provided setup.py script or if you hav put the package somewhere in your PYTHONPATH, simple call from the terminal
+.sp
+\fBmuonic [OPTIONS] xy\fP
+.sp
+where \fBxy\fP are two characters which you can choose freely. You will find this two letters occuring in automatically generated files, so that you can identify them.
+.sp
+For help you can call
+.sp
+\fBmuonic \-\-help\fP
+.sp
+which gives you also an overview abot the options.
+.sp
+[OPTIONS]
+.INDENT 0.0
+.TP
+.B \-s
+.TP
+.B use the simulation mode of muonic (no real data, so no physics behind!). This should only used for testing and developing the software
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-d
+.TP
+.B debug mode. Use it to generate more log messages on the console.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-t sec
+.TP
+.B change the timewindow for the calculation of the rates. If you expect very low rates, you might consider to change it to larger values.
+.TP
+.B default is 5 seconds.
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-p
+.TP
+.B automatically write a file with pulsetimes in a non hexadecimal representation
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-n
+.TP
+.B supress any status messages in the output raw data file, might be useful if you want use muonic only for data taking and use another script afterwards for analysis.
+.UNINDENT
+.SS Saving files with muonic
+.sp
+All files which are saved by muonic are ASCII files. The filenames are as follows:
+.IP Warning
+currently all files are saved under $HOME/muonic_data. This directory must exist. If you use the provided setup script, it is created automatically
+.RE
+.sp
+\fIYYYY\-MM\-DD_HH\-MM\-SS_TYPE_MEASUREMENTTME_xy\fP
+.INDENT 0.0
+.IP \(bu 2
+\fIYYYY\-MM\-DD\fP is the date of the measurement start
+.IP \(bu 2
+\fIHH\-MM\-SS\fP is the GMT time of the measurement start
+.IP \(bu 2
+\fIMEASUREMENTTIME\fP if muonic is closed, each file gets is corresponding measurement time (in hours) assigned.
+.IP \(bu 2
+\fIxy\fP the two letters which were specified at the start of muonic
+.IP \(bu 2
+\fITYPE\fP might be one of the following:
+.UNINDENT
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.IP \(bu 2
+\fIRAW\fP the raw ASCII output of the DAQ card, this is only saved if the \(aqSave to file\(aq button in clicked in the \(aqDaq output\(aq window of muonic
+.IP \(bu 2
+\fIR\fP is an automatically saved ASCII file which contains the rate measurement data, this can then be used to plot with e.g. gnuplot later on
+.IP \(bu 2
+\fIL\fP specifies a file with times of registered muon decays. This file is automatically saved if a muon decay measurement is started.
+.IP \(bu 2
+\fIP\fP stands for a file which contains a non\-hex representation of the registered pulses. This file is only save if the \fI\-p\fP option is given at the start of muonic
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.sp
+Representation of the pulses:
+.sp
+\fI(69.15291364, [(0.0, 12.5)], [(2.5, 20.0)], [], [])\fP
+.sp
+This is a python\-tuple which contains the triggertime of the event and four lists with more tuples. The lists represent the channels (0\-3 from left to right) and each tuple stands for a leading and a falling edge of a registered pulse. To get the exact time of the pulse start, one has to add the pulse LE and FE times to the triggertime
+.IP Note
+For calculation of the LE and FE pulse times a TMC is used. It seems that for some DAQs cards a TMC bin is 1.25 ns wide, allthough the documentation says something else.
+The triggertime is calculated using a CPLD which runs in some cards at 25MHz, which gives a binwidth of the CPLD time of 40 ns.
+Please keep this limited precision in mind when adding CPLD and TMC times.
+.RE
+.SS Performing measurements with muonic
+.SS Setting up the DAQ
+.sp
+For DAQ setup it is recommended to use the \(aqsettings\(aq menu, allthough everything can also be setup via the command line in the DAQ output window (see below.)
+Muonic translates the chosen settings to the corresponding DAQ commands and sends them to the DAQ. So if you want to change things like the coincidence time window, you have to issue the corresponding DAQ command in the DAQ output window.
+.sp
+Two menu items are of interest here:
+* Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.
+*
+.. note:
+.sp
+.nf
+.ft C
+You have to ensure that the checkboxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.
+.ft P
+.fi
+.IP Note
+The concidence is realized by the DAQ in a way that no specific channels can be given. Instead this is meant as an \(aqany\(aq condition.
+So \(aqtwofold\(aq means that \(aqany two of the enabled channels\(aq must claim signal instead of two specific ones (like 1 and 2).
+.RE
+.IP Warning
+Measurements at DESY indicated that the veto feature of the DAQ card might not work properly in all cases.
+.RE
+.INDENT 0.0
+.IP \(bu 2
+Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression. One can use for the calibration the rates in the muon rates tab.
+.UNINDENT
+.IP Note
+A proper calibration of the individual channels is the key to a succesfull measurement!
+.RE
+.SS Muon Rates
+.sp
+In the first tab a plot of the measured muonrates is displayed. A triggerrate is only shown if a coincidence condition is set.
+In the block on the right side of the tab, the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. On the bottom right side is also the maximum rate of the measurment. The plot and the shown values can be reset by clicking on \(aqRestart\(aq. The \(aqStop\(aq button can be used to temporarily hold the plot to have a better look at it.
+.IP Note
+You can use the displayed \(aqmax rate\(aq at the right bottom to check if anything with the measurement went wrong.
+.RE
+.IP Note
+Currently the plot shows only the last 200 seconds. If you want to have a longer timerange, you can use the information which is automatically stored in the \(aqR\(aq file (see above).
+.RE
+.SS Muon Lifetime
+.sp
+A lifetime measurement of muons can be performed here. A histogram of time differences between succeding pulses in the same channel is shown. It can be fit with an exponential by clicking on \(aqFit!\(aq. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.
+.INDENT 0.0
+.TP
+.B The measurment can be activated with the checkbox. In the following popup window the measurment has to be configured. It depends mainly on the detector you use and influences the quality of the measurment. The signal is accepted if more than one pulse appears in the single pulse channel or if one pulse appears in the single pulse channel and >= 2 pulses appear in the double pulse channel. The coincidence time is set to ?microseconds for this measurement. The signal are vetoed with the veto channel: only events are accepted if no pulse occurs there. If the selfveto is activated it accepts only events if:
+.INDENT 7.0
+.IP \(bu 2
+more than one pulse appears in the single pulse channel and none pulse is measured in the double pulse channel
+.IP \(bu 2
+one pulse in the single pulse channel appears and exactly two pulses in the double pulse channel.
+.UNINDENT
+.UNINDENT
+.IP Warning
+The error of the fit might be wrong!
+.RE
+.SS Muon Velocity
+.sp
+In this tab the muon velocity can be measured. The measurement can be started with activating the checkbox. In the following popup window it has to be configured.
+.IP Warning
+The error of the fit might be wrong!
+.RE
+.SS Pulse Analyzer
+.sp
+You can have a look at the pulsewidhts in this plot. The height of the pulses is lost during the digitization prozess, so all pulses have the same height here.
+On the left side is an oscilloscope of the pulsewidths shown and on the right side are the pulsewidths collected in an histogram.
+.SS GPS Output
+.sp
+In this tab you can read out the GPS information of the DAQ card. It requires a connected GPS antenna. The information are summarized on the bottom in a text box, from where they can be copied.
+.SS Raw DAQ data
+.sp
+The last tab of muonic displays the raw ASCII DAQ data.
+This can be saved to a file. If the DAQ status messages should be supressed in that file, the option \fI\-n\fP should be given at the start of muonic.
+The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
+To issue such an command periodically, you can use the button \(aqPeriodic Call\(aq
+.IP Note
+The two most importand DAQ commands are \(aqCD\(aq (\(aqcounter disable\(aq) and \(aqCE\(aq (\(aqcounter enable\(aq). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.
+.RE
+.SS Fermilab DAQ \- hardware documentation
+.SS ASCII DAQ output format
+.sp
+sample line of DAQ output \- example for the daq data format
+.TS
+center;
+|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|l|.
+_
+T{
+triggers
+T}	T{
+r0
+T}	T{
+f0
+T}	T{
+r1
+T}	T{
+f1
+T}	T{
+r2
+T}	T{
+f2
+T}	T{
+r3
+T}	T{
+f3
+T}	T{
+onepps
+T}	T{
+gpstime
+T}	T{
+gpsdte
+T}	T{
+gps\-valid
+T}	T{
+gps\-satelites
+T}	T{
+xx
+T}	T{
+correction
+T}
+_
+T{
+92328FE2
+T}	T{
+00
+T}	T{
+3D
+T}	T{
+00
+T}	T{
+3E
+T}	T{
+00
+T}	T{
+00
+T}	T{
+00
+T}	T{
+00
+T}	T{
+915E10CF
+T}	T{
+034016.021
+T}	T{
+060180
+T}	T{
+V
+T}	T{
+00
+T}	T{
+0
+T}	T{
++0055
+T}
+_
+.TE
+.SS DAQ onboard documentation
+.sp
+Online help on the DAQ cards is available by sending the following commands to the DAQ
+.INDENT 0.0
+.IP \(bu 2
+V1, V2, V3
+.IP \(bu 2
+H1,H2
+.UNINDENT
+.SS V1
+.TS
+center;
+|l|l|l|.
+_
+T{
+Setting
+T}	T{
+example value
+T}	T{
+description
+T}
+_
+T{
+Run Mode
+T}	T{
+Off
+T}	T{
+CE (cnt enable), CD (cnt disable )
+T}
+_
+T{
+Ch(s) Enabled
+T}	T{
+3,2,1,0
+T}	T{
+Cmd DC  Reg C0 using (bits 3\-0)
+T}
+_
+T{
+Veto Enable
+T}	T{
+Off
+T}	T{
+VE 0 (Off),  VE 1 (On)
+T}
+_
+T{
+Veto Select
+T}	T{
+Ch0
+T}	T{
+Cmd DC  Reg C0 using (bits 7,6)
+T}
+_
+T{
+Coincidence 1\-4
+T}	T{
+1\-Fold
+T}	T{
+Cmd DC  Reg C0 using (bits 5,4)
+T}
+_
+T{
+Pipe Line Delay
+T}	T{
+40 nS
+T}	T{
+Cmd DT  Reg T1=rDelay  Reg T2=wDelay  10nS/cnt
+T}
+_
+T{
+Gate Width
+T}	T{
+100 nS
+T}	T{
+Cmd DC  Reg C2=LowByte Reg C3=HighByte 10nS/cnt
+T}
+_
+T{
+Veto Width
+T}	T{
+0 nS
+T}	T{
+Cmd VG  (10nS/cnt)
+T}
+_
+T{
+Ch0 Threshold
+Ch1 Threshold
+Ch2 Threshold
+Ch3 Threshold
+T}	T{
+0.200 vlts
+0.200 vlts
+0.200 vlts
+0.200 vlts
+T}	T{
+T}
+_
+T{
+Test Pulser Vlt
+Test Pulse Ena
+T}	T{
+3.000 vlts
+Off
+T}	T{
+T}
+_
+.TE
+.sp
+Example line for 1 of 4 channels. (Line Drawing, Not to Scale)
+Input Pulse edges (begin/end) set rising/falling tags bits.
+____~~~~~~_________________________________ Input Pulse, Gate cycle begins
+__________________~________________________ Delayed Rise Edge \(aqRE\(aq Tag Bit
+________________________~__________________ Delayed Fall Edge \(aqFE\(aq Tag Bit
+_____________                           Tag Bits delayed by PipeLnDly
+___|        
+.nf
+|_________________________ PipeLineDelay :   40nS
+_____________________
+_________________|
+.fi
+                     
+.nf
+|___ Capture Window:   60nS
+___________________________________
+___|
+.fi
+                                   
+.nf
+|
+.fi
+___ Gate Width    :  100nS
+.sp
+If \(aqRE\(aq,\(aqFE\(aq are outside Capture Window, data tag bit(s) will be missing.
+CaptureWindow = GateWidth \- PipeLineDelay
+The default Pipe Line Delay is 40nS, default Gate Width is 100nS.
+Setup CMD sequence for Pipeline Delay.  CD,  WT 1 0, WT 2 nn (10nS/cnt)
+Setup CMD sequence for Gate Width.  CD, WC 2 nn(10nS/cnt), WC 3 nn (2.56uS/cnt)
+.sp
+H2
+.sp
+Barometer      Qnet Help Page 2
+BA      \- Display Barometer trim setting in mVolts and pressure as mBar.
+BA d    \- Calibrate Barometer by adj. trim DAC ch in mVlts (0\-4095mV).
+Flash
+FL p    \- Load Flash with Altera binary file(
+.nf
+*
+.fi
+.rbf), p=password.
+FR      \- Read FPGA setup flash, display sumcheck.
+FMR p   \- Read page 0\-3FF(h), (264 bytes/page)
+Page 100h= start fpga 
+.nf
+*
+.fi
+.rbf file, page 0=saved setup.
+GPS
+NA 0    \- Append NMEA GPS data Off,(include 1pps data).
+NA 1    \- Append NMEA GPS data On, (Adds GPS to output).
+NA 2    \- Append NMEA GPS data Off,(no 1pps data).
+NM 0    \- NMEA GPS display, Off, (default), GPS port speed 38400, locked.
+NM 1    \- NMEA GPS display (RMC + GGA + GSV) data.
+NM 2    \- NMEA GPS display (ALL) data, use with GPS display applications.
+Test Pulser
+TE m    \- Enable run mode,  0=Off, 1=One cycle, 2=Continuous.
+TD m    \- Load sample trigger data list, 0=Reset, 1=Singles, 2=Majority.
+TV m    \- Voltage level at pulse DAC, 0\-4095mV, TV=read.
+Serial #
+SN p n  \- Store serial # to flash, p=password, n=(0\-65535 BCD).
+SN      \- Display serial number (BCD).
+Status
+ST      \- Send status line now.  This resets the minute timer.
+ST 0    \- Status line, disabled.
+ST 1 m  \- Send status line every (m) minutes.(m=1\-30, def=5).
+ST 2 m  \- Include scalar data line, chs S0\-S4 after each status line.
+ST 3 m  \- Include scalar data line, plus reset counters on each timeout.
+TI n     \- Timer (day hr:min:sec.msec), TI=display time, (TI n=0 clear).
+U1 n     \- Display Uart error counter, (U1 n=0 to zero counters).
+VM 1     \- View mode, 0x80=Event_Demarcation_Bit outputs a blank line.
+\- View mode returns to normal after \(aqCD\(aq,\(aqCE\(aq,\(aqST\(aq or \(aqRE\(aq.
+.sp
+H1
+Quarknet Scintillator Card,  Qnet2.5  Vers 1.11  Compiled Jul 15 2009  HE=Help
+Serial#=6531     uC_Volts=3.33      GPS_TempC=0.0     mBar=1023.8
+.sp
+CE     \- TMC Counter Enable.
+CD     \- TMC Counter Disable.
+DC     \- Display Control Registers, (C0\-C3).
+WC a d \- Write   Control Registers, addr(0\-6) data byte(H).
+DT     \- Display TMC Reg, 0\-3, (1=PipeLineDelayRd, 2=PipeLineDelayWr).
+WT a d \- Write   TMC Reg, addr(1,2) data byte(H), if a=4 write delay word.
+DG     \- Display GPS Info, Date, Time, Position and Status.
+DS     \- Display Scalar, channel(S0\-S3), trigger(S4), time(S5).
+RE     \- Reset complete board to power up defaults.
+RB     \- Reset only the TMC and Counters.
+SB p d \- Set Baud,password, 1=19K, 2=38K, 3=57K ,4=115K, 5=230K, 6=460K, 7=920K
+SA n   \- Save setup, 0=(TMC disable), 1=(TMC enable), 2=(Restore Defaults).
+TH     \- Thermometer data display (@ GPS), \-40 to 99 degrees C.
+TL c d \- Threshold Level, signal ch(0\-3)(4=setAll), data(0\-4095mV), TL=read.
+Veto   \- Veto select, Off=\(aqVE 0\(aq, On=\(aqVE 1\(aq, Gate=\(aqVG c\(aq, 0\-255(D) 10ns/cnt.
+View   \- View setup registers. Setup=V1, Voltages(V2), GPS LOCK(V3).
+HELP   \- HE,H1=Page1, H2=Page2, HB=Barometer, HS=Status, HT=Trigger.
+.sp
+VE2
+V2
+Barometer Pressure Sensor
+Calibration Voltage  = 1495 mVolts   Use Cmd \(aqBA\(aq to calibrate.
+Sensor Output Voltage= 1655 mVolts   (2.93mV *  565 Cnts)
+Pressure mBar        = 1023.6        (1655.5 \- 1500)/15 + 1013.25
+Pressure inch        = 30.63         (mBar / 33.42)
+.sp
+Timer Capture/Compare Channel
+TempC  = 0.0     Error?  Check sensor cable connection at GPS unit.
+TempF  = 32.0    (TempC * 1.8) + 32
+.sp
+Analog to Digital Converter Channels(ADC)
+Vcc 1.80V = 1.82 vlts     (2.93mV *  621 Cnts)
+Vcc 1.20V = 1.19 vlts     (2.93mV *  407 Cnts)
+Pos 2.50V = 2.45 vlts     (2.93mV *  837 Cnts)
+Neg 5.00V = 5.03 vlts     (7.38mV *  682 Cnts)
+Vcc 3.30V = 3.33 vlts     (4.84mV *  689 Cnts)
+Pos 5.00V = 4.84 vlts     (7.38mV *  656 Cnts)
+5V Test    Max=4.86v    Min=4.84v    Noise=0.015v
+.sp
+V3
+10 Second Accumulation of 1PPS Latched 25MHz Counter. (20 line buffer)
+Buffer     Now (hex)     Prev\-Now (dec) (25e6*10)
+1              0               0
+2              0               0
+3              0               0
+4              0               0
+5              0               0
+6              0               0
+7              0               0
+8              0               0
+9              0               0
+10              0               0
+11              0               0
+12              0               0
+13              0               0
+14              0               0
+15              0               0
+16              0               0
+17              0               0
+18              0               0
+19              0               0
+20              0               0
+.SS muonic package software reference
+.SS main package: muonic
+.sp
+\fBmuonic.daq\fP
+\fBmuonic.gui\fP
+\fBmuonic.analysis\fP
+.SS daq i/o with muonic.daq
+.sp
+Provide a connection to the QNet DAQ cards via python\-serial. For software testing and development, (very) dumb DAQ card simulator is available
+.SS \fImuonic.daq.DAQProvider\fP
+.sp
+Control the two I/O threads which communicate with the DAQ. If the simulated DAQ is used, there is only one thread.
+.INDENT 0.0
+.TP
+.B class muonic.daq.DAQProvider.DAQClient(port, logger=None, root=None)
+.INDENT 7.0
+.TP
+.B data_available()
+is new data from daq available
+.UNINDENT
+.INDENT 7.0
+.TP
+.B get(*args)
+Get something from the daq
+.UNINDENT
+.INDENT 7.0
+.TP
+.B put(*args)
+Send information to the daq
+.UNINDENT
+.INDENT 7.0
+.TP
+.B setup_socket(port)
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B exception muonic.daq.DAQProvider.DAQIOError
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.daq.DAQProvider.DAQProvider(logger=None, sim=False)
+Launch the main part of the GUI and the worker threads. periodicCall and
+endApplication could reside in the GUI part, but putting them here
+means that you have all the thread controls in a single place.
+.INDENT 7.0
+.TP
+.B data_available()
+is new data from daq available
+.UNINDENT
+.INDENT 7.0
+.TP
+.B get(*args)
+Get something from the daq
+.UNINDENT
+.INDENT 7.0
+.TP
+.B put(*args)
+Send information to the daq
+.UNINDENT
+.UNINDENT
+.SS \fImuonic.daq.DAQConnection\fP
+.sp
+The module provides a class which uses python\-serial to open a connection over the usb ports to the daq card. Since on LINUX systems the used usb device ( which is usually /dev/tty0 ) might change during runtime, this is catched automatically by DaqConnection. Therefore a shell script is invoked.
+.INDENT 0.0
+.TP
+.B class muonic.daq.DaqConnection.DaqConnection(inqueue, outqueue, logger)
+.INDENT 7.0
+.TP
+.B get_port()
+check out which device (/dev/tty) is used for DAQ communication
+.UNINDENT
+.INDENT 7.0
+.TP
+.B read()
+Get data from the DAQ. Read it from the provided Queue.
+.UNINDENT
+.INDENT 7.0
+.TP
+.B write()
+Put messages from the inqueue which is filled by the DAQ
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.daq.DaqConnection.DaqServer(port, logger)
+.INDENT 7.0
+.TP
+.B read()
+Get data from the DAQ. Read it from the provided Queue.
+.UNINDENT
+.INDENT 7.0
+.TP
+.B serve()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B setup_socket(port, adress=\(aq127.0.0.1\(aq)
+.UNINDENT
+.INDENT 7.0
+.TP
+.B write()
+Put messages from the inqueue which is filled by the DAQ
+.UNINDENT
+.UNINDENT
+.SS \fImuonic.daq.SimDaqConnection\fP
+.sp
+This module provides a dummy class which simulates DAQ I/O which is read from the file "simdaq.txt".
+The simulation is only useful if the software\-gui should be tested, but no DAQ card is available
+.sp
+Provides a simple DAQ card simulation, so that software can be tested
+.INDENT 0.0
+.TP
+.B class muonic.daq.SimDaqConnection.SimDaq(logger, usefile=\(aqsimdaq.txt\(aq, createfakerates=True)
+.INDENT 7.0
+.TP
+.B _physics()
+This routine will increase the scalars variables using predefined rates
+Rates are drawn from Poisson distributions
+.UNINDENT
+.INDENT 7.0
+.TP
+.B inWaiting()
+simulate a busy DAQ
+.UNINDENT
+.INDENT 7.0
+.TP
+.B readline()
+read dummy pulses from the simdaq file till
+the configured value is reached
+.UNINDENT
+.INDENT 7.0
+.TP
+.B write(command)
+Trigger a simulated daq response with command
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.daq.SimDaqConnection.SimDaqConnection(inqueue, outqueue, logger)
+.INDENT 7.0
+.TP
+.B read()
+Simulate DAQ I/O
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.daq.SimDaqConnection.SimDaqServer(port, logger)
+.INDENT 7.0
+.TP
+.B read()
+Simulate DAQ I/O
+.UNINDENT
+.INDENT 7.0
+.TP
+.B serve()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B setup_socket(port, adress=\(aq127.0.0.1\(aq)
+.UNINDENT
+.UNINDENT
+.SS pyqt4 gui with muonic.gui
+.sp
+This package contains all gui relevant classes like dialogboxes and tabwidgets. Every item in the global menu is utilizes a "Dialog" class. The "Canvas" classes contain plot routines for displaying measurements in the TabWidget.
+.sp
+The gui of the programm, written with PyQt4
+.SS \fImuonic.gui.MainWindow\fP
+.sp
+Contains the  "main" gui application. It Provides the MainWindow, which initializes the different tabs and draws a menu.
+.sp
+Provides the main window for the gui part of muonic
+.INDENT 0.0
+.TP
+.B class muonic.gui.MainWindow.MainWindow(daq, logger, opts, win_parent=None)
+The main application
+.INDENT 7.0
+.TP
+.B about_menu()
+Show a link to the online documentation
+.UNINDENT
+.INDENT 7.0
+.TP
+.B advanced_menu()
+Show a config dialog for advanced options, ie. gatewidth, interval for the rate measurement, options for writing pulsefile and the nostatus option
+.UNINDENT
+.INDENT 7.0
+.TP
+.B closeEvent(ev)
+Is triggered when the window is closed, we have to reimplement it
+to provide our special needs for the case the program is ended.
+.UNINDENT
+.INDENT 7.0
+.TP
+.B config_menu()
+Show the config dialog
+.UNINDENT
+.INDENT 7.0
+.TP
+.B get_channels_from_queue(msg)
+Explicitely scan message for channel information
+Return True if found, else False
+.sp
+DC gives :
+DC C0=23 C1=71 C2=0A C3=00
+.sp
+Which has the meaning:
+.sp
+MM \- 00 \-> 8bits for channel enable/disable, coincidence and veto
+
+.nf
+|7   |6   |5          |4          |3       |2       |1 |0       |
+|veto|veto|coincidence|coincidence|channel3|channel2|channel1|channel0|
+.fi
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-bits\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+Set bits for veto:
+........................
+00 \- ch0 is veto
+01 \- ch1 is veto
+10 \- ch2 is veto
+11 \- ch3 is veto
+........................
+Set bits for coincidence
+........................
+00 \- singles
+01 \- twofold
+10 \- threefold
+11 \- fourfold
+.UNINDENT
+.INDENT 7.0
+.TP
+.B get_scalars_from_queue(msg)
+Explicitely scan a message for scalar informatioin
+Returns True if found, else False
+.UNINDENT
+.INDENT 7.0
+.TP
+.B get_thresholds_from_queue(msg)
+Explicitely scan message for threshold information
+Return True if found, else False
+.UNINDENT
+.INDENT 7.0
+.TP
+.B help_menu()
+Show a simple help menu
+.UNINDENT
+.INDENT 7.0
+.TP
+.B manualdoc_menu()
+Show the manual that comes with muonic in a pdf viewer
+.UNINDENT
+.INDENT 7.0
+.TP
+.B processIncoming()
+Handle all the messages currently in the daq 
+and pass the result to the corresponding widgets
+.UNINDENT
+.INDENT 7.0
+.TP
+.B query_daq_for_scalars()
+Send a "DS" message to DAQ and record the time when this is don
+.UNINDENT
+.INDENT 7.0
+.TP
+.B sphinxdoc_menu()
+Show the sphinx documentation that comes with muonic in a
+browser
+.UNINDENT
+.INDENT 7.0
+.TP
+.B threshold_menu()
+Shows the threshold dialogue
+.UNINDENT
+.INDENT 7.0
+.TP
+.B widgetUpdate()
+Update the widgets
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B muonic.gui.MainWindow.tr()
+QCoreApplication.translate(str, str, str disambiguation=None, QCoreApplication.Encoding encoding=QCoreApplication.CodecForTr) \-> QString
+QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) \-> QString
+.UNINDENT
+.SS \fImuonic.gui.MuonicWidgets\fP
+.sp
+The functionality of the software
+.sp
+Provide the different physics widgets
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.DAQWidget(logger, parent=None)
+.INDENT 7.0
+.TP
+.B on_file_clicked()
+save the raw daq data to a automatically named file
+.UNINDENT
+.INDENT 7.0
+.TP
+.B on_hello_clicked()
+send a message to the daq
+.UNINDENT
+.INDENT 7.0
+.TP
+.B on_periodic_clicked()
+issue a command periodically
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.DecayWidget(logger, parent=None)
+.INDENT 7.0
+.TP
+.B activateMuondecayClicked()
+What should be done if we are looking for mu\-decays?
+.UNINDENT
+.INDENT 7.0
+.TP
+.B calculate(pulses)
+.UNINDENT
+.INDENT 7.0
+.TP
+.B decayFitRangeClicked()
+fit the muon decay histogram
+.UNINDENT
+.INDENT 7.0
+.TP
+.B is_active()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B mufitClicked()
+fit the muon decay histogram
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update()
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.GPSWidget(logger, parent=None)
+.INDENT 7.0
+.TP
+.B calculate()
+Readout the GPS information and display it in the tab.
+.UNINDENT
+.INDENT 7.0
+.TP
+.B is_active()
+Is the GPS readout activated? return bool
+.UNINDENT
+.INDENT 7.0
+.TP
+.B on_refresh_clicked()
+Display/refresh the GPS information
+.UNINDENT
+.INDENT 7.0
+.TP
+.B on_save_clicked()
+Save the GPS data to an extra file
+.UNINDENT
+.INDENT 7.0
+.TP
+.B switch_active(switch=False)
+Switch the GPS activation status.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.PulseanalyzerWidget(logger, parent=None)
+Provide a widget which is able to show a plot of triggered pulses
+.INDENT 7.0
+.TP
+.B activatePulseanalyzerClicked()
+Perform extra actions when the checkbox is clicked
+.UNINDENT
+.INDENT 7.0
+.TP
+.B calculate(pulses)
+.UNINDENT
+.INDENT 7.0
+.TP
+.B is_active()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update()
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.RateWidget(logger, parent=None)
+Display rate plot
+.INDENT 7.0
+.TP
+.B calculate(rates)
+.UNINDENT
+.INDENT 7.0
+.TP
+.B is_active()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B startClicked()
+start the rate measurement and write a file
+.UNINDENT
+.INDENT 7.0
+.TP
+.B stopClicked()
+hold the rate measurement plot till buttion is pushed again
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update()
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.StatusWidget(logger, parent=None)
+Provide a widget which shows the status informations of the DAQ and the muonic software
+.INDENT 7.0
+.TP
+.B is_active()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B on_refresh_clicked()
+Refresh the status information
+.UNINDENT
+.INDENT 7.0
+.TP
+.B on_save_clicked()
+Refresh the status information
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update()
+Fill the status information in the widget.
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicWidgets.VelocityWidget(logger, parent=None)
+.INDENT 7.0
+.TP
+.B activateVelocityClicked()
+Perform extra actions when the checkbox is clicked
+.UNINDENT
+.INDENT 7.0
+.TP
+.B calculate(pulses)
+.UNINDENT
+.INDENT 7.0
+.TP
+.B is_active()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B velocityFitClicked()
+fit the muon velocity histogram
+.UNINDENT
+.INDENT 7.0
+.TP
+.B velocityFitRangeClicked()
+fit the muon velocity histogram
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B muonic.gui.MuonicWidgets.tr()
+QCoreApplication.translate(str, str, str disambiguation=None, QCoreApplication.Encoding encoding=QCoreApplication.CodecForTr) \-> QString
+QCoreApplication.translate(str, str, str, QCoreApplication.Encoding, int) \-> QString
+.UNINDENT
+.SS \fImuonic.gui.MuonicDialogs\fP
+.sp
+Provide the dialog fields for user interaction
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.AdvancedDialog(gatewidth=100, timewindow=5.0, nostatus=None, *args)
+Set Configuration dialog
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.ConfigDialog(channelcheckbox_0=True, channelcheckbox_1=True, channelcheckbox_2=True, channelcheckbox_3=True, coincidencecheckbox_0=True, coincidencecheckbox_1=False, coincidencecheckbox_2=False, coincidencecheckbox_3=False, vetocheckbox=False, vetocheckbox_0=False, vetocheckbox_1=False, vetocheckbox_2=False, *args)
+Set Channel configuration
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.DecayConfigDialog(*args)
+Settings for the muondecay
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.FitRangeConfigDialog(upperlim=None, lowerlim=None, dimension=\(aq\(aq, *args)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.HelpDialog(*args)
+.INDENT 7.0
+.TP
+.B helptext()
+Show this text in the help window
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.MuonicDialog
+Base class of all muonic dialogs
+.INDENT 7.0
+.TP
+.B createButtonBox(objectname=\(aqbuttonBox\(aq, leftoffset=80, topoffset=900)
+Create a custom button for cancel/apply
+.UNINDENT
+.INDENT 7.0
+.TP
+.B createCheckGroupBox(label=\(aqSingle Pulse\(aq, objectname=\(aqsinglecheckbox\(aq, radio=False, leftoffset=20, setchecked=None, checkable=False, checkable_set=False, itemlabels=[\(aqChan0\(aq, \(aqChan1\(aq, \(aqChan2\(aq, \(aqChan3\(aq])
+Create a group of choices
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.PeriodicCallDialog(*args)
+Issue a command periodically
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.ThresholdDialog(thr0, thr1, thr2, thr3, *args)
+Set the Thresholds
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicDialogs.VelocityConfigDialog(*args)
+.UNINDENT
+.SS \fImuonic.gui.MuonicPlotCanvases\fP
+.sp
+Provide the canvases for plots in muonic
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.LifetimeCanvas(parent, logger, binning=(0, 10, 21))
+A simple histogram for the use with mu lifetime
+measurement
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.MuonicHistCanvas(parent, logger, binning, histcolor=\(aqb\(aq, **kwargs)
+A base class for all canvases with a histogram
+.INDENT 7.0
+.TP
+.B show_fit(bin_centers, bincontent, fitx, decay, p, covar, chisquare, nbins)
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update_plot(data)
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas(parent, logger, ymin=0, ymax=10, xmin=0, xmax=10, xlabel=\(aqxlabel\(aq, ylabel=\(aqylabel\(aq, grid=True, spacing=(0.1, 0.9))
+The base class of all muonic plot canvases
+.INDENT 7.0
+.TP
+.B color(string, color=\(aqnone\(aq)
+output colored strings on the terminal
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update_plot()
+Instructions to updated this plot
+implement this individually
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.PulseCanvas(parent, logger)
+Matplotlib Figure widget to display Pulses
+.INDENT 7.0
+.TP
+.B update_plot(pulses)
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.PulseWidthCanvas(parent, logger, histcolor=\(aqr\(aq)
+.INDENT 7.0
+.TP
+.B update_plot(data)
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.ScalarsCanvas(parent, logger, MAXLENGTH=40)
+.INDENT 7.0
+.TP
+.B reset()
+reseting all data
+.UNINDENT
+.INDENT 7.0
+.TP
+.B update_plot(result, trigger=False, channelcheckbox_0=True, channelcheckbox_1=True, channelcheckbox_2=True, channelcheckbox_3=True)
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.gui.MuonicPlotCanvases.VelocityCanvas(parent, logger, binning=(0.0, 30, 15))
+.UNINDENT
+.SS analyis package muonic.analysis
+.SS \fImuonic.analysis.PulseAnalyzer\fP
+.sp
+Transformation of ASCII DAQ data. Combination of Pulses to events, and looking for decaying muons with different trigger condi
+.sp
+Get the absolute timing of the pulses
+by use of the gps time
+Calculate also a non hex representation of
+leading and falling edges of the pulses
+.INDENT 0.0
+.TP
+.B class muonic.analysis.PulseAnalyzer.DecayTriggerThorough(logger)
+We demand a second pulse in the same channel where the muon got stuck
+Should operate for a 10mu sec triggerwindow
+.INDENT 7.0
+.TP
+.B trigger(triggerpulses, single_channel=2, double_channel=3, veto_channel=4, mindecaytime=0, minsinglepulsewidth=0, maxsinglepulsewidth=12000, mindoublepulsewidth=0, maxdoublepulsewidth=12000)
+Trigger on a certain combination of single and doublepulses
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.analysis.PulseAnalyzer.PulseExtractor(pulsefile=\(aq\(aq)
+get the pulses out of a daq line
+speed is important here
+.INDENT 7.0
+.TP
+.B _calculate_edges(line, counter_diff=0)
+get the leading and falling edges of the pulses
+Use counter diff for getting pulse times in subsequent 
+lines of the triggerflag
+.UNINDENT
+.INDENT 7.0
+.TP
+.B _get_evt_time(time, correction, trigger_count, onepps)
+Get the absolute event time in seconds since day start
+If gps is not available, only relative eventtime based on counts
+is returned
+.UNINDENT
+.INDENT 7.0
+.TP
+.B _order_and_cleanpulses()
+Remove pulses which have a 
+leading edge later in time than a 
+falling edge and do a bit of sorting
+Remove also single leading or falling edges
+NEW: We add virtual falling edges!
+.UNINDENT
+.INDENT 7.0
+.TP
+.B close_file()
+.UNINDENT
+.INDENT 7.0
+.TP
+.B extract(line)
+Analyze subsequent lines (one per call)
+and check if pulses are related to triggers
+For each new trigger,
+return the set of pulses which belong to that trigger,
+otherwise return None
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B class muonic.analysis.PulseAnalyzer.VelocityTrigger(logger)
+.INDENT 7.0
+.TP
+.B trigger(pulses, upperchannel=1, lowerchannel=2)
+Timedifference will be calculated t(upperchannel) \- t(lowerchannel)
+.UNINDENT
+.UNINDENT
+.SS \fImuonic.analysis.fit\fP
+.sp
+Provide a fitting routine
+.sp
+Script for performing a fit to a histogramm of recorded 
+time differences for the use with QNet
+.INDENT 0.0
+.TP
+.B muonic.analysis.fit.gaussian_fit(bincontent, binning=(0, 2, 10), fitrange=None)
+.UNINDENT
+.INDENT 0.0
+.TP
+.B muonic.analysis.fit.main(bincontent=None, binning=(0, 10, 21), fitrange=None)
+.UNINDENT
+.INDENT 0.0
+.IP \(bu 2
+\fIgenindex\fP
+.IP \(bu 2
+\fImodindex\fP
+.IP \(bu 2
+\fIsearch\fP
+.UNINDENT
+.SH AUTHOR
+robert.franke,achim.stoessl,basho.kaminsky
+.SH COPYRIGHT
+2012, robert.franke,achim.stoessl,basho.kaminsky
+.\" Generated by docutils manpage writer.
+.\" 
+.

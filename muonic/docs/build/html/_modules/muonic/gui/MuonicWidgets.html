@@ -1,0 +1,608 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic.gui.MuonicWidgets &mdash; muonic 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="muonic 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for muonic.gui.MuonicWidgets</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provide the different physics widgets</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c"># Qt4 imports</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtGui</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span>
+
+<span class="c">#muonic imports</span>
+<span class="kn">from</span> <span class="nn">LineEdit</span> <span class="kn">import</span> <span class="n">LineEdit</span>
+<span class="kn">from</span> <span class="nn">MuonicPlotCanvases</span> <span class="kn">import</span> <span class="n">ScalarsCanvas</span><span class="p">,</span><span class="n">LifetimeCanvas</span><span class="p">,</span><span class="n">PulseCanvas</span><span class="p">,</span><span class="n">VelocityCanvas</span><span class="p">,</span><span class="n">PulseWidthCanvas</span>
+<span class="kn">from</span> <span class="nn">MuonicDialogs</span> <span class="kn">import</span> <span class="n">DecayConfigDialog</span><span class="p">,</span><span class="n">PeriodicCallDialog</span><span class="p">,</span> <span class="n">VelocityConfigDialog</span>
+<span class="kn">from</span> <span class="nn">..analysis.fit</span> <span class="kn">import</span> <span class="n">main</span> <span class="k">as</span> <span class="n">fit</span>
+<span class="kn">from</span> <span class="nn">..analysis.fit</span> <span class="kn">import</span> <span class="n">gaussian_fit</span>
+<span class="kn">from</span> <span class="nn">..analysis.PulseAnalyzer</span> <span class="kn">import</span> <span class="n">VelocityTrigger</span><span class="p">,</span><span class="n">DecayTriggerThorough</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_qt4agg</span> \
+<span class="kn">import</span> <span class="n">NavigationToolbar2QTAgg</span> <span class="k">as</span> <span class="n">NavigationToolbar</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">n</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">tr</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QCoreApplication</span><span class="o">.</span><span class="n">translate</span>
+
+<span class="n">C</span> <span class="o">=</span> <span class="mi">29979245000</span> <span class="c"># cm/s</span>
+
+<div class="viewcode-block" id="RateWidget"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.RateWidget">[docs]</a><span class="k">class</span> <span class="nc">RateWidget</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Display rate plot</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span>           <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">holdplot</span>         <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_result</span>   <span class="o">=</span> <span class="bp">False</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_monitor</span>  <span class="o">=</span> <span class="n">ScalarsCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span>            <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_mes_start</span>   <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previous_ch_counts</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="mi">0</span> <span class="p">,</span><span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="s">&quot;ch3&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ch_counts</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="mi">0</span> <span class="p">,</span><span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span><span class="s">&quot;ch3&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="c"># buttons for restart/clear the plot rate plot   </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_button</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;Restart&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_button</span>  <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;Stop&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastscalarquery</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thisscalarquery</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="c">#self.pulses_to_show = None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;time | chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time </span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        
+        <span class="c"># always write the rate plot data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_file_write</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_button</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">startClicked</span>
+                              <span class="p">)</span>
+
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_button</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">stopClicked</span>
+                              <span class="p">)</span>
+
+        <span class="n">ntb</span> <span class="o">=</span> <span class="n">NavigationToolbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">rate_widget</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">rate_widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">rate_widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">ntb</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">rate_widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_button</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rate_widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_button</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RateWidget.calculate"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.RateWidget.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">rates</span><span class="p">):</span>
+        <span class="c">#now = time.time()</span>
+        <span class="c">#self.thisscalarquery = now - self.lastscalarquery</span>
+        <span class="c">#self.lastscalarquery = now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="n">rates</span>
+</div>
+<div class="viewcode-block" id="RateWidget.update"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.RateWidget.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">holdplot</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rates</span><span class="p">)</span>
+      </div>
+<div class="viewcode-block" id="RateWidget.is_active"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.RateWidget.is_active">[docs]</a>    <span class="k">def</span> <span class="nf">is_active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">True</span> <span class="c"># rate widget is always active    </span>
+</div>
+<div class="viewcode-block" id="RateWidget.startClicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.RateWidget.startClicked">[docs]</a>    <span class="k">def</span> <span class="nf">startClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        restart the rate measurement</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Restart Button Clicked&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">holdplot</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scalars_monitor</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        </div>
+<div class="viewcode-block" id="RateWidget.stopClicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.RateWidget.stopClicked">[docs]</a>    <span class="k">def</span> <span class="nf">stopClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        hold the rate measurement plot till buttion is pushed again</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">holdplot</span> <span class="o">=</span> <span class="bp">True</span>
+
+</div></div>
+<div class="viewcode-block" id="PulseanalyzerWidget"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.PulseanalyzerWidget">[docs]</a><span class="k">class</span> <span class="nc">PulseanalyzerWidget</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span> <span class="c"># not used yet</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provide a widget which is able to show a plot of triggered pulses</span>
+<span class="sd">    &quot;&quot;&quot;</span>        
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">activatePulseanalyzer</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">activatePulseanalyzer</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;Show oscilloscope as well as the pulswidths&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+        <span class="n">activatePulseanalyzer</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;The oscilloscope will show the last triggered pulses in the selected time window&quot;</span><span class="p">))</span>
+        <span class="n">activatePulseanalyzer</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;activate_pulseanalyzer&quot;</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsecanvas</span> <span class="o">=</span> <span class="n">PulseCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsecanvas</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;pulse_canvas&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsewidthcanvas</span> <span class="o">=</span> <span class="n">PulseWidthCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsewidthcanvas</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;pulse_width_canvas&quot;</span><span class="p">)</span>
+        <span class="n">ntb</span> <span class="o">=</span> <span class="n">NavigationToolbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulsecanvas</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">ntb2</span> <span class="o">=</span> <span class="n">NavigationToolbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulsewidthcanvas</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        
+        <span class="n">grid</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">activatePulseanalyzer</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulsecanvas</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">ntb</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> 
+        <span class="n">grid</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulsewidthcanvas</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">ntb2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span>      <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsewidths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c"># more functional objects        </span>
+
+<div class="viewcode-block" id="PulseanalyzerWidget.is_active"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.PulseanalyzerWidget.is_active">[docs]</a>    <span class="k">def</span> <span class="nf">is_active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;activate_pulseanalyzer&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="PulseanalyzerWidget.calculate"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.PulseanalyzerWidget.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pulses</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulses</span> <span class="o">=</span> <span class="n">pulses</span>
+        <span class="c"># pulsewidths changed because falling edge can be None.</span>
+        <span class="c"># pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]</span>
+        <span class="n">pulsewidths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">pulses</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="k">for</span> <span class="n">le</span><span class="p">,</span> <span class="n">fe</span> <span class="ow">in</span> <span class="n">chan</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="n">pulsewidths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fe</span> <span class="o">-</span> <span class="n">le</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pulsewidths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsewidths</span> <span class="o">+=</span> <span class="n">pulsewidths</span>
+        </div>
+<div class="viewcode-block" id="PulseanalyzerWidget.update"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.PulseanalyzerWidget.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsecanvas</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulses</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsewidthcanvas</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulsewidths</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsewidths</span> <span class="o">=</span> <span class="p">[]</span>
+</div></div>
+<div class="viewcode-block" id="VelocityWidget"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.VelocityWidget">[docs]</a><span class="k">class</span> <span class="nc">VelocityWidget</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper_channel</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower_channel</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span> <span class="o">=</span> <span class="n">VelocityTrigger</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_distance</span> <span class="o">=</span> <span class="mf">100.</span> <span class="c"># in cm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omit_early_pulses</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="c">#self.velocitycanvas = VelocityCanvas(logger)</span>
+
+        <span class="n">activateVelocity</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">activateVelocity</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;Measure muon velocity&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+        <span class="n">activateVelocity</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;activate_velocity&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocityfit_button</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;Fit!&#39;</span><span class="p">))</span> 
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">activateVelocity</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocitycanvas</span> <span class="o">=</span> <span class="n">VelocityCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">velocitycanvas</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;velocity_plot&quot;</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">velocitycanvas</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ntb</span> <span class="o">=</span> <span class="n">NavigationToolbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">velocitycanvas</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">ntb</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">velocityfit_button</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>      
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">activateVelocity</span><span class="p">,</span>
+                               <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">activateVelocityClicked</span>
+                               <span class="p">)</span>
+        
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">velocityfit_button</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">velocityFitClicked</span>
+                              <span class="p">)</span>
+        
+<div class="viewcode-block" id="VelocityWidget.calculate"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.VelocityWidget.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pulses</span><span class="p">):</span>
+        <span class="n">flighttime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">pulses</span><span class="p">,</span><span class="n">upperchannel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">upper_channel</span><span class="p">,</span><span class="n">lowerchannel</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lower_channel</span><span class="p">,</span><span class="n">omit_early_pulses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">omit_early_pulses</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">flighttime</span> <span class="o">!=</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">flighttime</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">velocity</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_distance</span><span class="o">/</span><span class="p">((</span><span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">))</span><span class="o">*</span><span class="n">flighttime</span><span class="p">))</span><span class="o">/</span><span class="n">C</span> <span class="c">#flighttime is in ns, return in fractions of C</span>
+            <span class="c">#print flighttime,velocity,self.channel_distance</span>
+            <span class="k">print</span> <span class="s">&#39;VELOCITY&#39;</span><span class="p">,</span> <span class="n">velocity</span>
+            <span class="k">if</span> <span class="n">flighttime</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span>
+                
+        
+        <span class="c">#print self.times</span>
+    <span class="c">#FIXME: we should not name this update</span>
+    <span class="c">#since update is already a member</span></div>
+<div class="viewcode-block" id="VelocityWidget.update"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.VelocityWidget.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">VelocityCanvas</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;velocity_plot&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">times</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="VelocityWidget.is_active"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.VelocityWidget.is_active">[docs]</a>    <span class="k">def</span> <span class="nf">is_active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span>
+    </div>
+<div class="viewcode-block" id="VelocityWidget.velocityFitClicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.VelocityWidget.velocityFitClicked">[docs]</a>    <span class="k">def</span> <span class="nf">velocityFitClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        fit the muon velocity histogram</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fitresults</span> <span class="o">=</span> <span class="n">gaussian_fit</span><span class="p">(</span><span class="n">bincontent</span><span class="o">=</span><span class="n">n</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">velocitycanvas</span><span class="o">.</span><span class="n">heights</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fitresults</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocitycanvas</span><span class="o">.</span><span class="n">show_fit</span><span class="p">(</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="VelocityWidget.activateVelocityClicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.VelocityWidget.activateVelocityClicked">[docs]</a>    <span class="k">def</span> <span class="nf">activateVelocityClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform extra actions when the checkbox is clicked</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
+            
+            <span class="n">config_dialog</span> <span class="o">=</span> <span class="n">VelocityConfigDialog</span><span class="p">()</span>
+            <span class="n">rv</span> <span class="o">=</span> <span class="n">config_dialog</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">chan</span><span class="p">,</span><span class="n">ch_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s">&quot;0&quot;</span><span class="p">,</span><span class="s">&quot;1&quot;</span><span class="p">,</span><span class="s">&quot;2&quot;</span><span class="p">,</span><span class="s">&quot;3&quot;</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">config_dialog</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;uppercheckbox_&quot;</span> <span class="o">+</span> <span class="n">ch_label</span> <span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">upper_channel</span> <span class="o">=</span> <span class="n">chan</span> <span class="o">+</span> <span class="mi">1</span> <span class="c"># ch index is shifted</span>
+                        
+                <span class="k">for</span> <span class="n">chan</span><span class="p">,</span><span class="n">ch_label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s">&quot;0&quot;</span><span class="p">,</span><span class="s">&quot;1&quot;</span><span class="p">,</span><span class="s">&quot;2&quot;</span><span class="p">,</span><span class="s">&quot;3&quot;</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">config_dialog</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;lowercheckbox_&quot;</span> <span class="o">+</span> <span class="n">ch_label</span> <span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lower_channel</span> <span class="o">=</span> <span class="n">chan</span> <span class="o">+</span> <span class="mi">1</span> <span class="c">#</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_distance</span>  <span class="o">=</span> <span class="n">config_dialog</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QSpinBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;channel_distance&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>            
+            <span class="bp">self</span><span class="o">.</span><span class="n">omit_early_pulses</span> <span class="o">=</span> <span class="n">config_dialog</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;early_pulse_cut&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">True</span>            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">False</span>                
+</div></div>
+<div class="viewcode-block" id="DecayWidget"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DecayWidget">[docs]</a><span class="k">class</span> <span class="nc">DecayWidget</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span> 
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mufit_button</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;Fit!&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lifetime_monitor</span> <span class="o">=</span> <span class="n">LifetimeCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minsinglepulsewidth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxsinglepulsewidth</span> <span class="o">=</span> <span class="mi">100000</span> <span class="c">#inf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mindoublepulsewidth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxdoublepulsewidth</span> <span class="o">=</span> <span class="mi">100000</span> <span class="c">#inf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">muondecaycounter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastdecaytime</span>    <span class="o">=</span> <span class="s">&#39;None&#39;</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">singlepulsechannel</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">doublepulsechannel</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vetopulsechannel</span>   <span class="o">=</span> <span class="mi">2</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay_mintime</span>      <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay_selfveto</span>     <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active</span>             <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span> <span class="o">=</span> <span class="n">DecayTriggerThorough</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay</span>              <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span>            <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;/dev/null&quot;</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">dec_mes_start</span>      <span class="o">=</span> <span class="bp">None</span>
+
+
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mufit_button</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">mufitClicked</span>
+                              <span class="p">)</span>
+
+
+        <span class="n">ntb1</span> <span class="o">=</span> <span class="n">NavigationToolbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lifetime_monitor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="c"># activate Muondecay mode with a checkbox</span>
+        <span class="n">activateMuondecay</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">activateMuondecay</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;activate_mudecay&quot;</span><span class="p">)</span>
+        <span class="n">activateMuondecay</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;Check for decayed Muons </span><span class="se">\n</span><span class="s">- Warning! this will define your coincidence/Veto settings!&quot;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">activateMuondecay</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">activateMuondecayClicked</span>
+                              <span class="p">)</span>
+        <span class="n">displayMuons</span>                 <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">displayMuons</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;muoncounter&quot;</span><span class="p">)</span>
+        <span class="n">lastDecay</span>                    <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">lastDecay</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s">&quot;lastdecay&quot;</span><span class="p">)</span>
+ 
+        <span class="n">decay_tab</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">decay_tab</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">activateMuondecay</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">decay_tab</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">displayMuons</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">decay_tab</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">lastDecay</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">decay_tab</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lifetime_monitor</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">decay_tab</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">ntb1</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">decay_tab</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mufit_button</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;muoncounter&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;We have </span><span class="si">%i</span><span class="s"> decayed muons &quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">muondecaycounter</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;lastdecay&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;Last detected decay at time </span><span class="si">%s</span><span class="s"> &quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">lastdecaytime</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+        
+        <span class="c">#self.decaywidget = self.widget(1)</span>
+
+<div class="viewcode-block" id="DecayWidget.is_active"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DecayWidget.is_active">[docs]</a>    <span class="k">def</span> <span class="nf">is_active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span>
+     </div>
+<div class="viewcode-block" id="DecayWidget.calculate"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DecayWidget.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pulses</span><span class="p">):</span>
+        <span class="c">#single_channel = self.singlepulsechannel, double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel,selfveto = self.decay_selfveto,mindecaytime = self.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth):</span>
+        <span class="n">decay</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">pulses</span><span class="p">,</span><span class="n">single_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">singlepulsechannel</span><span class="p">,</span><span class="n">double_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doublepulsechannel</span><span class="p">,</span> <span class="n">veto_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vetopulsechannel</span><span class="p">,</span> <span class="n">selfveto</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay_selfveto</span><span class="p">,</span> <span class="n">mindecaytime</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay_mintime</span><span class="p">,</span><span class="n">minsinglepulsewidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minsinglepulsewidth</span><span class="p">,</span><span class="n">maxsinglepulsewidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxsinglepulsewidth</span><span class="p">,</span> <span class="n">mindoublepulsewidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mindoublepulsewidth</span><span class="p">,</span> <span class="n">maxdoublepulsewidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxdoublepulsewidth</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="n">decay</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">when</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">asctime</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">decay</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span><span class="n">when</span><span class="p">))</span>
+            <span class="c">#devide by 1000 to get microseconds</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;We have found a decaying muon with a decaytime of </span><span class="si">%f</span><span class="s"> at </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">decay</span><span class="p">,</span><span class="n">when</span><span class="p">))</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">muondecaycounter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastdecaytime</span> <span class="o">=</span> <span class="n">when</span>
+      </div>
+<div class="viewcode-block" id="DecayWidget.mufitClicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DecayWidget.mufitClicked">[docs]</a>    <span class="k">def</span> <span class="nf">mufitClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        fit the muon decay histogram</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fitresults</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">bincontent</span><span class="o">=</span><span class="n">n</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lifetime_monitor</span><span class="o">.</span><span class="n">heights</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fitresults</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lifetime_monitor</span><span class="o">.</span><span class="n">show_fit</span><span class="p">(</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="n">fitresults</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="DecayWidget.update"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DecayWidget.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">:</span>
+            <span class="n">decay_times</span> <span class="o">=</span>  <span class="p">[</span><span class="n">decay_time</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">decay_time</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lifetime_monitor</span><span class="o">.</span><span class="n">update_plot</span><span class="p">(</span><span class="n">decay_times</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;muoncounter&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;We have </span><span class="si">%i</span><span class="s"> decayed muons &quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">muondecaycounter</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;lastdecay&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&quot;Dialog&quot;</span><span class="p">,</span> <span class="s">&quot;Last detected decay at time </span><span class="si">%s</span><span class="s"> &quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">lastdecaytime</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="o">.</span><span class="n">UnicodeUTF8</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">muondecay</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay</span><span class="p">:</span>
+                <span class="c">#muondecay = self.decay[0] </span>
+                <span class="n">muondecay_time</span> <span class="o">=</span> <span class="n">muondecay</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span><span class="s">&#39;_&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;Decay &#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">muondecay_time</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">muondecay</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">__repr__</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">decay</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+</div>
+<div class="viewcode-block" id="DecayWidget.activateMuondecayClicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DecayWidget.activateMuondecayClicked">[docs]</a>    <span class="k">def</span> <span class="nf">activateMuondecayClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        What should be done if we are looking for mu-decays?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+ 
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="c">#if not self.mainwindow.mudecaymode:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
+                <span class="c">#self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString(&quot;activate_mudecay&quot;)).setChecked(True)</span>
+
+                <span class="c"># launch the settings window</span>
+                <span class="n">config_window</span> <span class="o">=</span> <span class="n">DecayConfigDialog</span><span class="p">()</span>
+                <span class="n">rv</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+                    <span class="n">chan0_single</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;singlecheckbox_0&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan1_single</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;singlecheckbox_1&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan2_single</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;singlecheckbox_2&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan3_single</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;singlecheckbox_3&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan0_double</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;doublecheckbox_0&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan1_double</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;doublecheckbox_1&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan2_double</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;doublecheckbox_2&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan3_double</span> <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;doublecheckbox_3&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan0_veto</span>   <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;vetocheckbox_0&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan1_veto</span>   <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;vetocheckbox_1&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan2_veto</span>   <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;vetocheckbox_2&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="n">chan3_veto</span>   <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QRadioButton</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;vetocheckbox_3&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">decay_selfveto</span>  <span class="o">=</span> <span class="n">config_window</span><span class="o">.</span><span class="n">selfveto</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">decay_mintime</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config_window</span><span class="o">.</span><span class="n">mintime</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGroupBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;pulsewidthgroupbox&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">minsinglepulsewidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QSpinBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;minsinglepulsewidth&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">maxsinglepulsewidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QSpinBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;maxsinglepulsewidth&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mindoublepulsewidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QSpinBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;mindoublepulsewidth&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">maxdoublepulsewidth</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">config_window</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QSpinBox</span><span class="p">,</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s">&quot;maxdoublepulsewidth&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+                    
+                    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">chan0_single</span><span class="p">,</span><span class="n">chan1_single</span><span class="p">,</span><span class="n">chan2_single</span><span class="p">,</span><span class="n">chan3_single</span><span class="p">]):</span>
+                        <span class="k">if</span> <span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">singlepulsechannel</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="c"># there is a mapping later from this to an index with an offset</span>
+                <span class="c"># FIXME! </span>
+                    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">chan0_double</span><span class="p">,</span><span class="n">chan1_double</span><span class="p">,</span><span class="n">chan2_double</span><span class="p">,</span><span class="n">chan3_double</span><span class="p">]):</span>
+                        <span class="k">if</span> <span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">doublepulsechannel</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="c"># there is a mapping later from this to an index with an offset</span>
+
+                    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">chan0_veto</span><span class="p">,</span><span class="n">chan1_veto</span><span class="p">,</span><span class="n">chan2_veto</span><span class="p">,</span><span class="n">chan3_veto</span><span class="p">]):</span>
+                        <span class="k">if</span> <span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">vetopulsechannel</span> <span class="o">=</span> <span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="c"># there is a mapping later from this to an index with an offset</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;We now activate the Muondecay mode!</span><span class="se">\n</span><span class="s"> All other Coincidence/Veto settings will be overriden!&quot;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Changing gate width and enabeling pulses&quot;</span><span class="p">)</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Looking for single pulse in Channel </span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">singlepulsechannel</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Looking for double pulse in Channel </span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doublepulsechannel</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Using veto pulses in Channel </span><span class="si">%i</span><span class="s">&quot;</span>        <span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vetopulsechannel</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">))</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_label</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Muon Decay measurement active!&#39;</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_label</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&quot;CE&quot;</span><span class="p">)</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s">&quot;WC 03 04&quot;</span><span class="p">)</span>
+              
+                <span class="bp">self</span><span class="o">.</span><span class="n">mu_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">decayfilename</span><span class="p">,</span><span class="s">&#39;w&#39;</span><span class="p">)</span>        
+                <span class="bp">self</span><span class="o">.</span><span class="n">dec_mes_start</span> <span class="o">=</span> <span class="n">now</span>
+                <span class="c">#self.decaywidget.findChild(&quot;activate_mudecay&quot;).setChecked(True)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">True</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#self.decaywidget.findChild(QtGui.QCheckBox,QtCore.QString(&quot;activate_mudecay&quot;)).setChecked(False)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Muondecay mode now deactivated, returning to previous setting (if available)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">removeWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_label</span><span class="p">)</span>
+            <span class="c">#self.parentWidget().parentWidget().parentWidget().mudecaymode = False</span>
+            <span class="n">mtime</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec_mes_start</span>
+            <span class="n">mtime</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">mtime</span><span class="o">.</span><span class="n">seconds</span><span class="o">/</span><span class="p">(</span><span class="mf">3600.</span><span class="p">),</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">mtime</span><span class="o">.</span><span class="n">days</span> <span class="o">*</span><span class="mi">86400</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;The muon decay measurement was active for </span><span class="si">%f</span><span class="s"> hours&quot;</span> <span class="o">%</span> <span class="n">mtime</span><span class="p">)</span>
+            <span class="n">newmufilename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">decayfilename</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;HOURS&quot;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">mtime</span><span class="p">))</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span><span class="o">.</span><span class="n">decayfilename</span><span class="p">,</span><span class="n">newmufilename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="bp">False</span>
+</div></div>
+<div class="viewcode-block" id="DAQWidget"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DAQWidget">[docs]</a><span class="k">class</span> <span class="nc">DAQWidget</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">,</span><span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parentWidget</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_file</span>       <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span>           <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Command&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span>      <span class="o">=</span> <span class="n">LineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hello_button</span>    <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Send&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_button</span>     <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;Save to File&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">periodic_button</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span> <span class="s">&#39;Periodic Call&#39;</span><span class="p">))</span>
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hello_button</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">on_hello_clicked</span>
+                              <span class="p">)</span>
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span><span class="p">,</span>
+                              <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;returnPressed()&quot;</span><span class="p">),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">on_hello_clicked</span>
+                              <span class="p">)</span>
+        
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_button</span><span class="p">,</span>
+                                <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">on_file_clicked</span>
+                                <span class="p">)</span>
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_button</span><span class="p">,</span>
+                                <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;clicked()&quot;</span><span class="p">),</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">on_periodic_clicked</span>
+                                <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_box</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPlainTextEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_box</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="c"># only 500 lines history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_box</span><span class="o">.</span><span class="n">document</span><span class="p">()</span><span class="o">.</span><span class="n">setMaximumBlockCount</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+        
+        <span class="n">daq_layout</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">daq_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text_box</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">daq_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">daq_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">daq_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hello_button</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> 
+        <span class="n">daq_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_button</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> 
+        <span class="n">daq_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_button</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>   
+
+<div class="viewcode-block" id="DAQWidget.on_hello_clicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DAQWidget.on_hello_clicked">[docs]</a>    <span class="k">def</span> <span class="nf">on_hello_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        send a message to the daq</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span><span class="o">.</span><span class="n">displayText</span><span class="p">())</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span><span class="o">.</span><span class="n">displayText</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span><span class="o">.</span><span class="n">add_hist_item</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hello_edit</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="DAQWidget.on_file_clicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DAQWidget.on_file_clicked">[docs]</a>    <span class="k">def</span> <span class="nf">on_file_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        save the raw daq data to a automatically named file</span>
+<span class="sd">        &quot;&quot;&quot;</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">outputfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">rawfilename</span><span class="p">,</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_label</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;Writing to </span><span class="si">%s</span><span class="s">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">rawfilename</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_file</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">raw_mes_start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_label</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="DAQWidget.on_periodic_clicked"><a class="viewcode-back" href="../../../muonic.html#muonic.gui.MuonicWidgets.DAQWidget.on_periodic_clicked">[docs]</a>    <span class="k">def</span> <span class="nf">on_periodic_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        issue a command periodically</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">periodic_window</span> <span class="o">=</span> <span class="n">PeriodicCallDialog</span><span class="p">()</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="n">periodic_window</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rv</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">period</span> <span class="o">=</span> <span class="n">periodic_window</span><span class="o">.</span><span class="n">time_box</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span> <span class="c">#We need the period in milliseconds</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">periodic_window</span><span class="o">.</span><span class="n">textbox</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="n">commands</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;+&#39;</span><span class="p">)</span>
+            <span class="k">def</span> <span class="nf">periodic_put</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic_put</span> <span class="o">=</span> <span class="n">periodic_put</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic_call_timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+            <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_call_timer</span><span class="p">,</span>
+                               <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&quot;timeout()&quot;</span><span class="p">),</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">periodic_put</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic_put</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic_call_timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">periodic_status_label</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="n">tr</span><span class="p">(</span><span class="s">&#39;MainWindow&#39;</span><span class="p">,</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> every </span><span class="si">%s</span><span class="s"> sec&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="n">period</span><span class="o">/</span><span class="mi">1000</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_status_label</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">periodic_call_timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mainwindow</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">removeWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">periodic_status_label</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl,basho.kaminsky.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

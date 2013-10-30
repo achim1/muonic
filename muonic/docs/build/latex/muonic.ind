@@ -1,0 +1,180 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter {Symbols}
+  \item -d
+    \subitem muonic command line option, \hyperpage{2}
+  \item -n
+    \subitem muonic command line option, \hyperpage{2}
+  \item -p
+    \subitem muonic command line option, \hyperpage{2}
+  \item -s
+    \subitem muonic command line option, \hyperpage{2}
+  \item -t sec
+    \subitem muonic command line option, \hyperpage{2}
+  \item \_calculate\_edges() (muonic.analysis.PulseAnalyzer.PulseExtractor method), \hyperpage{11}
+  \item \_get\_evt\_time() (muonic.analysis.PulseAnalyzer.PulseExtractor method), \hyperpage{12}
+  \item \_order\_and\_cleanpulses() (muonic.analysis.PulseAnalyzer.PulseExtractor method), 
+		\hyperpage{12}
+  \item \_physics() (muonic.daq.SimDaqConnection.SimDaq method), \hyperpage{7}
+
+  \indexspace
+  \bigletter A
+  \item about\_menu() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item activateMuondecayClicked() (muonic.gui.MuonicWidgets.DecayWidget method), \hyperpage{9}
+  \item activateVelocityClicked() (muonic.gui.MuonicWidgets.VelocityWidget method), \hyperpage{10}
+
+  \indexspace
+  \bigletter C
+  \item calculate() (muonic.gui.MuonicWidgets.DecayWidget method), \hyperpage{9}
+  \item calculate() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method), \hyperpage{9}
+  \item calculate() (muonic.gui.MuonicWidgets.RateWidget method), \hyperpage{9}
+  \item calculate() (muonic.gui.MuonicWidgets.VelocityWidget method), \hyperpage{10}
+  \item close\_file() (muonic.analysis.PulseAnalyzer.PulseExtractor method), \hyperpage{12}
+  \item closeEvent() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item color() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method), \hyperpage{11}
+  \item config\_menu() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item ConfigDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item createButtonBox() (muonic.gui.MuonicDialogs.MuonicDialog method), \hyperpage{10}
+  \item createCheckGroupBox() (muonic.gui.MuonicDialogs.MuonicDialog method), \hyperpage{10}
+
+  \indexspace
+  \bigletter D
+  \item DaqConnection (class in muonic.daq.DaqConnection), \hyperpage{7}
+  \item DAQProvider (class in muonic.daq.DAQProvider), \hyperpage{7}
+  \item DAQWidget (class in muonic.gui.MuonicWidgets), \hyperpage{9}
+  \item DecayConfigDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item DecayTriggerThorough (class in muonic.analysis.PulseAnalyzer), \hyperpage{11}
+  \item DecayWidget (class in muonic.gui.MuonicWidgets), \hyperpage{9}
+
+  \indexspace
+  \bigletter E
+  \item exit\_program() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item extract() (muonic.analysis.PulseAnalyzer.PulseExtractor method), \hyperpage{12}
+
+  \indexspace
+  \bigletter G
+  \item gaussian\_fit() (in module muonic.analysis.fit), \hyperpage{12}
+  \item get\_port() (muonic.daq.DaqConnection.DaqConnection method), \hyperpage{7}
+  \item get\_scalars\_from\_queue() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item get\_thresholds\_from\_queue() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+
+  \indexspace
+  \bigletter H
+  \item help\_menu() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item HelpDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item helptext() (muonic.gui.MuonicDialogs.HelpDialog method), \hyperpage{10}
+
+  \indexspace
+  \bigletter I
+  \item inWaiting() (muonic.daq.SimDaqConnection.SimDaq method), \hyperpage{7}
+  \item is\_active() (muonic.gui.MuonicWidgets.DecayWidget method), \hyperpage{9}
+  \item is\_active() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method), \hyperpage{9}
+  \item is\_active() (muonic.gui.MuonicWidgets.RateWidget method), \hyperpage{9}
+  \item is\_active() (muonic.gui.MuonicWidgets.VelocityWidget method), \hyperpage{10}
+
+  \indexspace
+  \bigletter L
+  \item LifetimeCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{10}
+
+  \indexspace
+  \bigletter M
+  \item main() (in module muonic.analysis.fit), \hyperpage{12}
+  \item MainWindow (class in muonic.gui.MainWindow), \hyperpage{8}
+  \item mufitClicked() (muonic.gui.MuonicWidgets.DecayWidget method), \hyperpage{9}
+  \item muonic (module), \hyperpage{7}
+  \item muonic command line option
+    \subitem -d, \hyperpage{2}
+    \subitem -n, \hyperpage{2}
+    \subitem -p, \hyperpage{2}
+    \subitem -s, \hyperpage{2}
+    \subitem -t sec, \hyperpage{2}
+  \item muonic.analysis (module), \hyperpage{11}
+  \item muonic.analysis.fit (module), \hyperpage{12}
+  \item muonic.analysis.PulseAnalyzer (module), \hyperpage{11}
+  \item muonic.daq (module), \hyperpage{7}
+  \item muonic.daq.DaqConnection (module), \hyperpage{7}
+  \item muonic.daq.DAQProvider (module), \hyperpage{7}
+  \item muonic.daq.SimDaqConnection (module), \hyperpage{7}
+  \item muonic.gui (module), \hyperpage{8}
+  \item muonic.gui.MainWindow (module), \hyperpage{8}
+  \item muonic.gui.MuonicDialogs (module), \hyperpage{10}
+  \item muonic.gui.MuonicPlotCanvases (module), \hyperpage{10}
+  \item muonic.gui.MuonicWidgets (module), \hyperpage{9}
+  \item MuonicDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item MuonicHistCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{11}
+  \item MuonicPlotCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{11}
+
+  \indexspace
+  \bigletter O
+  \item on\_file\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method), \hyperpage{9}
+  \item on\_hello\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method), \hyperpage{9}
+  \item on\_periodic\_clicked() (muonic.gui.MuonicWidgets.DAQWidget method), \hyperpage{9}
+
+  \indexspace
+  \bigletter P
+  \item PeriodicCallDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item processIncoming() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item PulseanalyzerWidget (class in muonic.gui.MuonicWidgets), \hyperpage{9}
+  \item PulseCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{11}
+  \item PulseExtractor (class in muonic.analysis.PulseAnalyzer), \hyperpage{11}
+  \item PulseWidthCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{11}
+
+  \indexspace
+  \bigletter Q
+  \item query\_daq\_for\_scalars() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+
+  \indexspace
+  \bigletter R
+  \item RateWidget (class in muonic.gui.MuonicWidgets), \hyperpage{9}
+  \item read() (muonic.daq.DaqConnection.DaqConnection method), \hyperpage{7}
+  \item read() (muonic.daq.SimDaqConnection.SimDaqConnection method), \hyperpage{8}
+  \item readline() (muonic.daq.SimDaqConnection.SimDaq method), \hyperpage{7}
+  \item reset() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method), \hyperpage{11}
+
+  \indexspace
+  \bigletter S
+  \item ScalarsCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{11}
+  \item show\_fit() (muonic.gui.MuonicPlotCanvases.MuonicHistCanvas method), \hyperpage{11}
+  \item SimDaq (class in muonic.daq.SimDaqConnection), \hyperpage{7}
+  \item SimDaqConnection (class in muonic.daq.SimDaqConnection), \hyperpage{8}
+  \item sphinxdoc\_menu() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item startClicked() (muonic.gui.MuonicWidgets.RateWidget method), \hyperpage{9}
+  \item stopClicked() (muonic.gui.MuonicWidgets.RateWidget method), \hyperpage{9}
+
+  \indexspace
+  \bigletter T
+  \item threshold\_menu() (muonic.gui.MainWindow.MainWindow method), \hyperpage{8}
+  \item ThresholdDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item tr() (in module muonic.gui.MainWindow), \hyperpage{9}
+  \item tr() (in module muonic.gui.MuonicWidgets), \hyperpage{10}
+  \item trigger() (muonic.analysis.PulseAnalyzer.DecayTriggerThorough method), \hyperpage{11}
+  \item trigger() (muonic.analysis.PulseAnalyzer.VelocityTrigger method), \hyperpage{12}
+
+  \indexspace
+  \bigletter U
+  \item update() (muonic.gui.MuonicWidgets.DecayWidget method), \hyperpage{9}
+  \item update() (muonic.gui.MuonicWidgets.PulseanalyzerWidget method), \hyperpage{9}
+  \item update() (muonic.gui.MuonicWidgets.RateWidget method), \hyperpage{9}
+  \item update() (muonic.gui.MuonicWidgets.VelocityWidget method), \hyperpage{10}
+  \item update\_plot() (muonic.gui.MuonicPlotCanvases.MuonicHistCanvas method), \hyperpage{11}
+  \item update\_plot() (muonic.gui.MuonicPlotCanvases.MuonicPlotCanvas method), \hyperpage{11}
+  \item update\_plot() (muonic.gui.MuonicPlotCanvases.PulseCanvas method), \hyperpage{11}
+  \item update\_plot() (muonic.gui.MuonicPlotCanvases.PulseWidthCanvas method), \hyperpage{11}
+  \item update\_plot() (muonic.gui.MuonicPlotCanvases.ScalarsCanvas method), \hyperpage{11}
+
+  \indexspace
+  \bigletter V
+  \item VelocityCanvas (class in muonic.gui.MuonicPlotCanvases), \hyperpage{11}
+  \item VelocityConfigDialog (class in muonic.gui.MuonicDialogs), \hyperpage{10}
+  \item velocityFitClicked() (muonic.gui.MuonicWidgets.VelocityWidget method), \hyperpage{10}
+  \item VelocityTrigger (class in muonic.analysis.PulseAnalyzer), \hyperpage{12}
+  \item VelocityWidget (class in muonic.gui.MuonicWidgets), \hyperpage{10}
+
+  \indexspace
+  \bigletter W
+  \item widgetUpdate() (muonic.gui.MainWindow.MainWindow method), \hyperpage{9}
+  \item write() (muonic.daq.DaqConnection.DaqConnection method), \hyperpage{7}
+  \item write() (muonic.daq.SimDaqConnection.SimDaq method), \hyperpage{8}
+
+\end{theindex}

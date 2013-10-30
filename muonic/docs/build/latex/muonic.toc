@@ -1,0 +1,38 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Documentation for release 1.0.1, documentation built on May 22, 2013}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}muonic - a python gui for QNET experiments}{1}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Licence and terms of agreement}{1}{subsection.1.1.1}
+\contentsline {section}{\numberline {1.2}muonic setup and installation}{1}{section.1.2}
+\contentsline {subsection}{\numberline {1.2.1}prerequesitories}{1}{subsection.1.2.1}
+\contentsline {subsection}{\numberline {1.2.2}installation with the setup.py script}{2}{subsection.1.2.2}
+\contentsline {subsection}{\numberline {1.2.3}installing muonic without the setup script}{2}{subsection.1.2.3}
+\contentsline {section}{\numberline {1.3}How to use muonic}{2}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}start muonic}{2}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2}Saving files with muonic}{3}{subsection.1.3.2}
+\contentsline {subsection}{\numberline {1.3.3}Performing measurements with muonic}{3}{subsection.1.3.3}
+\contentsline {subsubsection}{Setting up the DAQ}{3}{subsubsection*.8}
+\contentsline {subsubsection}{Looking at raw DAQ data}{4}{subsubsection*.9}
+\contentsline {subsubsection}{Muon Rates}{4}{subsubsection*.10}
+\contentsline {subsubsection}{Muon Lifetime}{4}{subsubsection*.11}
+\contentsline {subsubsection}{Pulse Analyzer}{5}{subsubsection*.12}
+\contentsline {section}{\numberline {1.4}Fermilab DAQ - hardware documentation}{5}{section.1.4}
+\contentsline {subsection}{\numberline {1.4.1}ASCII DAQ output format}{5}{subsection.1.4.1}
+\contentsline {subsection}{\numberline {1.4.2}DAQ onboard documentation}{5}{subsection.1.4.2}
+\contentsline {subsubsection}{V1}{5}{subsubsection*.13}
+\contentsline {section}{\numberline {1.5}muonic package software reference}{7}{section.1.5}
+\contentsline {subsection}{\numberline {1.5.1}main package: muonic}{7}{subsection.1.5.1}
+\contentsline {subsection}{\numberline {1.5.2}daq i/o with muonic.daq}{7}{subsection.1.5.2}
+\contentsline {subsubsection}{\emph {muonic.daq.DAQProvider}}{7}{subsubsection*.14}
+\contentsline {subsubsection}{\emph {muonic.daq.DAQConnection}}{7}{subsubsection*.17}
+\contentsline {subsubsection}{\emph {muonic.daq.SimDaqConnection}}{7}{subsubsection*.23}
+\contentsline {subsection}{\numberline {1.5.3}pyqt4 gui with muonic.gui}{8}{subsection.1.5.3}
+\contentsline {subsubsection}{\emph {muonic.gui.MainWindow}}{8}{subsubsection*.33}
+\contentsline {subsubsection}{\emph {muonic.gui.MuonicWidgets}}{9}{subsubsection*.49}
+\contentsline {subsubsection}{\emph {muonic.gui.MuonicDialogs}}{10}{subsubsection*.78}
+\contentsline {subsubsection}{\emph {muonic.gui.MuonicPlotCanvases}}{10}{subsubsection*.89}
+\contentsline {subsection}{\numberline {1.5.4}analyis package muonic.analysis}{11}{subsection.1.5.4}
+\contentsline {subsubsection}{\emph {muonic.analysis.PulseAnalyzer}}{11}{subsubsection*.105}
+\contentsline {subsubsection}{\emph {muonic.analysis.fit}}{12}{subsubsection*.117}
+\contentsline {chapter}{\numberline {2}Indices and tables}{13}{chapter.2}
+\contentsline {chapter}{Python Module Index}{15}{section*.121}
+\contentsline {chapter}{Index}{17}{section*.122}
