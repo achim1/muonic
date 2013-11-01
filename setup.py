@@ -22,8 +22,8 @@ from glob import glob
 datapath = (os.getenv('HOME') + os.sep + 'muonic_data')
 
 setup(name='muonic',
-      version='2.0.0',
-      description='Software to work with QNet DAQ cards',
+      version='trunk',
+      description='Software to work with QNet DAQ cards. This is a TRUNK version',
       long_description='Software is able to manage DAQ comunications and shows e.g. a rate plot...',
       author='Robert Franke,Achim Stoessl,Basho Kaminsky',
       author_email="achim.stoessl@desy.de, basho.kaminsky@desy.de",
@@ -43,23 +43,24 @@ setup(name='muonic',
       keywords=["QNET","QuarkNET","Fermilab","DESY","DAQ"],
       packages=['muonic','muonic.analysis','muonic.gui','muonic.daq'],
       scripts=['bin/muonic','bin/which_tty_daq'],
-      package_data={'muonic': ['daq/simdaq.txt'],'':['*.txt','*.rst']}, 
+      package_data={'muonic': ['daq/simdaq.txt'],'':['*.txt','*.rst']},
       #package_data={'' : ['docs/*','README'], 'muonic': ['daq/simdaq.txt','daq/which_tty_daq']}, 
-      data_files=[(datapath,[]),(datapath,["docs/build/man/muonic.1"]),(os.path.join(datapath,"docs/html"),glob("docs/build/html/*html")),(os.path.join(datapath,"docs/html/_static"),glob("docs/build/html/_static/*")),(os.path.join(datapath,"docs/html/_modules"),glob("docs/build/html/_modules/*html")),(os.path.join(datapath,"docs/html/_sources"),glob("docs/build/html/_sources/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/"), glob("docs/build/html/_modules/muonic/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/gui"),glob("docs/build/html/_modules/muonic/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/daq"),glob("docs/build/html/_modules/muonic/daq/*html")),(os.path.join(datapath,"docs/html/_modules/muonic/analysis"), glob("docs/build/html/_modules/muonic/analysis/*html"))])
+      data_files=[(datapath,[])]#,(datapath,["muonic/docs/build/man/muonic.1"]),(os.path.join(datapath,"muonic/docs/html"),glob("muonic/docs/build/html/*html")),(os.path.join(datapath,"muonic/docs/html/_static"),glob("muonic/docs/build/html/_static/*")),(os.path.join(datapath,"muonic/docs/html/_modules"),glob("muonic/docs/build/html/_modules/*html")),(os.path.join(datapath,"muonic/docs/html/_sources"),glob("muonic/docs/build/html/_sources/*html")),(os.path.join(datapath,"muonic/docs/html/_modules/muonic/"), glob("muonic/docs/build/html/_modules/muonic/*html")),(os.path.join(datapath,"muonic/docs/html/_modules/muonic/gui"),glob("muonic/docs/build/html/_modules/muonic/*html")),(os.path.join(datapath,"muonic/docs/html/_modules/muonic/daq"),glob("muonic/docs/build/html/_modules/muonic/daq/*html")),(os.path.join(datapath,"muonic/docs/html/_modules/muonic/analysis"), glob("muonic/docs/build/html/_modules/muonic/analysis/*html"))]
+      )
 
 # setting correct permissions of created muonic_data dir
-
-userid = os.stat(os.getenv("HOME"))[4]
-gid = os.stat(os.getenv("HOME"))[5]
-
-# if muonic is installed with sudo, the ownership of the files
-# has to be changed to the current user.
-if os.geteuid() == 0:
-    cline = "chown -R " + str(gid) + ":" + str(userid) + " " + datapath
-    print cline
-
-    chown_success = sub.Popen(shlex.split(cline),stdout=sub.PIPE).communicate()
-
+#
+#userid = os.stat(os.getenv("HOME"))[4]
+#gid = os.stat(os.getenv("HOME"))[5]
+#
+## if muonic is installed with sudo, the ownership of the files
+## has to be changed to the current user.
+#if os.geteuid() == 0:
+#    cline = "chown -R " + str(gid) + ":" + str(userid) + " " + datapath
+#    print cline
+#
+#    chown_success = sub.Popen(shlex.split(cline),stdout=sub.PIPE).communicate()
+#
 #print man_success[0]
 #print html_success[0]
 #if chown_success[1] is None:
@@ -74,4 +75,3 @@ if os.geteuid() == 0:
 #    print "---------------------------"
 #
 #print "MUONIC succesfully installed!"
-
