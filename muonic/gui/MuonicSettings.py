@@ -65,7 +65,7 @@ class MuonicSettings(object):
         self._muonic_setting['muonic_filenames'] = ("%s_%s_HOURS_%s%s" ,True)
         self._muonic_setting['data_folder'] = ('muonic_data',True)
         self._muonic_setting['data_path'] = (os.getenv('HOME') + os.sep + self._muonic_setting['data_folder'][0], False)
-        if not self.__check_create_folder(self._muonic_setting['data_path']):
+        if not self.__check_create_folder(self._muonic_setting['data_path'][0]):
             self.logger.warning('The previous warning means it can not save muonic data! All Muonic data will be thrown away!')
             self._muonic_setting['data_path'] = os.devnull
         self._muonic_setting['doc_folder'] = ('docs', True)

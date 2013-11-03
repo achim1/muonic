@@ -147,12 +147,12 @@ class RateWidget(QtGui.QWidget):
         rate_widget.addWidget(buttomlineBox,4,0,1,3)
         self.setLayout(rate_widget)
 
-    def calculate(self,scalers):
+    def calculate(self):
         """
         Calculate the values shown in the rate widget and writes values to a file. Started via Processincoming in Mainwindow
         """
-        time_window = scalers[0] - scalers[1]
-        self.rates['rates'] = (scalers[2]/time_window,scalers[3]/time_window,scalers[4]/time_window,scalers[5]/time_window, scalers[6]/time_window, time_window,scalers[2],scalers[3], scalers[4], scalers[5], scalers[6])
+        time_window = self.mainwindow.scalers[0] - self.mainwindow.scalers[1]
+        self.rates['rates'] = (self.mainwindow.scalers[2]/time_window,self.mainwindow.scalers[3]/time_window,self.mainwindow.scalers[4]/time_window,self.mainwindow.scalers[5]/time_window, self.mainwindow.scalers[6]/time_window, time_window,self.mainwindow.scalers[2],self.mainwindow.scalers[3], self.mainwindow.scalers[4], self.mainwindow.scalers[5], self.mainwindow.scalers[6])
 
         self.timewindow += self.rates['rates'][5]
 
@@ -211,7 +211,7 @@ class RateWidget(QtGui.QWidget):
         """
         Returns a bool whether the rate measurment is currently running or not.
         """
-        return self.active    
+        return self.active
 
     def startClicked(self):
         """
@@ -308,7 +308,6 @@ class PulseanalyzerWidget(QtGui.QWidget):
         grid.addWidget(ntb,2,0) 
         grid.addWidget(self.pulsewidthcanvas,1,1)
         grid.addWidget(ntb2,2,1)
-        self.pulses      = None
         self.pulsewidths = []
         self.active = False
 
@@ -318,15 +317,15 @@ class PulseanalyzerWidget(QtGui.QWidget):
         """
         return self.active
 
-    def calculate(self,pulses):
+    def calculate(self):
         """
         Calculate the pulse widths, take in consideration that the falling edge might be missing.
         """
-        self.pulses = pulses
+        self.pulses = self.mainwindow.pulses
         # pulsewidths changed because falling edge can be None.
         # pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]
         pulsewidths = []
-        for chan in pulses[1:]:
+        for chan in self.mainwindow.pulses[1:]:
             for le, fe in chan:
                 if fe is not None:
                     pulsewidths.append(fe - le)
@@ -355,9 +354,9 @@ class PulseanalyzerWidget(QtGui.QWidget):
 
             self.mainwindow.daq.put('CE')
             if not self.pulsefile:
-                self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
+                self.mainwindow.writepulses = self.mainwindow.pulsefilename
                 self.mainwindow.pulse_mes_start = self.mainwindow.now
-                self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
+                self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.writepulses,'w')
 
         else:
             self.logger.debug("Switching off Pulseanalyzer.")
@@ -365,7 +364,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
             self.active = False
 
             if not self.pulsefile:
-                self.mainwindow.pulsefilename = ''
+                self.mainwindow.writepulses = False
                 self.mainwindow.pulse_mes_start = False
                 if self.mainwindow.pulseextractor.pulsefile:
                     self.mainwindow.pulseextractor.pulsefile.close()
@@ -646,10 +645,11 @@ class VelocityWidget(QtGui.QWidget):
                               self.velocityFitRangeClicked
                               )
         
-    def calculate(self,pulses):
+    def calculate(self):
         """
         Calculates the flight time and discards dt s below 0 and which are none (might happen if trigger time window was exceeded).
         """
+        pulses = self.mainwindow.pulses
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
         if flighttime != None and flighttime > 0:
             #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
@@ -798,10 +798,11 @@ class DecayWidget(QtGui.QWidget):
         """
         return self.active
      
-    def calculate(self,pulses):
+    def calculate(self):
         """
         Calculates the time between the first pulse and the last pulse. This can be fitted with an exp decay to get the muon life time.
         """
+        pulses = self.mainwindow.pulses
         decay =  self.trigger.trigger(pulses,single_channel = self.singlepulsechannel,double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel, mindecaytime= self.decay_mintime,minsinglepulsewidth = self.minsinglepulsewidth,maxsinglepulsewidth = self.maxsinglepulsewidth, mindoublepulsewidth = self.mindoublepulsewidth, maxdoublepulsewidth = self.maxdoublepulsewidth )
         if decay != None:
             when = time.asctime()
@@ -1038,14 +1039,14 @@ class DAQWidget(QtGui.QWidget):
             except AttributeError:
                 pass
     
-    def calculate(self, msg):
+    def calculate(self):
         """
         Function that is called via processincoming. It does:
         - starts file writing stuff
         """
-        self.text_box.appendPlainText(str(msg))
+        self.text_box.appendPlainText(str(self.mainwindow.daq_msg))
         if self.write_daq_file:
-            self.daq_file.write(msg, status = self.mainwindow.statusline)
+            self.daq_file.write(self.mainwindow.daq_msg, status = self.mainwindow.statusline)
 
 class GPSWidget(QtGui.QWidget):
     """
