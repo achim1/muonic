@@ -176,7 +176,7 @@ class RateWidget(QtGui.QWidget):
 
         # file'ish part:
         if self.rate_file_write:
-            self.rate_file.write('%f %f %f %f %f %f %f %f %f %f' % (scalers[2], scalers[3], scalers[4], scalers[5], scalers[2]/time_window,scalers[3]/time_window,scalers[4]/time_window,scalers[5]/time_window,scalers[6]/time_window,time_window))
+            self.rate_file.write('%f %f %f %f %f %f %f %f %f %f' % (self.mainwindow.scalers[2], self.mainwindow.scalers[3], self.mainwindow.scalers[4], self.mainwindow.scalers[5], self.mainwindow.scalers[2]/time_window,self.mainwindow.scalers[3]/time_window,self.mainwindow.scalers[4]/time_window,self.mainwindow.scalers[5]/time_window,self.mainwindow.scalers[6]/time_window,time_window))
  
 
     def update(self):
