@@ -151,8 +151,8 @@ class RateWidget(QtGui.QWidget):
         """
         Calculate the values shown in the rate widget and writes values to a file. Started via Processincoming in Mainwindow
         """
-        time_window = self.mainwindow.scalers[0] - self.mainwindow.scalers[1]
-        self.rates['rates'] = (self.mainwindow.scalers[2]/time_window,self.mainwindow.scalers[3]/time_window,self.mainwindow.scalers[4]/time_window,self.mainwindow.scalers[5]/time_window, self.mainwindow.scalers[6]/time_window, time_window,self.mainwindow.scalers[2],self.mainwindow.scalers[3], self.mainwindow.scalers[4], self.mainwindow.scalers[5], self.mainwindow.scalers[6])
+        time_window = self.mainwindow.thisscalarquery - self.mainwindow.lastscalarquery
+        self.rates['rates'] = (self.mainwindow.scalars_diff_ch0/time_window,self.mainwindow.scalars_diff_ch1/time_window,self.mainwindow.scalars_diff_ch2/time_window,self.mainwindow.scalars_diff_ch3/time_window, self.mainwindow.scalars_diff_trigger/time_window, time_window,self.mainwindow.scalars_diff_ch0,self.mainwindow.scalars_diff_ch1, self.mainwindow.scalars_diff_ch2, self.mainwindow.scalars_diff_ch3, self.mainwindow.scalars_diff_trigger)
 
         self.timewindow += self.rates['rates'][5]
 
@@ -176,7 +176,8 @@ class RateWidget(QtGui.QWidget):
 
         # file'ish part:
         if self.rate_file_write:
-            self.rate_file.write('%f %f %f %f %f %f %f %f %f %f' % (self.mainwindow.scalers[2], self.mainwindow.scalers[3], self.mainwindow.scalers[4], self.mainwindow.scalers[5], self.mainwindow.scalers[2]/time_window,self.mainwindow.scalers[3]/time_window,self.mainwindow.scalers[4]/time_window,self.mainwindow.scalers[5]/time_window,self.mainwindow.scalers[6]/time_window,time_window))
+            
+            self.rate_file.write('%f %f %f %f %f %f %f %f %f %f' % (self.mainwindow.scalars_diff_ch0, self.mainwindow.scalars_diff_ch1, self.mainwindow.scalars_diff_ch2, self.mainwindow.scalars_diff_ch3, self.mainwindow.scalars_diff_ch0/time_window,self.mainwindow.scalars_diff_ch1/time_window,self.mainwindow.scalars_diff_ch2/time_window,self.mainwindow.scalars_diff_ch3/time_window,self.mainwindow.scalars_diff_trigger/time_window,time_window))
  
 
     def update(self):
@@ -753,8 +754,7 @@ class DecayWidget(QtGui.QWidget):
         self.decay               = []
         self.mu_file             = open("/dev/null","w") 
         self.dec_mes_start       = None
-        self.previous_coinc_time_03 = "00"
-        self.previous_coinc_time_02 = "0A"
+        self.previous_coinc_time = "100"
         self.binning = (0,10,21)
         self.fitrange = (self.binning[0],self.binning[1])
 
@@ -911,6 +911,7 @@ class DecayWidget(QtGui.QWidget):
                 self.mainwindow.statusbar.addPermanentWidget(self.mu_label)
 
                 self.mainwindow.daq.put("DC")
+                self.previous_coinc_time = self.mainwindow.coincidence_time
 
                 self.mainwindow.daq.put("CE") 
                 self.mainwindow.daq.put("WC 03 04")
@@ -927,10 +928,13 @@ class DecayWidget(QtGui.QWidget):
                 self.active = False
 
         else:
-            reset_time = "WC 03 " + self.previous_coinc_time_03
-            self.mainwindow.daq.put(reset_time)
-            reset_time = "WC 02 " + self.previous_coinc_time_02
-            self.mainwindow.daq.put(reset_time)
+            reset_time = bin(int(self.previous_coinc_time/10)).replace('0b','').zfill(16)
+            _03 = format(int(_gatewidth[0:8],2),'x').zfill(2)
+            _02 = format(int(_gatewidth[8:16],2),'x').zfill(2)
+            tmp_msg = 'WC 03 '+str(_03)
+            self.daq.put(tmp_msg)
+            tmp_msg = 'WC 02 '+str(_02)
+            self.daq.put(tmp_msg)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.mainwindow.statusbar.removeWidget(self.mu_label)
             mtime = now - self.dec_mes_start
