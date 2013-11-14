@@ -343,21 +343,38 @@ class DecayTriggerThorough:
         # then we do not want to have more than one
         # hit in the first
         # again: use selfveto to adjust the behavior
-        if pulses2 >= 2 and pulses1 == 1:
-            # check if the width of the pulses is as required
-            singlepulsewidth = ttp[single_channel][0][1] - ttp[single_channel][0][0]
-            doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
-            #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
-            #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
-            if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):          
-                # subtract rising edges, falling edges might be virtual
-                decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
+        if single_channel == double_channel:
+            if pulses2 >= 2 and pulses1 >= 2:
+                # check if the width of the pulses is as required
+                singlepulsewidth = ttp[single_channel][0][1] - ttp[single_channel][0][0]
+                doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
+                #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
+                #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
+                if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):          
+                    # subtract rising edges, falling edges might be virtual
+                    decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
+                else:
+                    self.logger.debug('Rejected event.')
+                    return None
             else:
                 self.logger.debug('Rejected event.')
                 return None
         else:
-            self.logger.debug('Rejected event.')
-            return None
+            if pulses2 >= 2 and pulses1 == 1:
+                # check if the width of the pulses is as required
+                singlepulsewidth = ttp[single_channel][0][1] - ttp[single_channel][0][0]
+                doublepulsewidth = ttp[double_channel][-1][1] - ttp[double_channel][-1][0]
+                #print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,"single",minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth
+                #print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,"double",mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth
+                if (minsinglepulsewidth < singlepulsewidth < maxsinglepulsewidth)  and (mindoublepulsewidth < doublepulsewidth < maxdoublepulsewidth):          
+                    # subtract rising edges, falling edges might be virtual
+                    decaytime = ttp[double_channel][-1][0] - ttp[double_channel][0][0]
+                else:
+                    self.logger.debug('Rejected event.')
+                    return None
+            else:
+                self.logger.debug('Rejected event.')
+                return None
 
         # perform sanity checks
         if (decaytime > mindecaytime) and (decaytime < self.triggerwindow -1000): # there is an artefact at the end
