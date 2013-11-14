@@ -322,6 +322,8 @@ class PulseanalyzerWidget(QtGui.QWidget):
         """
         Calculate the pulse widths, take in consideration that the falling edge might be missing.
         """
+        if self.mainwindow.pulses is None:
+            return None
         self.pulses = self.mainwindow.pulses
         # pulsewidths changed because falling edge can be None.
         # pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]
@@ -650,6 +652,8 @@ class VelocityWidget(QtGui.QWidget):
         """
         Calculates the flight time and discards dt s below 0 and which are none (might happen if trigger time window was exceeded).
         """
+        if self.mainwindow.pulses is None:
+            return None
         pulses = self.mainwindow.pulses
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
         if flighttime != None and flighttime > 0:
@@ -803,6 +807,8 @@ class DecayWidget(QtGui.QWidget):
         Calculates the time between the first pulse and the last pulse. This can be fitted with an exp decay to get the muon life time.
         """
         pulses = self.mainwindow.pulses
+        if pulses is None:
+            return None
         decay =  self.trigger.trigger(pulses,single_channel = self.singlepulsechannel,double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel, mindecaytime= self.decay_mintime,minsinglepulsewidth = self.minsinglepulsewidth,maxsinglepulsewidth = self.maxsinglepulsewidth, mindoublepulsewidth = self.mindoublepulsewidth, maxdoublepulsewidth = self.maxdoublepulsewidth )
         if decay != None:
             when = time.asctime()
@@ -929,12 +935,12 @@ class DecayWidget(QtGui.QWidget):
 
         else:
             reset_time = bin(int(self.previous_coinc_time/10)).replace('0b','').zfill(16)
-            _03 = format(int(_gatewidth[0:8],2),'x').zfill(2)
-            _02 = format(int(_gatewidth[8:16],2),'x').zfill(2)
+            _03 = format(int(reset_time[0:8],2),'x').zfill(2)
+            _02 = format(int(reset_time[8:16],2),'x').zfill(2)
             tmp_msg = 'WC 03 '+str(_03)
-            self.daq.put(tmp_msg)
+            self.mainwindow.daq.put(tmp_msg)
             tmp_msg = 'WC 02 '+str(_02)
-            self.daq.put(tmp_msg)
+            self.mainwindow.daq.put(tmp_msg)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.mainwindow.statusbar.removeWidget(self.mu_label)
             mtime = now - self.dec_mes_start

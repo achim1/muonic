@@ -436,25 +436,15 @@ class MainWindow(QtGui.QMainWindow):
                 continue
 
             self.get_scalars_from_queue()
-            try:
-                self.pulses = self.pulseextractor.extract(self.daq_msg)
-            #except:
-            #    self.pulses = None
-            if self.pulses:
-                self.tabwidget.pulseanalyzerwidget.calculate()
-
+            __pulses = self.pulseextractor.extract(self.daq_msg)
+            if not __pulses is None:
+                self.pulses = __pulses
                 self.channel_counts[0] += 1                         
                 for channel,pulses in enumerate(self.pulses[1:]):
                     if pulses:
                         for pulse in pulses:
                             self.channel_counts[channel + 1] += 1
            
-                if self.tabwidget.velocitywidget.is_active():
-                    self.tabwidget.velocitywidget.calculate()
-
-                if self.tabwidget.decaywidget.is_active():
-                    self.tabwidget.decaywidget.calculate()
-            continue
             self.widgetCalculate()
                         
             

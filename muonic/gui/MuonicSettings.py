@@ -31,6 +31,7 @@ class MuonicConstants(object):
         self.__consts['TMC_TICK'] = (1.25, 'ns')
         self.__consts['MAX_TRIGGERWINDOW'] = (9960.0,'ns') # for mudecay!
         self.__consts['DEFAULT_FREQUENCY'] = (25.0e6,'Hz')
+        self.__consts['PULSE_REGEX'] = "^([A-Z0-9]{8}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([0-9A-Z]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{8}) (\d{6})\.(\d{3}) (\d{6}) ([AV]{1}) (\d{2}) (\d{1}) [+-](\d{4})$"
 
     def keys(self):
         """

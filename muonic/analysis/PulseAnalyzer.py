@@ -5,6 +5,7 @@ Calculate also a non hex representation of
 leading and falling edges of the pulses
 """
 
+import re
 
 # for the pulses 
 # 8 bits give a hex number
@@ -165,7 +166,10 @@ class PulseExtractor:
         otherwise return None
         """
 
-        line = line.split()
+        if re.compile("^([A-Z0-9]{8}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([0-9A-Z]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{8}) (\d{6})\.(\d{3}) (\d{6}) ([AV]{1}) (\d{2}) (\d{1}) [+-](\d{4})$").match(line.strip()) is None:
+            return None
+
+        line = line.strip().split()
 
         onepps        = int(line[9],16)
         trigger_count = int(line[0],16)
