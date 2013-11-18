@@ -7,7 +7,7 @@ from PyQt4 import QtCore
 
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
-from MuonicData import MuonicRawFile, MuonicRateFile
+from MuonicData import MuonicRawFile, MuonicRateFile, MuonicDecayFile
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
 from ..analysis.fit import main as fit
 from ..analysis.fit import gaussian_fit
@@ -99,7 +99,8 @@ class RateWidget(QtGui.QWidget):
         self.general_info['min_rate'] = 0
 
         #self.pulses_to_show = None
-        self.rate_file = MuonicRateFile(self.mainwindow.filename, self.logger)
+        self.filename = os.path.join(self.mainwindow.settings.muonic_setting('data_path'),self.mainwindow.settings.muonic_setting('muonic_filenames') %(self.mainwindow.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]) )
+        self.rate_file = MuonicRateFile(self.filename, self.logger)
         # always write the rate plot data
         self.rate_file_write = False
 
@@ -568,11 +569,11 @@ class StatusWidget(QtGui.QWidget):
             self.veto.setText(self.daq_stats['veto'])
             self.veto.setEnabled(True)
             
-            self.muonic_stats['open_files'] = str(self.mainwindow.filename)
+            self.muonic_stats['open_files'] = str(self.mainwindow.tabwidget.ratewidget.filename)
             if self.mainwindow.tabwidget.daqwidget.write_file:
-                self.muonic_stats['open_files'] += ', ' + self.mainwindow.rawfilename
+                self.muonic_stats['open_files'] += ', ' + self.mainwindow.tabwidget.daqwidget.rawfilename
             if self.mainwindow.tabwidget.decaywidget.is_active():
-                self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
+                self.muonic_stats['open_files'] += ', ' + self.mainwindow.tabwidget.decaywidget.decayfilename
             if self.mainwindow.writepulses:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.pulsefilename
             self.start_params.setPlainText(self.muonic_stats['start_params'])
@@ -756,8 +757,7 @@ class DecayWidget(QtGui.QWidget):
         self.active              = False
         self.trigger             = DecayTriggerThorough(logger)
         self.decay               = []
-        self.mu_file             = open("/dev/null","w") 
-        self.dec_mes_start       = None
+        self.decay_file          = None
         self.previous_coinc_time = "100"
         self.binning = (0,10,21)
         self.fitrange = (self.binning[0],self.binning[1])
@@ -840,12 +840,7 @@ class DecayWidget(QtGui.QWidget):
             self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(qt_translate("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
             self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(qt_translate("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
             for muondecay in self.decay:
-                #muondecay = self.decay[0] 
-                muondecay_time = muondecay[1].replace(' ','_')
-                self.mu_file.write('Decay ')
-                self.mu_file.write(muondecay_time.__repr__() + ' ')
-                self.mu_file.write(muondecay[0].__repr__())
-                self.mu_file.write('\n')
+                self.decay_file.write(muondecay)
                 self.decay = []
         else:
             pass
@@ -923,8 +918,10 @@ class DecayWidget(QtGui.QWidget):
                 self.mainwindow.daq.put("WC 03 04")
                 self.mainwindow.daq.put("WC 02 0A")
               
-                self.mu_file = open(self.mainwindow.decayfilename,'w')        
-                self.dec_mes_start = now
+                self.decayfilename = os.path.join(self.mainwindow.settings.muonic_setting('data_path'),self.mainwindow.settings.muonic_setting('muonic_filenames') %(self.mainwindow.now.strftime('%Y-%m-%d_%H-%M-%S'),"L",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]) )
+                self.decay_file = MuonicDecayFile(self.decayfilename, self.logger)
+                self.decay_file.start_run()
+                self.dec_mes_start = now                
                 #self.decaywidget.findChild("activate_mudecay").setChecked(True)
                 self.active = True
                 self.mainwindow.tabwidget.ratewidget.startClicked()            
@@ -943,12 +940,11 @@ class DecayWidget(QtGui.QWidget):
             self.mainwindow.daq.put(tmp_msg)
             self.logger.info('Muondecay mode now deactivated, returning to previous setting (if available)')
             self.mainwindow.statusbar.removeWidget(self.mu_label)
+            self.decay_file.stop_run()
+            self.decay_file.close()
             mtime = now - self.dec_mes_start
             mtime = round(mtime.seconds/(3600.),2) + mtime.days *86400
             self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-            newmufilename = self.mainwindow.decayfilename.replace("HOURS",str(mtime))
-            shutil.move(self.mainwindow.decayfilename,newmufilename)
-            #self.mainwindow.daq.put("CD")
             self.active = False
             self.activateMuondecay.setChecked(False)
             self.mainwindow.tabwidget.ratewidget.stopClicked()            
@@ -964,6 +960,7 @@ class DAQWidget(QtGui.QWidget):
         
         self.write_daq_file  = False
         self.daq_file        = None
+        self.rawfilename = os.path.join(self.mainwindow.settings.muonic_setting('data_path'),self.mainwindow.settings.muonic_setting('muonic_filenames') %(self.mainwindow.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]) )
         self.label           = QtGui.QLabel(qt_translate('MainWindow','Command'))
         self.message_edit    = LineEdit()
         self.send_button     = QtGui.QPushButton(qt_translate('MainWindow','Send'))
@@ -1013,11 +1010,10 @@ class DAQWidget(QtGui.QWidget):
         """
         save the raw daq data to a automatically named file
         """
-        self.mainwindow.daq.put("CE")        
-        self.daq_file = MuonicRawFile(self.mainwindow.rawfilename, self.logger)
-        self.file_label = QtGui.QLabel(qt_translate('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
+        self.mainwindow.daq.put("CE") 
+        self.daq_file = MuonicRawFile(self.rawfilename, self.logger)
+        self.file_label = QtGui.QLabel(qt_translate('MainWindow','Writing to %s'%self.rawfilename))
         self.write_daq_file = True
-        self.mainwindow.raw_mes_start = datetime.datetime.now()
         self.mainwindow.statusbar.addPermanentWidget(self.file_label)
 
     def on_periodic_clicked(self):
@@ -1150,10 +1146,7 @@ class GPSWidget(QtGui.QWidget):
         """
         Save the GPS data to an extra file
         """
-        #self.outputfile = open(self.mainwindow.rawfilename,"w")
-        #self.file_label = QtGui.QLabel(qt_translate('MainWindow','Writing to %s'%self.mainwindow.rawfilename))
         #self.write_file = True
-        #self.mainwindow.raw_mes_start = datetime.datetime.now()
         #self.mainwindow.statusbar.addPermanentWidget(self.file_label)
         self.text_box.appendPlainText('save to clicked - function out of order')        
         self.logger.info("Saving GPS informations still disabled.")

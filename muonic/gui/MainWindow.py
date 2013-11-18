@@ -37,6 +37,7 @@ class MainWindow(QtGui.QMainWindow):
         self.logger  = logger
         self.settings = MuonicSettings(self.logger)
         self.constants = MuonicConstants()
+        self.opts = opts
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
@@ -55,11 +56,7 @@ class MainWindow(QtGui.QMainWindow):
         # v-erster Buchstabe Vorname; n-erster Buchstabe Familienname)."
  
         self.now = datetime.datetime.now()
-        self.filename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1]) )
-        self.rawfilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",opts.user[0],opts.user[1]) )
-        self.raw_mes_start = False
 
-        self.decayfilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"L",opts.user[0],opts.user[1]) )
         self.pulsefilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
 # TODO ; writepulses shouldn't be always False here, doesn't it? or set it by default to false, but then remove following if loop
@@ -484,12 +481,8 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.ratewidget.rate_file.close()
 
             if self.tabwidget.decaywidget.is_active():
-
-                mtime = now - self.tabwidget.decaywidget.dec_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-                self.logger.info("The muon decay measurement was active for %f hours" % mtime)
-                newmufilename = self.decayfilename.replace("HOURS",str(mtime))
-                shutil.move(self.decayfilename,newmufilename)
+                self.decay_file.stop_run()
+                self.decay_file.close()
 
             if self.writepulses:
                 # no pulses shall be extracted any more, 
@@ -503,10 +496,6 @@ class MainWindow(QtGui.QMainWindow):
                 newpulsefilename = self.pulsefilename.replace("HOURS",str(mtime))
                 shutil.move(self.pulsefilename,newpulsefilename)
               
-            try:
-                self.tabwidget.decaywidget.mu_file.close()
-            except AttributeError:
-                pass
 
             self.emit(QtCore.SIGNAL('lastWindowClosed()'))
             self.close()

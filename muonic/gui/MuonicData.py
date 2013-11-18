@@ -203,7 +203,7 @@ class MuonicDecayFile(MuonicFile):
         self._pulse_mes_start = datetime.datetime.now()
         MuonicFile.__init__(self,self.filename, mode, **kwargs)
 
-    def start_run(self, measurement = 'rate'):
+    def start_run(self, measurement = 'decay'):
         """
         Writes a comment about the measurment run start with date and time
         """
@@ -227,7 +227,7 @@ class MuonicDecayFile(MuonicFile):
         """
         if msg is None or len(msg) < 2:
             raise ValueError, "Missing something to write to the file."
-        __msg = 'Decay ' + muondecay[1].replace(' ','_').__repr__() + ' ' + muondecay[0].__repr__()
+        __msg = 'Decay ' + msg[1].replace(' ','_').__repr__() + ' ' + msg[0].__repr__()
         self.muonic_file.write(str(__msg)+'\n')
         return True
 
