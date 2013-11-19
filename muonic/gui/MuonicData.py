@@ -303,6 +303,59 @@ class MuonicRawFile(MuonicFile):
         shutil.move(self.filename,_newfilename)
         return True
 
+class MuonicDAQMSG(object):
+    """
+    class that holds the DAQ messages. Items shouldn't be removed handwise, only you are shure that it doesn't harm the program!
+    Works like a list,
+    oldes item at position 0, newest on highest index(-1)
+    """
+    def __init__(self, msg = None):
+        self._container_length = 25
+        self._daq_msg = list()
+        if isinstance(msg, list):
+            self._daq_msg = msg[(len(msg)-self._container_length):]
+        elif isinstance(msg, str):
+            self._daq_msg.append(msg)
+
+    def __check_length(self):
+        """
+        Checks the container length and cuts the overhead of the container away
+        """
+        del(self._daq_msg[:(len(self._daq_msg)-self._container_length)])
+        return True
+
+    def append(self, msg):
+        """
+        appends a message or a list of messages
+        """
+        if isinstance(msg, str):
+            self._daq_msg.append(msg)
+            self.__check_length()
+            return True
+        elif isinstance(msg, list):
+            __eva = True
+            for val in msg:
+                if not isinstance(val, str):
+                    __eva = False
+            if not __eva:
+                return False
+            self._daq_msg.extend(msg)
+            self.__check_length()
+            return True
+
+    def read(self, index = -1):
+        """
+        Replies the DAQ message at position -1 if not given at an other position. If position is None, all is given
+        """
+        if not index is None:
+            if not isinstance(index, str):
+                return self._daq_msg[index]
+            else:
+                return self._daq_msg[self._daq_msg.index(index)]
+        else:
+            return self._daq_msg
+
+
 class MuonicRate(object):
     """
     Stores rates Rates are appended, so 0 position is the oldest, -1 the newest.

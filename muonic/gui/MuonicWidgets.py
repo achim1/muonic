@@ -570,7 +570,7 @@ class StatusWidget(QtGui.QWidget):
             self.veto.setEnabled(True)
             
             self.muonic_stats['open_files'] = str(self.mainwindow.tabwidget.ratewidget.filename)
-            if self.mainwindow.tabwidget.daqwidget.write_file:
+            if self.mainwindow.tabwidget.daqwidget.write_daq_file:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.tabwidget.daqwidget.rawfilename
             if self.mainwindow.tabwidget.decaywidget.is_active():
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.tabwidget.decaywidget.decayfilename
@@ -1050,9 +1050,9 @@ class DAQWidget(QtGui.QWidget):
         Function that is called via processincoming. It does:
         - starts file writing stuff
         """
-        self.text_box.appendPlainText(str(self.mainwindow.daq_msg))
+        self.text_box.appendPlainText(str(self.mainwindow.daq_msg.read()))
         if self.write_daq_file:
-            self.daq_file.write(self.mainwindow.daq_msg, status = self.mainwindow.statusline)
+            self.daq_file.write(self.mainwindow.daq_msg.read(), status = self.mainwindow.statusline)
 
 class GPSWidget(QtGui.QWidget):
     """

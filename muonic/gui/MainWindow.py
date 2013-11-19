@@ -19,6 +19,7 @@ from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 
 from MuonicSettings import MuonicConstants, MuonicSettings
+from MuonicData import MuonicDAQMSG
 from MuonicDialogs import ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 from MuonicMenus import MuonicMenus
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
@@ -82,10 +83,10 @@ class MainWindow(QtGui.QMainWindow):
             self.threshold_ch.append(300)
 
         self.coincidencecheckbox[0] = True
-        self.daq_msg = None
+        self.daq_msg = MuonicDAQMSG()
         while self.daq.data_available():
             try:
-                self.daq_msg = self.daq.get(0)
+                self.daq_msg.append(self.daq.get(0))
                 self.get_thresholds_from_queue()
 
             except DAQIOError:
@@ -97,7 +98,7 @@ class MainWindow(QtGui.QMainWindow):
         time.sleep(0.5) #give the daq some time to ract
         while self.daq.data_available():
             try:
-                self.daq_msg = self.daq.get(0)
+                self.daq_msg.append(self.daq.get(0))
                 self.get_channels_from_queue()
 
             except DAQIOError:
@@ -126,7 +127,7 @@ class MainWindow(QtGui.QMainWindow):
         self.query_daq_for_scalars()
         while self.daq.data_available():
             try:
-                self.daq_msg = self.daq.get(0)
+                self.daq_msg.append(self.daq.get(0))
                 self.get_scalars_from_queue()
             except DAQIOError:
                 self.logger.debug("Queue empty!")
@@ -251,8 +252,8 @@ class MainWindow(QtGui.QMainWindow):
         Explicitely scan a message for scalar informatioin
         Returns True if found, else False
         """
-        if len(self.daq_msg) >= 2 and self.daq_msg[0]=='D' and self.daq_msg[1] == 'S':                    
-            self.scalars = self.daq_msg.split()
+        if len(self.daq_msg.read()) >= 2 and self.daq_msg.read()[0:1]=='DS':                    
+            self.scalars = self.daq_msg.read().split()
             time_window = self.thisscalarquery - self.lastscalarquery
             self.logger.debug("Time window %s" %time_window)
             errors = False
@@ -294,8 +295,8 @@ class MainWindow(QtGui.QMainWindow):
         Explicitely scan message for threshold information
         Return True if found, else False
         """
-        if self.daq_msg.startswith('TL') and len(self.daq_msg) > 9:
-            msg = self.daq_msg.split('=')
+        if self.daq_msg.read().startswith('TL') and len(self.daq_msg.read()) > 9:
+            msg = self.daq_msg.read().split('=')
             self.threshold_ch = []
             for i in range(3):
                 self.threshold_ch.append(int(msg[1][:-2]))
@@ -333,9 +334,9 @@ class MainWindow(QtGui.QMainWindow):
         10 - threefold
         11 - fourfold
         """
-        if self.daq_msg.startswith('DC ') and len(self.daq_msg) > 25:
+        if self.daq_msg.read().startswith('DC ') and len(self.daq_msg.read()) > 25:
 
-            msg = self.daq_msg.split(' ')
+            msg = self.daq_msg.read().split(' ')
             self.coincidence_time = msg[4].split('=')[1]+ msg[3].split('=')[1]
             msg = bin(int(msg[1][3:], 16))[2:].zfill(8)
             vetoconfig = msg[0:2]
@@ -405,20 +406,17 @@ class MainWindow(QtGui.QMainWindow):
         and pass the result to the corresponding widgets
         """
         while self.daq.data_available():
-
             try:
-                self.daq_msg = self.daq.get(0)
+                self.daq_msg.append(self.daq.get(0))
 
             except DAQIOError:
-                self.daq_msg = None
                 self.logger.debug("Queue empty!")
                 return None
-
             self.tabwidget.daqwidget.calculate()
             
             if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
                 if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
-                    self.tabwidget.gpswidget.gps_dump.append(self.daq_msg)
+                    self.tabwidget.gpswidget.gps_dump.append(self.daq_msg.read())
                 if len(self.tabwidget.gpswidget.gps_dump) == self.tabwidget.gpswidget.read_lines:
                     self.tabwidget.gpswidget.calculate()
                 continue
@@ -429,11 +427,11 @@ class MainWindow(QtGui.QMainWindow):
             if self.get_channels_from_queue():
                 continue
 
-            if self.daq_msg.startswith('ST') or len(self.daq_msg) < 50:
+            if self.daq_msg.read().startswith('ST') or len(self.daq_msg.read()) < 50:
                 continue
 
             self.get_scalars_from_queue()
-            __pulses = self.pulseextractor.extract(self.daq_msg)
+            __pulses = self.pulseextractor.extract(self.daq_msg.read())
             if not __pulses is None:
                 self.pulses = __pulses
                 self.channel_counts[0] += 1                         
