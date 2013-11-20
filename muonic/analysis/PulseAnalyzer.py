@@ -6,6 +6,11 @@ leading and falling edges of the pulses
 """
 
 import re
+try:
+    from ..gui.MuonicData import MuonicPulseFile
+    pulseimports = True
+except ImportError:
+    pulseimports = False
 
 # for the pulses 
 # 8 bits give a hex number
@@ -81,7 +86,10 @@ class PulseExtractor:
         #self.debug_freq = open('frequency.txt','w')
         #self.debug_freq.write('#  sec (le (nsec), fe(nsec)) chan0 chan1 chan2 chan3 \n')
         if pulsefile:
-            self.pulsefile = open(pulsefile,'w')           
+            if pulseimports:
+                self.pulsefile = MuonicPulseFile(pulsefile)
+            else:
+                self.pulsefile = open(pulsefile,'w')           
         else:
             self.pulsefile = False
 
@@ -228,7 +236,10 @@ class PulseExtractor:
             pulses = self._order_and_cleanpulses()
             extracted_pulses = (self.lasttriggertime,pulses["ch0"],pulses["ch1"],pulses["ch2"],pulses["ch3"])
             if self.pulsefile:
-                self.pulsefile.write(extracted_pulses.__repr__() + '\n')
+                if isinstance(self.pulsefile, MuonicPulseFile):
+                    self.pulsefile.write(extracted_pulses)
+                else:
+                    self.pulsefile.write(extracted_pulses.__repr__() + '\n')
 
             # as the pulses for the last event are done, reinitialize data structures
             # for the next event
@@ -269,7 +280,7 @@ class PulseExtractor:
 
 
     def close_file(self):
-        self.pulsefile.close()          
+        self.pulsefile.close()
 
 
 #ma a velocity "trigger", so that czts can be defined

@@ -11,7 +11,8 @@ import sys
 #import optimalbins
 
 def main(bincontent=None,binning = (0,10,21), fitrange = None):
-
+    if not bincontent is None:
+        bincontent = numpy.asarray(bincontent)
     def decay(p,x):
         return p[0]*numpy.exp(-x/p[1])+p[2]
     
@@ -152,6 +153,7 @@ def main(bincontent=None,binning = (0,10,21), fitrange = None):
      
 
 def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
+    bincontent = numpy.asarray(bincontent)
 
     def gauss(p,x):
         return (1/((p[0]*numpy.sqrt(2*numpy.pi))))*numpy.exp(-0.5*(((x - p[1])/p[0])**2)) 

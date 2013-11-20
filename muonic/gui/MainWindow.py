@@ -59,14 +59,7 @@ class MainWindow(QtGui.QMainWindow):
         self.now = datetime.datetime.now()
 
         self.pulsefilename = os.path.join(self.settings.muonic_setting('data_path'),self.settings.muonic_setting('muonic_filenames') %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
-        self.pulse_mes_start = None
-# TODO ; writepulses shouldn't be always False here, doesn't it? or set it by default to false, but then remove following if loop
         self.writepulses = False
-        if self.writepulses:
-                self.daq.put('CE')
-                self.pulse_mes_start = self.now
-        else:
-                self.pulse_mes_start = False
         self.statusline = self.settings.muonic_setting('status_line')
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL')
@@ -252,7 +245,7 @@ class MainWindow(QtGui.QMainWindow):
         Explicitely scan a message for scalar informatioin
         Returns True if found, else False
         """
-        if len(self.daq_msg.read()) >= 2 and self.daq_msg.read()[0:1]=='DS':                    
+        if len(self.daq_msg.read()) >= 2 and self.daq_msg.read()[:3]=='DS ': 
             self.scalars = self.daq_msg.read().split()
             time_window = self.thisscalarquery - self.lastscalarquery
             self.logger.debug("Time window %s" %time_window)
@@ -460,6 +453,17 @@ class MainWindow(QtGui.QMainWindow):
             if widget.is_active():
                 widget.calculate()
 
+    def widgetClose(self):
+        """
+        Runs the close function in all widgets
+        """
+        __cnt = self.tabwidget.count()
+        for __i in range(__cnt):
+            try:
+                self.tabwidget.widget(__i).close()
+            except:
+                self.logger.warning("Could not close the %s tab properly!" % self.tabwidget.tabText(__i))
+
     def closeEvent(self, ev):
         """
         Is triggered when the window is closed, we have to reimplement it
@@ -471,29 +475,12 @@ class MainWindow(QtGui.QMainWindow):
 
         if reply == QtGui.QMessageBox.Yes:
             now = datetime.datetime.now()
-
-            if self.tabwidget.daqwidget.write_daq_file:
-                self.tabwidget.daqwidget.write_daq_file = False
-                self.tabwidget.daqwidget.daq_file.close()
-            
-            self.tabwidget.ratewidget.rate_file.close()
-
-            if self.tabwidget.decaywidget.is_active():
-                self.decay_file.stop_run()
-                self.decay_file.close()
+            self.widgetClose()
 
             if self.writepulses:
-                # no pulses shall be extracted any more, 
-                # this means changing lots of switches
                 self.writepulses = False
                 self.showpulses = False
                 self.pulseextractor.close_file()
-                mtime = now - self.pulse_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
-                self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
-                newpulsefilename = self.pulsefilename.replace("HOURS",str(mtime))
-                shutil.move(self.pulsefilename,newpulsefilename)
-              
 
             self.emit(QtCore.SIGNAL('lastWindowClosed()'))
             self.close()

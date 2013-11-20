@@ -7,24 +7,20 @@ from PyQt4 import QtCore
 
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
-from MuonicData import MuonicRawFile, MuonicRateFile, MuonicDecayFile
+from MuonicData import MuonicRawFile, MuonicRateFile, MuonicDecayFile, MuonicPulseFile
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
 from ..analysis.fit import main as fit
 from ..analysis.fit import gaussian_fit
 from ..analysis.PulseAnalyzer import VelocityTrigger,DecayTriggerThorough
 from matplotlib.backends.backend_qt4agg \
 import NavigationToolbar2QTAgg as NavigationToolbar
-import numpy
 
 import datetime
 
 import os
-import shutil
 import time
 
 qt_translate = QtCore.QCoreApplication.translate
-
-C = 29979245000 # cm/s
 
 class RateWidget(QtGui.QWidget):
     """
@@ -280,6 +276,14 @@ class RateWidget(QtGui.QWidget):
         self.rate_file_write = False
         self.rate_file.stop_run()
 
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        self.stopClicked()
+        self.rate_file.close()
+        QtGui.QWidget.close(self)
+
 class PulseanalyzerWidget(QtGui.QWidget):
     """
     Provide a widget which is able to show a plot of triggered pulses
@@ -358,9 +362,8 @@ class PulseanalyzerWidget(QtGui.QWidget):
 
             self.mainwindow.daq.put('CE')
             if not self.pulsefile:
-                self.mainwindow.writepulses = self.mainwindow.pulsefilename
-                self.mainwindow.pulse_mes_start = self.mainwindow.now
-                self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.writepulses,'w')
+                self.mainwindow.writepulses = True
+                self.mainwindow.pulseextractor.pulsefile = MuonicPulseFile(self.mainwindow.pulsefilename, self.logger)
 
         else:
             self.logger.debug("Switching off Pulseanalyzer.")
@@ -369,10 +372,20 @@ class PulseanalyzerWidget(QtGui.QWidget):
 
             if not self.pulsefile:
                 self.mainwindow.writepulses = False
-                self.mainwindow.pulse_mes_start = False
                 if self.mainwindow.pulseextractor.pulsefile:
                     self.mainwindow.pulseextractor.pulsefile.close()
                 self.mainwindow.pulseextractor.pulsefile = False
+
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        if self.mainwindow.pulseextractor.pulsefile:
+            self.mainwindow.pulseextractor.pulsefile.close()
+            self.mainwindow.pulseextractor.pulsefile = False
+        self.mainwindow.writepulses = False
+        self.active = False
+        QtGui.QWidget.close(self)
 
 
 class StatusWidget(QtGui.QWidget):
@@ -601,6 +614,13 @@ class StatusWidget(QtGui.QWidget):
         self.refresh_button.setDisabled(False)
         self.active = False
 
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        self.active = False
+        QtGui.QWidget.close(self)
+
 
 class VelocityWidget(QtGui.QWidget):
     """
@@ -658,7 +678,6 @@ class VelocityWidget(QtGui.QWidget):
         pulses = self.mainwindow.pulses
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
         if flighttime != None and flighttime > 0:
-            #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             self.logger.info("measured flighttime %s" %flighttime.__repr__())
             self.times.append(flighttime)
         
@@ -692,7 +711,7 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon time of flight histogram
         """
-        fitresults = gaussian_fit(bincontent=numpy.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
+        fitresults = gaussian_fit(bincontent=self.velocitycanvas.heights,binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
@@ -728,6 +747,15 @@ class VelocityWidget(QtGui.QWidget):
             self.activateVelocity.setChecked(False)            
             self.active = False
             self.mainwindow.tabwidget.ratewidget.stopClicked()            
+
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        if self.active:
+            self.activateVelocityClicked()
+        QtGui.QWidget.close(self)
+
 
 class DecayWidget(QtGui.QWidget):
     """
@@ -823,7 +851,7 @@ class DecayWidget(QtGui.QWidget):
         """
         Fit the muon decay histogram
         """
-        fitresults = fit(bincontent=numpy.asarray(self.lifetime_monitor.heights),binning = self.binning, fitrange = self.fitrange)
+        fitresults = fit(bincontent=self.lifetime_monitor.heights,binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
 
@@ -949,6 +977,15 @@ class DecayWidget(QtGui.QWidget):
             self.activateMuondecay.setChecked(False)
             self.mainwindow.tabwidget.ratewidget.stopClicked()            
 
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        if self.active:
+            self.activateMuondecayClicked()
+        QtGui.QWidget.close(self)
+
+
 class DAQWidget(QtGui.QWidget):
     """
     Widget which provides an interface to communicate via DAQ commands with the DAQ and to read the direct DAQ output.
@@ -1053,6 +1090,16 @@ class DAQWidget(QtGui.QWidget):
         self.text_box.appendPlainText(str(self.mainwindow.daq_msg.read()))
         if self.write_daq_file:
             self.daq_file.write(self.mainwindow.daq_msg.read(), status = self.mainwindow.statusline)
+
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        if self.write_daq_file:
+            self.write_daq_file = False
+            self.daq_file.close()
+        QtGui.QWidget.close(self)
+
 
 class GPSWidget(QtGui.QWidget):
     """
@@ -1246,3 +1293,9 @@ class GPSWidget(QtGui.QWidget):
 
         self.switch_active(False)
         return True
+
+    def close(self):
+        """
+        Closes the tab properly.
+        """
+        QtGui.QWidget.close(self)

@@ -130,7 +130,7 @@ class MuonicPulseFile(MuonicFile):
     Class which holds pulse files. Contains pulses in the format:
     lasttriggertime,pulses["ch0"],pulses["ch1"],pulses["ch2"],pulses["ch3"]
     """
-    def __init__(self, filename, logger, mode = 'a', **kwargs):
+    def __init__(self, filename, logger = False, mode = 'a', **kwargs):
         self.filename = str(filename)
         self.logger = logger
         self._pulse_mes_start = datetime.datetime.now()
@@ -172,7 +172,10 @@ class MuonicPulseFile(MuonicFile):
         self.muonic_file.close()
         __mtime = datetime.datetime.now() - self._pulse_mes_start
         __mtime = round(__mtime.seconds/(3600.),2) + __mtime.days*86400
-        self.logger.info("The rate measurement was active for %f hours" % __mtime)
+        if self.logger:
+            self.logger.info("The rate measurement was active for %f hours" % __mtime)
+        else:
+            print "The rate measurement was active for %f hours" % __mtime
         _newfilename = self.filename.replace("HOURS",str(__mtime))
         shutil.move(self.filename,_newfilename)
         return True
@@ -305,7 +308,7 @@ class MuonicRawFile(MuonicFile):
 
 class MuonicDAQMSG(object):
     """
-    class that holds the DAQ messages. Items shouldn't be removed handwise, only you are shure that it doesn't harm the program!
+    class that holds the DAQ messages. Items shouldn't be removed handwise, only you are sure that it doesn't harm the program!
     Works like a list,
     oldes item at position 0, newest on highest index(-1)
     """
