@@ -472,8 +472,11 @@ class MuonicRate(object):
                             return False
                         new_rates.append(rateseries + [None]*(len(self._rates[0])-len(rateseries)))
                     self._rates = new_rates
-                if len(rates) < len(self._rates[0]):
-                    rates = rates + [None]*(len(self._rates[0])-len(rates))
+                else:
+                    if len(rates) < len(self._rates[0]):
+                        rates = rates + [None]*(len(self._rates[0])-len(rates))
+                    elif len(rates) > len(self._rates[0]):
+                        rates
             else:
                 return False
         self.__check_length()

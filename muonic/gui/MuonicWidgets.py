@@ -1,5 +1,5 @@
 """
-Provide the different physics widgets
+Provide the different widgets
 """
 
 from PyQt4 import QtGui
@@ -8,6 +8,7 @@ from PyQt4 import QtCore
 from LineEdit import LineEdit
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
 from MuonicData import MuonicRawFile, MuonicRateFile, MuonicDecayFile, MuonicPulseFile
+from MuonicData import MuonicRate
 from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
 from ..analysis.fit import main as fit
 from ..analysis.fit import gaussian_fit
@@ -49,7 +50,7 @@ class RateWidget(QtGui.QWidget):
         self.label_total_scalers = QtGui.QLabel(qt_translate('MainWindow','total scalers:'))
         self.label_started = QtGui.QLabel(qt_translate('MainWindow','started:'))
         self.rates = dict()
-        self.rates['rates']= None
+        self.rates['rates'] = MuonicRate([0,0,0,0,0])
         self.rates['rates_buffer'] = dict()
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
@@ -149,7 +150,7 @@ class RateWidget(QtGui.QWidget):
         Calculate the values shown in the rate widget and writes values to a file. Started via Processincoming in Mainwindow
         """
         time_window = self.mainwindow.thisscalarquery - self.mainwindow.lastscalarquery
-        self.rates['rates'] = (self.mainwindow.scalars_diff_ch0/time_window,self.mainwindow.scalars_diff_ch1/time_window,self.mainwindow.scalars_diff_ch2/time_window,self.mainwindow.scalars_diff_ch3/time_window, self.mainwindow.scalars_diff_trigger/time_window, time_window,self.mainwindow.scalars_diff_ch0,self.mainwindow.scalars_diff_ch1, self.mainwindow.scalars_diff_ch2, self.mainwindow.scalars_diff_ch3, self.mainwindow.scalars_diff_trigger)
+        self.rates['rates'].rates((self.mainwindow.scalars_diff_ch0/time_window,self.mainwindow.scalars_diff_ch1/time_window,self.mainwindow.scalars_diff_ch2/time_window,self.mainwindow.scalars_diff_ch3/time_window, self.mainwindow.scalars_diff_trigger/time_window, time_window,self.mainwindow.scalars_diff_ch0,self.mainwindow.scalars_diff_ch1, self.mainwindow.scalars_diff_ch2, self.mainwindow.scalars_diff_ch3, self.mainwindow.scalars_diff_trigger)
 
         self.timewindow += self.rates['rates'][5]
 
