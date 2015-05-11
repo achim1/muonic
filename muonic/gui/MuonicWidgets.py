@@ -636,7 +636,7 @@ class VelocityWidget(QtGui.QWidget):
         self.trigger = VelocityTrigger(logger)
         self.times = []
         self.active = False
-        self.binning = (0.,30,24)
+        self.binning = (0.,30,25)
         self.fitrange = (self.binning[0],self.binning[1])
 
         self.activateVelocity = QtGui.QCheckBox(self)

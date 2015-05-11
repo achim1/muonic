@@ -232,6 +232,7 @@ class MuonicDecayFile(MuonicFile):
             raise ValueError, "Missing something to write to the file."
         __msg = 'Decay ' + msg[1].replace(' ','_').__repr__() + ' ' + msg[0].__repr__()
         self.muonic_file.write(str(__msg)+'\n')
+        self.muonic_file.flush()
         return True
 
     def close(self):

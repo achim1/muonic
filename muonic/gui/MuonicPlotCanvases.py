@@ -337,7 +337,7 @@ class LifetimeCanvas(MuonicHistCanvas):
     """
     def __init__(self,parent,logger,binning = (0,10,21)): 
         try:
-            MuonicHistCanvas.__init__(self,parent,logger,n.linspacen.linspace((binning[0],binning[1],binning[2]),xlabel=r"Time between Pulses ($\mu$s)", ylabel="Events")
+            MuonicHistCanvas.__init__(self,parent,logger,n.linspace((binning[0],binning[1],binning[2]),xlabel=r"Time between Pulses ($\mu$s)", ylabel="Events")
         except:
             MuonicHistCanvas.__init__(self,parent,logger,n.linspace(binning[0],binning[1],binning[2]),xlabel="Time between Pulses (microseconds)", ylabel="Events")
      
