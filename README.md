@@ -1,24 +1,23 @@
-#################################################
+
 muonic - a python gui for QNET experiments
-#################################################
+================================================
 
 The muonic project provides an interface to communicate with QuarkNet DAQ cards and to perform simple analysis of the generated data.
-Its goal is to ensure easy and stable access to the QuarkNet cards and visualize some of the features of the cards. It is meant to be used in school projects, so it should be easy to use even by people who do not have lots LINUX backround or experience with scientific software. Automated data taking can be used to ensure no valuable data is lost.
+Its goal is to ensure easy and stable access to the QuarkNet cards and visualize some of the features of the cards. It is meant to be used in school projects, so it should be easy to use even by people who do not have lots LINUX backround or experience with scientific software. Automated data taking ensure no measured data is lost.
 
 License and terms of agreement
-===================================
+----------------------------------
 
 Muonic is distributed under the terms of GPL (GNU Public License). With the use of the software you accept the conditions of the GPL. This means also that the authors can not be made responsible for any damage of any kind to hard- or software.
 
 muonic setup and installation
-=============================
+-----------------------------------
 
 Muonic consists of two main parts:
 1. the python package `muonic`
 2. a python executable
 
-prerequisites
--------------------
+###prerequisites
 
 muonic needs the following packages to be installed (list may not be complete!)
 
@@ -29,8 +28,7 @@ muonic needs the following packages to be installed (list may not be complete!)
 * python-serial
 
 
-installation with the setup.py script
----------------------------------------
+###installation with the setup.py script
 
 Run the following command in the directory where you checked out the source code:
 
@@ -40,8 +38,7 @@ This will install the muonic package into your python site-packages directory an
 
 The use of python-virtualenv is recommended.
 
-installing muonic without the setup script
----------------------------------------------------
+###installing muonic without the setup script
 
 You just need the script `./bin/muonic` to the upper directory and rename it to `muonic.py`.
 You can do this by typing
@@ -99,8 +96,7 @@ Saving files with muonic
 
 All files which are saved by muonic are ASCII files. The filenames are as follows:
 
-.. warning::
-   currently all files are saved under $HOME/muonic_data. This directory must exist. If you use the provided setup script, it is created automatically
+*currently all files are saved under $HOME/muonic_data. This directory must exist. If you use the provided setup script, it is created automatically*
 
 `YYYY-MM-DD_HH-MM-SS_TYPE_MEASUREMENTTME_xy`
 
@@ -120,17 +116,15 @@ Representation of the pulses:
 
 This is a python-tuple which contains the trigger time of the event and four lists with more tuples. The lists represent the channels (0-3 from left to right) and each tuple stands for a leading and a falling edge of a registered pulse. To get the exact time of the pulse start, one has to add the pulse LE and FE times to the triggertime
 
-.. note::
-   For calculation of the LE and FE pulse times a TMC is used. It seems that for some DAQs cards a TMC bin is 1.25 ns wide, although the documentation says something else.
+_For calculation of the LE and FE pulse times a TMC is used. It seems that for some DAQs cards a TMC bin is 1.25 ns wide, although the documentation says something else.
    The trigger time is calculated using a CPLD which runs in some cards at 25MHz, which gives a bin width of the CPLD time of 40 ns.
-   Please keep this limited precision in mind when adding CPLD and TMC times.
+   Please keep this limited precision in mind when adding CPLD and TMC times._
 
 
 Performing measurements with muonic
 -----------------------------------
 
-Setting up the DAQ
-~~~~~~~~~~~~~~~~~~
+###Setting up the DAQ
 
 For DAQ setup it is recommended to use the 'settings' menu, although everything can also be setup via the command line in the DAQ output window (see below.)
 Muonic translates the chosen settings to the corresponding DAQ commands and sends them to the DAQ. So if you want to change things like the coincidence time window, you have to issue the corresponding DAQ command in the DAQ output window.
@@ -154,8 +148,7 @@ Two menu items are of interest here:
    A proper calibration of the individual channels is the key to a successful measurement!
 
 
-Muon Rates
-~~~~~~~~~~
+###Muon Rates
 
 In the first tab a plot of the measured muon rates is displayed. A trigger rate is only shown if a coincidence condition is set.
 In the block on the right side of the tab, the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. On the bottom right side is also the maximum rate of the measurement. The plot and the shown values can be reset by clicking on 'Restart'. The 'Stop' button can be used to temporarily hold the plot to have a better look at it.
@@ -164,8 +157,7 @@ In the block on the right side of the tab, the average rates are displayed since
 
 .. note:: Currently the plot shows only the last 200 seconds. If you want to have a longer time range, you can use the information which is automatically stored in the 'R' file (see above).
 
-Muon Lifetime
-~~~~~~~~~~~~~
+###Muon Lifetime
 
 A lifetime measurement of muons can be performed here. A histogram of time differences between succeeding pulses in the same channel is shown. It can be fit with an exponential by clicking on 'Fit!'. The fit lifetime is then shown in the above right of the plot, for an estimate on the errors you have to look at the console.
 
@@ -176,34 +168,28 @@ The measurement can be activated with the check box. In the following popup wind
 .. warning::
    The error of the fit might be wrong!
 
-Muon Velocity
-~~~~~~~~~~~~~
+###Muon Velocity
 
 In this tab the muon velocity can be measured. The measurement can be started with activating the check box. In the following popup window it has to be configured.
 
 .. warning::
    The error of the fit might be wrong!
 
-Pulse Analyzer
-~~~~~~~~~~~~~~
+###Pulse Analyzer
 
 You can have a look at the pulse widths in this plot. The height of the pulses is lost during the digitization process, so all pulses have the same height here.
 On the left side is an oscilloscope of the pulse widths shown and on the right side are the pulse widths collected in an histogram.
 
-GPS Output
-~~~~~~~~~~
+###GPS Output
 
 In this tab you can read out the GPS information of the DAQ card. It requires a connected GPS antenna. The information are summarized on the bottom in a text box, from where they can be copied.
 
-Raw DAQ data
-~~~~~~~~~~~~
+###Raw DAQ data
 
 The last tab of muonic displays the raw ASCII DAQ data.
 This can be saved to a file. If the DAQ status messages should be suppressed in that file, the option `-n` should be given at the start of muonic.
 The edit field can be used to send messages to the DAQ. For an overview over the messages, look here (link not available yet!).
 To issue such an command periodically, you can use the button 'Periodic Call'
 
-.. note::
-   The two most important DAQ commands are 'CD' ('counter disable') and 'CE' ('counter enable'). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled.
-
+_The two most important DAQ commands are 'CD' ('counter disable') and 'CE' ('counter enable'). Pulse information is only given out by the DAQ if the counter is set to enabled. All pulse related features may not work properly if the counter is set to disabled._
 

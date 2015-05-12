@@ -421,7 +421,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         QtGui.QMessageBox.information(self,
                   "about muonic",
-                  "version: %s\ source located at: %s"%(__version__,__source_location__))
+                  "version: %s\n source located at: %s"%(__version__,__source_location__))
 
     def sphinxdoc_menu(self):
         """

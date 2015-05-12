@@ -650,12 +650,14 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.logger.debug("Status informations widget not active - ignoring update call.")
         self.refresh_button.setDisabled(False)
         self.active = False
-        if not self.pulsefile:
-            self.mainwindow.pulsefilename = ''
-            self.mainwindow.pulse_mes_start = False
-            if self.mainwindow.pulseextractor.pulsefile:
-                self.mainwindow.pulseextractor.pulsefile.close()
-            self.mainwindow.pulseextractor.pulsefile = False
+
+        #FIXME: status widget has no pulsefile!
+        #if not self.pulsefile:
+        #    self.mainwindow.pulsefilename = ''
+        #    self.mainwindow.pulse_mes_start = False
+        #    if self.mainwindow.pulseextractor.pulsefile:
+        #        self.mainwindow.pulseextractor.pulsefile.close()
+        #    self.mainwindow.pulseextractor.pulsefile = False
 
 
 
