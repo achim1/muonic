@@ -132,20 +132,16 @@ Muonic translates the chosen settings to the corresponding DAQ commands and send
 Two menu items are of interest here:
 * Channel Configuration: Enable the channels here and set coincidence settings. A veto channel can also be specified.
 
-.. note::
-   You have to ensure that the check boxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.
+*You have to ensure that the check boxes for the channels you want to use are checked before you leave this dialogue, otherwise the channel gets deactivated.*
 
-.. note::
-   The coincidence is realized by the DAQ in a way that no specific channels can be given. Instead this is meant as an 'any' condition.
-   So 'twofold' means that 'any two of the enabled channels' must claim signal instead of two specific ones (like 1 and 2).
+*The coincidence is realized by the DAQ in a way that no specific channels can be given. Instead this is meant as an 'any' condition.
+   So 'twofold' means that 'any two of the enabled channels' must claim signal instead of two specific ones (like 1 and 2).*
 
-.. warning::
-   Measurements at DESY indicated that the veto feature of the DAQ card might not work properly in all cases.
+*Measurements at DESY indicated that the veto feature of the DAQ card might not work properly in all cases.*
 
 * Thresholds: For each channel a threshold (in milliVolts) can be specified. Pulse which are below this threshold are rejected. Use this for electronic noise supression. One can use for the calibration the rates in the muon rates tab.
 
-.. note::
-   A proper calibration of the individual channels is the key to a successful measurement!
+**A proper calibration of the individual channels is the key to a successful measurement!**
 
 
 ###Muon Rates
@@ -153,9 +149,9 @@ Two menu items are of interest here:
 In the first tab a plot of the measured muon rates is displayed. A trigger rate is only shown if a coincidence condition is set.
 In the block on the right side of the tab, the average rates are displayed since the measurement start. Below you can find the number of counts for the individual channels. On the bottom right side is also the maximum rate of the measurement. The plot and the shown values can be reset by clicking on 'Restart'. The 'Stop' button can be used to temporarily hold the plot to have a better look at it.
 
-.. note:: You can use the displayed 'max rate' at the right bottom to check if anything with the measurement went wrong.
+*You can use the displayed 'max rate' at the right bottom to check if anything with the measurement went wrong.*
 
-.. note:: Currently the plot shows only the last 200 seconds. If you want to have a longer time range, you can use the information which is automatically stored in the 'R' file (see above).
+*Currently the plot shows only the last 200 seconds. If you want to have a longer time range, you can use the information which is automatically stored in the 'R' file (see above).*
 
 ###Muon Lifetime
 
@@ -165,15 +161,13 @@ The measurement can be activated with the check box. In the following popup wind
 * more than one pulse appears in the single pulse channel and none pulse is measured in the double pulse channel
 * one pulse in the single pulse channel appears and exactly two pulses in the double pulse channel.
 
-.. warning::
-   The error of the fit might be wrong!
+**The error of the fit might be wrong!**
 
 ###Muon Velocity
 
 In this tab the muon velocity can be measured. The measurement can be started with activating the check box. In the following popup window it has to be configured.
 
-.. warning::
-   The error of the fit might be wrong!
+**The error of the fit might be wrong!**
 
 ###Pulse Analyzer
 
