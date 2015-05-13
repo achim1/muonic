@@ -271,7 +271,9 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.underflow = 0 #FIXME the current implementation does not know about outliers
         self.overflow  = 0 #FIXME the current implementation does not know about outliers
         self.dimension = r"$\mu$s"
-        
+        # fixed xrange for histogram
+        self.xmin      = binning[0]
+        self.xmax      = binning[-1] + (binning[:-1] - binning[1:])[-1]  
         
     def update_plot(self,data):    
 
@@ -318,10 +320,14 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)
 
-        if _max_xval < self.ax.get_xlim()[1] or _max_xval*5. > self.ax.get_xlim()[1]:
-            _max_xval = self.ax.get_xlim()[1]
-        self.ax.set_xlim(xmax=_max_xval)
-        
+        # FIXED: we don't want to cut off something from 
+        # the histogram, so make it just large
+        # FIXME: adjust the size properly
+        # HOTFIX: disabled, does not seem to work at all
+        #if  _max_xval*5. > self.ax.get_xlim()[1]:
+        #    _max_xval = self.ax.get_xlim()[1]
+        #self.ax.set_xlim(xmax=_max_xval)
+        self.ax.set_xlim(xmin=self.xmin,xmax=self.xmax)
         # always get rid of unused stuff
         del tmphist
 
