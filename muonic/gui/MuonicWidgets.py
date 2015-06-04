@@ -52,7 +52,7 @@ class RateWidget(QtGui.QWidget):
         self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
         self.stop_button = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
         self.label_mean_rates = QtGui.QLabel(tr('MainWindow','mean rates:'))
-        self.label_total_scalers = QtGui.QLabel(tr('MainWindow','total scalers:'))
+        self.label_total_scalers = QtGui.QLabel(tr('MainWindow','total counts:'))
         self.label_started = QtGui.QLabel(tr('MainWindow','started:'))
         self.rates = dict()
         self.rates['rates']= None
@@ -63,7 +63,7 @@ class RateWidget(QtGui.QWidget):
         self.table = QtGui.QTableWidget(5,2,self)
         self.table.setColumnWidth(0,85)
         self.table.setColumnWidth(1,60)
-        self.table.setHorizontalHeaderLabels(["rate [Hz]","scaler"])
+        self.table.setHorizontalHeaderLabels(["rate [1/s]","counts"])
         self.table.setVerticalHeaderLabels(["channel 0","channel 1","channel 2","channel 3","trigger"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.scalers = dict()
@@ -185,7 +185,7 @@ class RateWidget(QtGui.QWidget):
     def update(self):
         if self.run:
             self.general_info['edit_daq_time'].setText('%.2f s' %(self.timewindow))
-            self.general_info['edit_max_rate'].setText('%.2f Hz' %(self.general_info['max_rate']))
+            self.general_info['edit_max_rate'].setText('%.2f 1/s' %(self.general_info['max_rate']))
             if self.mainwindow.channelcheckbox_0:
                 self.rates['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']/self.timewindow))
                 self.scalers['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']))
