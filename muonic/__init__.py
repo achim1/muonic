@@ -1,1 +1,2 @@
-__all__ = ["gui","daq","analysis","__version__"]
+import __version__
+__all__ = ["gui","daq","analysis"]
