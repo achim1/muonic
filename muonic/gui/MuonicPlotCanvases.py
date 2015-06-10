@@ -265,8 +265,10 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         #super(MuonicHistCanvas,self).__init__(self,parent,logger,**kwargs)
         MuonicPlotCanvas.__init__(self,parent,logger,**kwargs)
         self.binning = binning
-        self.bincontent   = self.ax.hist(n.array([]), self.binning, fc=histcolor, alpha=0.25)[0]
-        self.hist_patches = self.ax.hist(n.array([]), self.binning, fc=histcolor, alpha=0.25)[2]
+        self.bincontent   = n.zeros(len(binning-1))
+        self.hist_patches = self.ax.hist(n.array([self.binning[0]-1]), 
+                                         self.binning, fc=histcolor, 
+                                         alpha=0.25)[2]
         self.heights = []
         self.underflow = 0 #FIXME the current implementation does not know about outliers
         self.overflow  = 0 #FIXME the current implementation does not know about outliers
