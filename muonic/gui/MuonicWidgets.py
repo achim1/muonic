@@ -705,7 +705,7 @@ class VelocityWidget(QtGui.QWidget):
                               QtCore.SIGNAL("clicked()"),
                               self.velocityFitRangeClicked
                               )
-        self.pulsefile = self.parentWidget().pulseextractor.pulsefile
+        self.pulsefile = self.mainwindow.pulseextractor.pulsefile
         
     def calculate(self,pulses):
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
@@ -771,11 +771,10 @@ class VelocityWidget(QtGui.QWidget):
                 self.active = True
                 self.parentWidget().parentWidget().parentWidget().daq.put("CE")
                 self.parentWidget().parentWidget().ratewidget.startClicked()
-                self.pulsefile = self.parentWidget().parentWidget().pulseextractor.pulsefile
                 if not self.pulsefile:
-                    self.parentWidget().parentWidget().pulsefilename = os.path.join(self.parentWidget().parentWidget().DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.parentWidget().parentWidget().date.tm_year,self.parentWidget().parentWidget().date.tm_mon,self.parentWidget().parentWidget().date.tm_mday,self.parentWidget().parentWidget().date.tm_hour,self.parentWidget().parentWidget().date.tm_min,self.parentWidget().parentWidget().date.tm_sec,"P",self.parentWidget().parentWidget().opts.user[0],self.parentWidget().parentWidget().opts.user[1]))
-                    self.parentWidget().parentWidget().pulse_mes_start = self.parentWidget().parentWidget().now
-                    self.parentWidget().parentWidget().pulseextractor.pulsefile = open(self.parentWidget().parentWidget().pulsefilename,'w')
+                    self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
+                    self.mainwindow.pulse_mes_start = self.mainwindow.now
+                    self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
 
 
             else:
@@ -785,13 +784,13 @@ class VelocityWidget(QtGui.QWidget):
             self.activateVelocity.setChecked(False)            
             self.active = False
             if not self.pulsefile:
-                self.parentWidget().parentWidget().pulsefilename = ''
-                self.parentWidget().parentWidget().pulse_mes_start = False
-                if self.parentWidget().parentWidget().pulseextractor.pulsefile:
-                    self.parentWidget().parentWidget().pulseextractor.pulsefile.close()
-                self.parentWidget().parentWidget().pulseextractor.pulsefile = False
+                self.mainwindow.pulsefilename = ''
+                self.mainwindow.pulse_mes_start = False
+                if self.mainwindow.pulseextractor.pulsefile:
+                    self.mainwindow.pulseextractor.pulsefile.close()
+                self.mainwindow.pulseextractor.pulsefile = False
 
-            self.parentWidget().parentWidget().ratewidget.stopClicked()  
+            self.mainwindow.tabwidget.ratewidget.stopClicked()  
 
 class DecayWidget(QtGui.QWidget):
     
