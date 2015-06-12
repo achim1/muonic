@@ -1,0 +1,19 @@
+Metadata-Version: 1.1
+Name: muonic
+Version: 2.0.10
+Summary: Software to work with QNet DAQ cards. This is a TRUNK version
+Home-page: https://github.com/achim1/muonic/
+Author: Robert Franke,Achim Stoessl,Basho Kaminsky
+Author-email: achim.stoessl@desy.de, basho.kaminsky@desy.de
+License: GPL
+Download-URL: pip install muonic
+Description: Software is able to manage DAQ comunications and shows e.g. a rate plot...
+Keywords: QNET,QuarkNET,Fermilab,DESY,DAQ
+Platform: Ubuntu 12.04
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Topic :: Scientific/Engineering :: Physics
