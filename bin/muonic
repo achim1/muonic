@@ -79,12 +79,13 @@ if __name__ == '__main__':
 
 
     opts, args = parser.parse_args()
-    if (len(args) != 1) or (len(args[0]) != 2):
-            parser.error("Incorrect number of arguments, you have to specify just the initials of your name for the filenames \n initials must be two letters!")
 
     if opts.version:
         print (__version__)
         sys.exit(0)
+    
+    if (len(args) != 1) or (len(args[0]) != 2):
+            parser.error("Incorrect number of arguments, you have to specify just the initials of your name for the filenames \n initials must be two letters!")
 
     # small ugly hack, mixing args and options...
     opts.user = args[0]

@@ -240,6 +240,7 @@ def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
 
     #return (bin_centers,bincontent,fitx,decay,p,covar,chisquare,nbins)
     return (cut_bincenters,cut_bincontent,fitx,gauss,p,covar,chisquare,nbins)
+     
 
 if __name__ == '__main__':
     main()

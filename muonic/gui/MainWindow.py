@@ -22,7 +22,7 @@ import webbrowser
 from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 from ..__version__ import __version__,__source_location__
-
+from .styles import RCSettings
 
 from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
@@ -46,7 +46,7 @@ class MainWindow(QtGui.QMainWindow):
     """
 
     def __init__(self, daq, logger, opts,  win_parent = None):
-
+        RCSettings()
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
         self.opts = opts
@@ -169,7 +169,7 @@ class MainWindow(QtGui.QMainWindow):
         #this is a stupid comment for getting upload permission ;)  
         self.tabwidget.mainwindow = self.parentWidget()
 
-        self.timewindow = 5.0
+        self.timewindow = opts.timewindow #5.0
         self.logger.info("Timewindow is %4.2f" %self.timewindow)
 
         self.tabwidget.addTab(RateWidget(logger,parent = self),"Muon Rates")
@@ -464,8 +464,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
             self.scalars = msg.split()
-            time_window = self.thisscalarquery - self.lastscalarquery
-            self.logger.debug("Time window %s" %time_window)
+            #time_window = self.thisscalarquery - self.lastscalarquery
+            #self.logger.debug("Time window %s" %time_window)
             errors = False
 
             for item in self.scalars:

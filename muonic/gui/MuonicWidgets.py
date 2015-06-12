@@ -741,7 +741,7 @@ class VelocityWidget(QtGui.QWidget):
         """
         fit the muon velocity histogram
         """
-        print 'That is it ', self.fitrange
+        self.logger.debug("Using fitrange of %s" %self.fitrange.__repr__())
         fitresults = gaussian_fit(bincontent=n.asarray(self.velocitycanvas.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
             self.velocitycanvas.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])

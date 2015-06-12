@@ -345,6 +345,8 @@ class MuonicHistCanvas(MuonicPlotCanvas):
     def show_fit(self,bin_centers,bincontent,fitx,decay,p,covar,chisquare,nbins):
 
         #self.ax.clear()
+        #print decay(p,fitx)
+        #print p
         self.ax.plot(bin_centers,bincontent,"b^",fitx,decay(p,fitx),"b-")
         #FIXME: this seems to crop the histogram
         #self.ax.set_ylim(0,max(bincontent)*1.2)
