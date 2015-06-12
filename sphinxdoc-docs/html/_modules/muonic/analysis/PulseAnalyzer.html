@@ -1,0 +1,513 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic.analysis.PulseAnalyzer &mdash; muonic 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="muonic 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for muonic.analysis.PulseAnalyzer</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Get the absolute timing of the pulses</span>
+<span class="sd">by use of the gps time</span>
+<span class="sd">Calculate also a non hex representation of</span>
+<span class="sd">leading and falling edges of the pulses</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">..gui.MuonicData</span> <span class="kn">import</span> <span class="n">MuonicPulseFile</span>
+    <span class="n">pulseimports</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">pulseimports</span> <span class="o">=</span> <span class="bp">False</span>
+
+<span class="c"># for the pulses </span>
+<span class="c"># 8 bits give a hex number</span>
+<span class="c"># but only the first 5 bits are used for the pulses time,</span>
+<span class="c"># the fifth bit flags if the pulse is considered valid</span>
+<span class="c"># the seventh bit should be the triggerflag...</span>
+
+<span class="n">BIT0_4</span> <span class="o">=</span> <span class="mi">31</span>
+<span class="n">BIT5</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span>
+<span class="n">BIT7</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span>
+
+<span class="c"># For DAQ status</span>
+<span class="n">BIT0</span> <span class="o">=</span> <span class="mi">1</span> <span class="c"># 1 PPS interrupt pending</span>
+<span class="n">BIT1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span> <span class="c"># Trigger interrupt pending</span>
+<span class="n">BIT2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span> <span class="c"># GPS data possible corrupted</span>
+<span class="n">BIT3</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span> <span class="c"># Current or last 1PPS rate not within range</span>
+
+<span class="c"># ticksize of tmc internal clock</span>
+<span class="c"># 42Mhz card: 0.75, 25MHz version of daq card 1.25</span>
+<span class="c"># TODO: find out if tmc is coupled to cpld!</span>
+<span class="n">TMC_TICK</span> <span class="o">=</span> <span class="mf">1.25</span> <span class="c">#nsec</span>
+<span class="c">#MAX_TRIGGERWINDOW = 60.0 #nsec</span>
+<span class="n">MAX_TRIGGERWINDOW</span> <span class="o">=</span> <span class="mf">9960.0</span> <span class="c">#nsec for mudecay!</span>
+<span class="n">DEFAULT_FREQUENCY</span> <span class="o">=</span> <span class="mf">25.0e6</span>
+
+
+<div class="viewcode-block" id="PulseExtractor"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.PulseExtractor">[docs]</a><span class="k">class</span> <span class="nc">PulseExtractor</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get the pulses out of a daq line</span>
+<span class="sd">    speed is important here</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pulsefile</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">tmc_ticks</span> <span class="o">=</span> <span class="n">TMC_TICK</span><span class="p">,</span> <span class="n">daq_freq</span> <span class="o">=</span> <span class="n">DEFAULT_FREQUENCY</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if a pulsefile is given, all the extracte pulses</span>
+<span class="sd">        will be written into it</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+ 
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmc_ticks</span> <span class="o">=</span> <span class="n">tmc_ticks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">daq_freq</span> <span class="o">=</span> <span class="n">daq_freq</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">re</span>      <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fe</span>      <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_re</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_fe</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+
+        <span class="c"># ini will be False if we have seen the first </span>
+        <span class="c"># trigger</span>
+        <span class="c"># store items if Events are longer than one line</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ini</span>                 <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span>          <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggertime</span>     <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_count</span>       <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttime</span>            <span class="o">=</span> <span class="mi">0</span>
+
+
+        <span class="c"># store the actual value of</span>
+        <span class="c"># the trigger counter</span>
+        <span class="c"># to correct trigger counter rollover</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggercount</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c"># TODO find a generic way to account</span>
+        <span class="c"># for the fact that the default</span>
+        <span class="c"># cna be either 25 or 41 MHz</span>
+        <span class="c"># variables for DAQ frequency calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastfrequencypolltime</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastfrequencypolltriggers</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">daq_freq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastoneppspoll</span>      <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passedonepps</span>        <span class="o">=</span> <span class="mi">0</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">prevlast_onepps</span>     <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c">#self.debug_freq = open(&#39;frequency.txt&#39;,&#39;w&#39;)</span>
+        <span class="c">#self.debug_freq.write(&#39;#  sec (le (nsec), fe(nsec)) chan0 chan1 chan2 chan3 \n&#39;)</span>
+        <span class="k">if</span> <span class="n">pulsefile</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pulseimports</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span> <span class="o">=</span> <span class="n">MuonicPulseFile</span><span class="p">(</span><span class="n">pulsefile</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">pulsefile</span><span class="p">,</span><span class="s">&#39;w&#39;</span><span class="p">)</span>           
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="PulseExtractor._calculate_edges"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.PulseExtractor._calculate_edges">[docs]</a>    <span class="k">def</span> <span class="nf">_calculate_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">line</span><span class="p">,</span><span class="n">counter_diff</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get the leading and falling edges of the pulses</span>
+<span class="sd">        Use counter diff for getting pulse times in subsequent </span>
+<span class="sd">        lines of the triggerflag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">rising_edges</span>  <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">16</span><span class="p">),</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="mi">16</span><span class="p">),</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="mi">16</span><span class="p">),</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="mi">16</span><span class="p">)}</span>
+        <span class="n">falling_edges</span>  <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="mi">16</span><span class="p">),</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="mi">16</span><span class="p">),</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span><span class="mi">16</span><span class="p">),</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span><span class="mi">16</span><span class="p">)}</span>
+
+
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;ch0&quot;</span><span class="p">,</span><span class="s">&quot;ch1&quot;</span><span class="p">,</span><span class="s">&quot;ch2&quot;</span><span class="p">,</span><span class="s">&quot;ch3&quot;</span><span class="p">]:</span>
+            <span class="n">re</span> <span class="o">=</span> <span class="n">rising_edges</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span>
+            <span class="n">fe</span> <span class="o">=</span> <span class="n">falling_edges</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">re</span> <span class="o">&amp;</span> <span class="n">BIT5</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">re</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">counter_diff</span> <span class="o">+</span> <span class="p">(</span><span class="n">re</span> <span class="o">&amp;</span> <span class="n">BIT0_4</span><span class="p">)</span><span class="o">*</span><span class="n">TMC_TICK</span> <span class="p">)</span> 
+            <span class="k">if</span> <span class="p">(</span><span class="n">fe</span> <span class="o">&amp;</span> <span class="n">BIT5</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fe</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">counter_diff</span> <span class="o">+</span> <span class="p">(</span><span class="n">fe</span> <span class="o">&amp;</span> <span class="n">BIT0_4</span><span class="p">)</span><span class="o">*</span><span class="n">TMC_TICK</span> <span class="p">)</span> 
+
+
+</div>
+<div class="viewcode-block" id="PulseExtractor._order_and_cleanpulses"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.PulseExtractor._order_and_cleanpulses">[docs]</a>    <span class="k">def</span> <span class="nf">_order_and_cleanpulses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove pulses which have a </span>
+<span class="sd">        leading edge later in time than a </span>
+<span class="sd">        falling edge and do a bit of sorting</span>
+<span class="sd">        Remove also single leading or falling edges</span>
+<span class="sd">        NEW: We add virtual falling edges!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pulses</span>  <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+
+
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&quot;ch0&quot;</span><span class="p">,</span><span class="s">&quot;ch1&quot;</span><span class="p">,</span><span class="s">&quot;ch2&quot;</span><span class="p">,</span><span class="s">&quot;ch3&quot;</span><span class="p">]:</span>
+            
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">re</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_re</span><span class="p">[</span><span class="n">ch</span><span class="p">]):</span>
+                <span class="c"># add the virtual falling edge if necessary</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_fe</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="n">index</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">fe</span> <span class="o">&lt;</span> <span class="n">re</span><span class="p">:</span>
+                        <span class="n">fe</span> <span class="o">=</span> <span class="n">MAX_TRIGGERWINDOW</span> 
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="n">fe</span> <span class="o">=</span> <span class="n">MAX_TRIGGERWINDOW</span>
+                    
+                <span class="n">pulses</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">re</span><span class="p">,</span><span class="n">fe</span><span class="p">))</span>
+                
+            <span class="n">pulses</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">ch</span><span class="p">])</span>
+
+           <span class="c"># self.pulses[ch] = [(re,fe) for re,fe in self.last_re[ch],self.last_fe[ch])</span>
+           <span class="c"># for i in self.pulses[ch]:</span>
+           <span class="c">#     if not i[0] &lt; i[1]:</span>
+           <span class="c">#         #self.chan0.remove(i)</span>
+           <span class="c">#         self.pulses[ch] = (i[0],MAX_TRIGGERWINDOW)</span>
+        <span class="k">return</span> <span class="n">pulses</span>
+</div>
+<div class="viewcode-block" id="PulseExtractor._get_evt_time"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.PulseExtractor._get_evt_time">[docs]</a>    <span class="k">def</span> <span class="nf">_get_evt_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">time</span><span class="p">,</span><span class="n">correction</span><span class="p">,</span><span class="n">trigger_count</span><span class="p">,</span><span class="n">onepps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the absolute event time in seconds since day start</span>
+<span class="sd">        If gps is not available, only relative eventtime based on counts</span>
+<span class="sd">        is returned</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tfields</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">tfields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">secs_since_day_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span><span class="o">*</span><span class="mi">3600</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span><span class="o">*</span><span class="mi">60</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+
+        <span class="c"># FIXME: Why tfields[1]/1000?</span>
+        <span class="n">gps_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">secs_since_day_start</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">tfields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">1000.0</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span><span class="o">/</span><span class="mf">1000.0</span><span class="p">)</span>
+
+        <span class="n">line_time</span> <span class="o">=</span> <span class="n">gps_time</span> <span class="o">+</span> <span class="nb">float</span><span class="p">((</span><span class="n">trigger_count</span> <span class="o">-</span> <span class="n">onepps</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">line_time</span>
+
+</div>
+<div class="viewcode-block" id="PulseExtractor.extract"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.PulseExtractor.extract">[docs]</a>    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Analyze subsequent lines (one per call)</span>
+<span class="sd">        and check if pulses are related to triggers</span>
+<span class="sd">        For each new trigger,</span>
+<span class="sd">        return the set of pulses which belong to that trigger,</span>
+<span class="sd">        otherwise return None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;^([A-Z0-9]{8}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([0-9A-Z]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{2}) ([A-Z0-9]{8}) (\d{6})\.(\d{3}) (\d{6}) ([AV]{1}) (\d{2}) (\d{1}) [+-](\d{4})$&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+        <span class="n">onepps</span>        <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">trigger_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">time</span>          <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span>
+
+        <span class="c"># correct for triggercount rollover</span>
+        <span class="k">if</span> <span class="n">trigger_count</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggercount</span><span class="p">:</span>
+            <span class="n">trigger_count</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span> <span class="c"># counter offset</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_count</span> <span class="o">=</span> <span class="n">trigger_count</span>
+        
+        <span class="n">switched_onepps</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">onepps</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">passedonepps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c"># poll every x lines for the frequency</span>
+            <span class="c"># check for onepps counter rollover</span>
+            <span class="k">if</span> <span class="n">onepps</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span><span class="p">:</span>
+                <span class="n">onepps</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="mh">0xFFFFFFFF</span><span class="p">)</span>
+        
+            <span class="n">switched_onepps</span> <span class="o">=</span> <span class="bp">True</span>
+            
+            <span class="c"># calculate the frequency every x onepps</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">passedonepps</span><span class="o">%</span><span class="mi">5</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span> <span class="o">=</span> <span class="p">(</span><span class="n">onepps</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastoneppspoll</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passedonepps</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">passedonepps</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lastoneppspoll</span> <span class="o">=</span> <span class="n">onepps</span>
+                <span class="c"># check if calculatedfrequency is sane,</span>
+                <span class="c"># assuming the daq frequency is somewhat stable</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="mf">0.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">daq_freq</span> <span class="o">&lt;</span> <span class="mf">1.5</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">daq_freq</span>
+
+       
+            <span class="k">if</span> <span class="n">time</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lasttime</span><span class="p">:</span> 
+            <span class="c"># correcting for delayed onepps swicth</span>
+                <span class="n">linetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_evt_time</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">15</span><span class="p">],</span><span class="n">trigger_count</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">linetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_evt_time</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">15</span><span class="p">],</span><span class="n">trigger_count</span><span class="p">,</span><span class="n">onepps</span><span class="p">)</span>
+
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">linetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_evt_time</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">15</span><span class="p">],</span><span class="n">trigger_count</span><span class="p">,</span><span class="n">onepps</span><span class="p">)</span>
+
+        <span class="c"># storing the last two onepps switches</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prevlast_onepps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span> <span class="o">=</span> <span class="n">onepps</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttime</span> <span class="o">=</span> <span class="n">time</span>
+
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">BIT7</span><span class="p">:</span> <span class="c"># a triggerflag!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ini</span> <span class="o">=</span> <span class="bp">False</span>
+             
+            <span class="c"># a new trigger! we have to evaluate the last one and get the new pulses</span>
+        
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_re</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">re</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_fe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fe</span>
+            <span class="n">pulses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_and_cleanpulses</span><span class="p">()</span>
+            <span class="n">extracted_pulses</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lasttriggertime</span><span class="p">,</span><span class="n">pulses</span><span class="p">[</span><span class="s">&quot;ch0&quot;</span><span class="p">],</span><span class="n">pulses</span><span class="p">[</span><span class="s">&quot;ch1&quot;</span><span class="p">],</span><span class="n">pulses</span><span class="p">[</span><span class="s">&quot;ch2&quot;</span><span class="p">],</span><span class="n">pulses</span><span class="p">[</span><span class="s">&quot;ch3&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span><span class="p">,</span> <span class="n">MuonicPulseFile</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">extracted_pulses</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">extracted_pulses</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+            <span class="c"># as the pulses for the last event are done, reinitialize data structures</span>
+            <span class="c"># for the next event</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggertime</span> <span class="o">=</span> <span class="n">linetime</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">re</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fe</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;ch0&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch1&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch2&quot;</span> <span class="p">:</span> <span class="p">[],</span> <span class="s">&quot;ch3&quot;</span> <span class="p">:</span> <span class="p">[]</span> <span class="p">}</span>
+
+            <span class="c"># calculate edges of the new pulses</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_edges</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggercount</span> <span class="o">=</span> <span class="n">trigger_count</span> 
+        
+            <span class="k">return</span> <span class="n">extracted_pulses</span>
+        
+        <span class="k">else</span><span class="p">:</span>    
+            <span class="c"># we do have a previous trigger and are now adding more pulses to the event</span>
+            <span class="c">#print &#39;notrigger&#39;,line</span>
+        
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ini</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lastonepps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span><span class="mi">16</span><span class="p">)</span>
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">counter_diff</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">counter_diff</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger_count</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggercount</span><span class="p">)</span>
+                <span class="c">#print counter_diff, counter_diff &gt; int(0xffffffff)</span>
+                <span class="c"># FIXME: is this correct?</span>
+                <span class="k">if</span> <span class="n">counter_diff</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="mh">0xffffffff</span><span class="p">):</span>
+                    <span class="n">counter_diff</span> <span class="o">-=</span> <span class="nb">int</span><span class="p">(</span><span class="mh">0xffffffff</span><span class="p">)</span>
+        
+                <span class="n">counter_diff</span> <span class="o">=</span> <span class="n">counter_diff</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">calculatedfrequency</span>
+                
+                <span class="c">#print counter_diff,counter_diff*1e9,&#39; edges diff&#39;</span>
+       
+                 
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_edges</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">counter_diff</span><span class="o">=</span><span class="n">counter_diff</span><span class="o">*</span><span class="mf">1e9</span><span class="p">)</span>
+        <span class="c"># end of if triggerflag</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lasttriggercount</span> <span class="o">=</span> <span class="n">trigger_count</span> 
+
+</div>
+<div class="viewcode-block" id="PulseExtractor.close_file"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.PulseExtractor.close_file">[docs]</a>    <span class="k">def</span> <span class="nf">close_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulsefile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="c">#ma a velocity &quot;trigger&quot;, so that czts can be defined</span></div></div>
+<div class="viewcode-block" id="VelocityTrigger"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.VelocityTrigger">[docs]</a><span class="k">class</span> <span class="nc">VelocityTrigger</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Velocity trigger initialized&quot;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="VelocityTrigger.trigger"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.VelocityTrigger.trigger">[docs]</a>    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pulses</span><span class="p">,</span><span class="n">upperchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lowerchannel</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Timedifference will be calculated t(upperchannel) - t(lowerchannel)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># remember that index 0 is the triggertime</span>
+        <span class="n">upperpulses</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">upperchannel</span><span class="p">])</span>
+        <span class="n">lowerpulses</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">lowerchannel</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="n">upperpulses</span> <span class="ow">and</span> <span class="n">lowerpulses</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">upperchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">lowerchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">pulsewidth</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">pulsewidth</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">upperchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">pulses</span><span class="p">[</span><span class="n">upperchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">pulsewidth</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulses</span><span class="p">[</span><span class="n">lowerchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">pulses</span><span class="p">[</span><span class="n">lowerchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">pulsewidth</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">pulsewidth</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">15.</span> <span class="ow">or</span> <span class="n">pulsewidth</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">pulsewidth</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">45.</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+            
+            <span class="n">tdiff</span> <span class="o">=</span> <span class="n">pulses</span><span class="p">[</span><span class="n">lowerchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">pulses</span><span class="p">[</span><span class="n">upperchannel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c"># always use rising edge since fe might be virtual</span>
+            <span class="k">return</span> <span class="n">tdiff</span>
+            
+
+
+<span class="c"># trigger on a set of extracted pulses and look for decayed muons</span></div></div>
+<div class="viewcode-block" id="DecayTriggerThorough"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.DecayTriggerThorough">[docs]</a><span class="k">class</span> <span class="nc">DecayTriggerThorough</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    We demand a second pulse in the same channel where the muon got stuck</span>
+<span class="sd">    Should operate for a 10mu sec triggerwindow</span>
+<span class="sd">    &quot;&quot;&quot;</span>   
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerwindow</span> <span class="o">=</span> <span class="mi">10000</span>  <span class="c"># 10 musec set at DAQ -&gt; in ns since</span>
+                                    <span class="c"># TMC info is in nsec</span>
+                                   
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Initializing decay trigger, setting triggerwindow to </span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">triggerwindow</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DecayTriggerThorough.trigger"><a class="viewcode-back" href="../../../muonic.html#muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger">[docs]</a>    <span class="k">def</span> <span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">triggerpulses</span><span class="p">,</span><span class="n">single_channel</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">double_channel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">veto_channel</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span><span class="n">mindecaytime</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">minsinglepulsewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">maxsinglepulsewidth</span><span class="o">=</span><span class="mi">12000</span><span class="p">,</span><span class="n">mindoublepulsewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">maxdoublepulsewidth</span><span class="o">=</span><span class="mi">12000</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trigger on a certain combination of single and doublepulses</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="c">#print single_channel, double_channel, veto_channel,mindecaytime</span>
+
+        <span class="n">ttp</span> <span class="o">=</span> <span class="n">triggerpulses</span>       
+        <span class="n">pulses1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ttp</span><span class="p">[</span><span class="n">single_channel</span><span class="p">])</span> <span class="c"># single pulse </span>
+        <span class="n">pulses2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">])</span> <span class="c"># double pulse</span>
+        <span class="n">pulses3</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ttp</span><span class="p">[</span><span class="n">veto_channel</span><span class="p">])</span>   <span class="c"># veto pulses</span>
+        <span class="n">time</span>    <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c">#print ttp</span>
+        <span class="n">decaytime</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c"># reject events with too few pulses</span>
+        <span class="c"># in some setups good value will be three</span>
+        <span class="c"># (single pulse + double pulse required)</span>
+        <span class="c"># and no hits in the veto channel3</span>
+        <span class="c"># change this if only one channel is available</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">pulses1</span> <span class="o">+</span> <span class="n">pulses2</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="n">pulses3</span><span class="p">:</span>
+            <span class="c"># reject event if it has to few pulses</span>
+            <span class="c"># or veto pulses</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Rejecting decay with singlepulses </span><span class="si">%s</span><span class="s">, doublepulses </span><span class="si">%s</span><span class="s"> and vetopulses </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">pulses1</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(),</span><span class="n">pulses2</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(),</span><span class="n">pulses3</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c"># muon it might have entered the second channel</span>
+        <span class="c"># then we do not want to have more than one</span>
+        <span class="c"># hit in the first</span>
+        <span class="c"># again: use selfveto to adjust the behavior</span>
+        <span class="k">if</span> <span class="n">single_channel</span> <span class="o">==</span> <span class="n">double_channel</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pulses2</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">pulses1</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="c"># check if the width of the pulses is as required</span>
+                <span class="n">singlepulsewidth</span> <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="n">single_channel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ttp</span><span class="p">[</span><span class="n">single_channel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">doublepulsewidth</span> <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c">#print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,&quot;single&quot;,minsinglepulsewidth &lt; singlepulsewidth &lt; maxsinglepulsewidth</span>
+                <span class="c">#print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,&quot;double&quot;,mindoublepulsewidth &lt; doublepulsewidth &lt; maxdoublepulsewidth</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">minsinglepulsewidth</span> <span class="o">&lt;</span> <span class="n">singlepulsewidth</span> <span class="o">&lt;</span> <span class="n">maxsinglepulsewidth</span><span class="p">)</span>  <span class="ow">and</span> <span class="p">(</span><span class="n">mindoublepulsewidth</span> <span class="o">&lt;</span> <span class="n">doublepulsewidth</span> <span class="o">&lt;</span> <span class="n">maxdoublepulsewidth</span><span class="p">):</span>          
+                    <span class="c"># subtract rising edges, falling edges might be virtual</span>
+                    <span class="n">decaytime</span> <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Rejected event.&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Rejected event.&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pulses2</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">pulses1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c"># check if the width of the pulses is as required</span>
+                <span class="n">singlepulsewidth</span> <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="n">single_channel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ttp</span><span class="p">[</span><span class="n">single_channel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">doublepulsewidth</span> <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c">#print singlepulsewidth,minsinglepulsewidth,maxsinglepulsewidth,&quot;single&quot;,minsinglepulsewidth &lt; singlepulsewidth &lt; maxsinglepulsewidth</span>
+                <span class="c">#print doublepulsewidth,mindoublepulsewidth,maxdoublepulsewidth,&quot;double&quot;,mindoublepulsewidth &lt; doublepulsewidth &lt; maxdoublepulsewidth</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">minsinglepulsewidth</span> <span class="o">&lt;</span> <span class="n">singlepulsewidth</span> <span class="o">&lt;</span> <span class="n">maxsinglepulsewidth</span><span class="p">)</span>  <span class="ow">and</span> <span class="p">(</span><span class="n">mindoublepulsewidth</span> <span class="o">&lt;</span> <span class="n">doublepulsewidth</span> <span class="o">&lt;</span> <span class="n">maxdoublepulsewidth</span><span class="p">):</span>          
+                    <span class="c"># subtract rising edges, falling edges might be virtual</span>
+                    <span class="n">decaytime</span> <span class="o">=</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ttp</span><span class="p">[</span><span class="n">double_channel</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Rejected event.&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;Rejected event.&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">None</span>
+
+        <span class="c"># perform sanity checks</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">decaytime</span> <span class="o">&gt;</span> <span class="n">mindecaytime</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">decaytime</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">triggerwindow</span> <span class="o">-</span><span class="mi">1000</span><span class="p">):</span> <span class="c"># there is an artefact at the end</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Decay with decaytime </span><span class="si">%d</span><span class="s"> found &quot;</span> <span class="o">%</span><span class="n">decaytime</span><span class="p">)</span>        <span class="c"># of the triggerwindow</span>
+            <span class="k">return</span> <span class="n">decaytime</span>                                                      <span class="c"># so -1000</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Rejecting decay with singlepulses </span><span class="si">%s</span><span class="s">, doublepulses </span><span class="si">%s</span><span class="s"> and vetopulses </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">pulses1</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(),</span><span class="n">pulses2</span><span class="o">.</span><span class="n">__repr__</span><span class="p">(),</span><span class="n">pulses3</span><span class="o">.</span><span class="n">__repr__</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="kn">import</span> <span class="nn">sys</span> 
+
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">extractor</span> <span class="o">=</span> <span class="n">PulseExtractor</span><span class="p">()</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">extractor</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="c">#print extractor.extract(line)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span><span class="ne">IndexError</span><span class="p">):</span>
+            <span class="k">pass</span> 
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl,basho.kaminsky.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

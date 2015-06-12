@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic.daq.DAQProvider &mdash; muonic 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="muonic 2.0.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for muonic.daq.DAQProvider</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mult</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">Queue</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">zmq</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;no zmq installed...&quot;</span>
+
+<span class="kn">from</span> <span class="nn">SimDaqConnection</span> <span class="kn">import</span> <span class="n">SimDaqConnection</span><span class="p">,</span><span class="n">SimDaqServer</span>
+<span class="kn">from</span> <span class="nn">DaqConnection</span> <span class="kn">import</span> <span class="n">DaqConnection</span><span class="p">,</span><span class="n">DaqServer</span>
+
+<span class="k">class</span> <span class="nc">DAQIOError</span><span class="p">(</span><span class="ne">IOError</span><span class="p">):</span>
+<div class="viewcode-block" id="DAQIOError"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQIOError">[docs]</a>    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">DAQProvider</span><span class="p">:</span></div>
+<div class="viewcode-block" id="DAQProvider"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQProvider">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Launch the main part of the GUI and the worker threads. periodicCall and</span>
+<span class="sd">    endApplication could reside in the GUI part, but putting them here</span>
+<span class="sd">    means that you have all the thread controls in a single place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">logger</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">sim</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span> <span class="o">=</span> <span class="n">mult</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span>  <span class="o">=</span> <span class="n">mult</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">good_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;^[a-zA-Z0-9+-.,:()=$/#?!%_@*|~&#39; ]*[</span><span class="se">\n\r</span><span class="s">]*$&quot;</span><span class="p">)</span>
+        <span class="c"># get option parser options</span>
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sim</span> <span class="o">=</span> <span class="n">sim</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">daq</span> <span class="o">=</span> <span class="n">SimDaqConnection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">daq</span> <span class="o">=</span> <span class="n">DaqConnection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+        
+        <span class="c"># Set up the thread to do asynchronous I/O</span>
+        <span class="c"># Set daemon flag so that the threads finish when the main app finishes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readthread</span> <span class="o">=</span> <span class="n">mult</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">daq</span><span class="o">.</span><span class="n">read</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;pREADER&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readthread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readthread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writethread</span> <span class="o">=</span> <span class="n">mult</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">daq</span><span class="o">.</span><span class="n">write</span><span class="p">,</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;pWRITER&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writethread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writethread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<div class="viewcode-block" id="DAQProvider.get"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQProvider.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get something from the daq</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DAQIOError</span><span class="p">(</span><span class="s">&quot;Queue is empty&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># Do something more sensible here,     like stopping the DAQ</span>
+            <span class="c"># then wait until service is restar    ted?</span>
+            <span class="k">print</span> <span class="s">&#39;LINE&#39;</span><span class="p">,</span><span class="n">line</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Got garbage from the DAQ: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\r\n</span><span class="s">&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">line</span>
+        
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DAQProvider.put"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQProvider.put">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send information to the daq</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inqueue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">data_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DAQProvider.data_available"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQProvider.data_available">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check if there is new data from daq available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Running Mac version of muonic.&quot;</span><span class="p">)</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">outqueue</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">size</span>
+
+<span class="k">class</span> <span class="nc">DAQClient</span><span class="p">(</span><span class="n">DAQProvider</span><span class="p">):</span></div></div>
+<div class="viewcode-block" id="DAQClient"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQClient">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ZMQ Client site of the DAQ hadling.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">port</span><span class="p">,</span><span class="n">logger</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">root</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+           
+        <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">good_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;^[a-zA-Z0-9+-.,:()=$/#?!%_@*|~&#39; ]*[</span><span class="se">\n\r</span><span class="s">]*$&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_socket</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+     
+    <span class="k">def</span> <span class="nf">setup_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">port</span><span class="p">):</span>
+<div class="viewcode-block" id="DAQClient.setup_socket"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQClient.setup_socket">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup the ZMQ socket</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#port = &quot;5556&quot;</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;tcp://127.0.0.1:</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket_port</span> <span class="o">=</span> <span class="n">port</span> 
+        
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DAQClient.get"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQClient.get">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get something from the daq</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv_string</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DAQIOError</span><span class="p">(</span><span class="s">&quot;Queue is empty&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># Do something more sensible here,     like stopping the DAQ</span>
+            <span class="c"># then wait until service is restar    ted?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Got garbage from the DAQ: </span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\r\n</span><span class="s">&#39;</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">None</span>
+            <span class="c">#raise DAQIOError(&quot;Queue contains garbage!&quot;)</span>
+        
+        <span class="k">return</span> <span class="n">line</span>
+        
+
+    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DAQClient.put"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQClient.put">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send information to the daq</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">send_string</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">data_available</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span></div>
+<div class="viewcode-block" id="DAQClient.data_available"><a class="viewcode-back" href="../../../muonic.html#muonic.daq.DAQProvider.DAQClient.data_available">[docs]</a>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        is new data from daq available</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">muonic 2.0.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl,basho.kaminsky.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

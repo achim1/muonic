@@ -1,0 +1,531 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>muonic package software reference &mdash; muonic 2.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="muonic 2.0.0 documentation" href="index.html" />
+    <link rel="prev" title="Fermilab DAQ - hardware documentation" href="hardware.html" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head>
+  <body>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">muonic 2.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="muonic-package-software-reference">
+<h1>muonic package software reference<a class="headerlink" href="#muonic-package-software-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-muonic">
+<span id="main-package-muonic"></span><h2>main package: muonic<a class="headerlink" href="#module-muonic" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#module-muonic.daq" title="muonic.daq"><tt class="xref py py-mod docutils literal"><span class="pre">muonic.daq</span></tt></a>
+<a class="reference internal" href="#module-muonic.gui" title="muonic.gui"><tt class="xref py py-mod docutils literal"><span class="pre">muonic.gui</span></tt></a>
+<a class="reference internal" href="#module-muonic.analysis" title="muonic.analysis"><tt class="xref py py-mod docutils literal"><span class="pre">muonic.analysis</span></tt></a></p>
+</div>
+<div class="section" id="module-muonic.daq">
+<span id="daq-i-o-with-muonic-daq"></span><h2>daq i/o with muonic.daq<a class="headerlink" href="#module-muonic.daq" title="Permalink to this headline">¶</a></h2>
+<p>Provide a connection to the QNet DAQ cards via python-serial. For software testing and development, (very) dumb DAQ card simulator is available</p>
+<div class="section" id="muonic-daq-daqprovider">
+<h3><cite>muonic.daq.DAQProvider</cite><a class="headerlink" href="#muonic-daq-daqprovider" title="Permalink to this headline">¶</a></h3>
+<p>Control the two I/O threads which communicate with the DAQ. If the simulated DAQ is used, there is only one thread.</p>
+<span class="target" id="module-muonic.daq.DAQProvider"></span><dl class="class">
+<dt id="muonic.daq.DAQProvider.DAQClient">
+<em class="property">class </em><tt class="descclassname">muonic.daq.DAQProvider.</tt><tt class="descname">DAQClient</tt><big>(</big><em>port</em>, <em>logger=None</em>, <em>root=None</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>ZMQ Client site of the DAQ hadling.</p>
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQClient.data_available">
+<tt class="descname">data_available</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQClient.data_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQClient.data_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>is new data from daq available</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQClient.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQClient.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQClient.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get something from the daq</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQClient.put">
+<tt class="descname">put</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQClient.put"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQClient.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send information to the daq</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQClient.setup_socket">
+<tt class="descname">setup_socket</tt><big>(</big><em>port</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQClient.setup_socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQClient.setup_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup the ZMQ socket</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="muonic.daq.DAQProvider.DAQIOError">
+<em class="property">exception </em><tt class="descclassname">muonic.daq.DAQProvider.</tt><tt class="descname">DAQIOError</tt><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQIOError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQIOError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="muonic.daq.DAQProvider.DAQProvider">
+<em class="property">class </em><tt class="descclassname">muonic.daq.DAQProvider.</tt><tt class="descname">DAQProvider</tt><big>(</big><em>logger=None</em>, <em>sim=False</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQProvider"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQProvider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Launch the main part of the GUI and the worker threads. periodicCall and
+endApplication could reside in the GUI part, but putting them here
+means that you have all the thread controls in a single place.</p>
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQProvider.data_available">
+<tt class="descname">data_available</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQProvider.data_available"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQProvider.data_available" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if there is new data from daq available</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQProvider.get">
+<tt class="descname">get</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQProvider.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQProvider.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get something from the daq</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DAQProvider.DAQProvider.put">
+<tt class="descname">put</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DAQProvider.html#DAQProvider.put"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DAQProvider.DAQProvider.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send information to the daq</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="muonic-daq-daqconnection">
+<h3><cite>muonic.daq.DAQConnection</cite><a class="headerlink" href="#muonic-daq-daqconnection" title="Permalink to this headline">¶</a></h3>
+<p>The module provides a class which uses python-serial to open a connection over the usb ports to the daq card. Since on LINUX systems the used usb device ( which is usually /dev/tty0 ) might change during runtime, this is catched automatically by DaqConnection. Therefore a shell script is invoked.</p>
+<span class="target" id="module-muonic.daq.DaqConnection"></span><dl class="class">
+<dt id="muonic.daq.DaqConnection.DaqConnection">
+<em class="property">class </em><tt class="descclassname">muonic.daq.DaqConnection.</tt><tt class="descname">DaqConnection</tt><big>(</big><em>inqueue</em>, <em>outqueue</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqConnection" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqConnection.get_port">
+<tt class="descname">get_port</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqConnection.get_port"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqConnection.get_port" title="Permalink to this definition">¶</a></dt>
+<dd><p>check out which device (/dev/tty) is used for DAQ communication</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqConnection.read">
+<tt class="descname">read</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqConnection.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqConnection.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data from the DAQ. Read it from the provided Queue.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqConnection.write">
+<tt class="descname">write</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqConnection.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqConnection.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put messages from the inqueue which is filled by the DAQ</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.daq.DaqConnection.DaqServer">
+<em class="property">class </em><tt class="descclassname">muonic.daq.DaqConnection.</tt><tt class="descname">DaqServer</tt><big>(</big><em>port</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqServer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqServer.read">
+<tt class="descname">read</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqServer.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqServer.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get data from the DAQ. Read it from the provided Queue.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqServer.serve">
+<tt class="descname">serve</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqServer.serve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqServer.serve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqServer.setup_socket">
+<tt class="descname">setup_socket</tt><big>(</big><em>port</em>, <em>adress='127.0.0.1'</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqServer.setup_socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqServer.setup_socket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.DaqConnection.DaqServer.write">
+<tt class="descname">write</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/DaqConnection.html#DaqServer.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.DaqConnection.DaqServer.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put messages from the inqueue which is filled by the DAQ</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="muonic-daq-simdaqconnection">
+<h3><cite>muonic.daq.SimDaqConnection</cite><a class="headerlink" href="#muonic-daq-simdaqconnection" title="Permalink to this headline">¶</a></h3>
+<p>This module provides a dummy class which simulates DAQ I/O which is read from the file &#8220;simdaq.txt&#8221;.
+The simulation is only useful if the software-gui should be tested, but no DAQ card is available</p>
+<span class="target" id="module-muonic.daq.SimDaqConnection"></span><p>Provides a simple DAQ card simulation, so that software can be tested</p>
+<dl class="class">
+<dt id="muonic.daq.SimDaqConnection.SimDaq">
+<em class="property">class </em><tt class="descclassname">muonic.daq.SimDaqConnection.</tt><tt class="descname">SimDaq</tt><big>(</big><em>logger</em>, <em>usefile='simdaq.txt'</em>, <em>createfakerates=True</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulation mode reproduces rates from an file, drwan from a Poisson distribution.
+This routine will increase the scalars variables using predefined rates
+Rates are drawn from Poisson distributions</p>
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaq._physics">
+<tt class="descname">_physics</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq._physics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq._physics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaq.cmd_sim">
+<tt class="descname">cmd_sim</tt><big>(</big><em>cmd_buffer=None</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq.cmd_sim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq.cmd_sim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate the answer on a command.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaq.inWaiting">
+<tt class="descname">inWaiting</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq.inWaiting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq.inWaiting" title="Permalink to this definition">¶</a></dt>
+<dd><p>simulate a busy DAQ</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaq.readline">
+<tt class="descname">readline</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq.readline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq.readline" title="Permalink to this definition">¶</a></dt>
+<dd><p>read dummy pulses from the simdaq file till
+the configured value is reached</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaq.write">
+<tt class="descname">write</tt><big>(</big><em>command</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaq.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaq.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger a simulated daq response with command</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.daq.SimDaqConnection.SimDaqConnection">
+<em class="property">class </em><tt class="descclassname">muonic.daq.SimDaqConnection.</tt><tt class="descname">SimDaqConnection</tt><big>(</big><em>inqueue</em>, <em>outqueue</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaqConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaqConnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Basic class which provides the simulated DAQ. It can be started via the DAQ server or if not zmq is available as stand alone locally</p>
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaqConnection.read">
+<tt class="descname">read</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaqConnection.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaqConnection.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate DAQ I/O</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.daq.SimDaqConnection.SimDaqServer">
+<em class="property">class </em><tt class="descclassname">muonic.daq.SimDaqConnection.</tt><tt class="descname">SimDaqServer</tt><big>(</big><em>port</em>, <em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaqServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaqServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Server site which simulates the DAQ.</p>
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaqServer.read">
+<tt class="descname">read</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaqServer.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaqServer.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate DAQ I/O</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaqServer.serve">
+<tt class="descname">serve</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaqServer.serve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaqServer.serve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.daq.SimDaqConnection.SimDaqServer.setup_socket">
+<tt class="descname">setup_socket</tt><big>(</big><em>port</em>, <em>adress='127.0.0.1'</em><big>)</big><a class="reference internal" href="_modules/muonic/daq/SimDaqConnection.html#SimDaqServer.setup_socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.daq.SimDaqConnection.SimDaqServer.setup_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup up the socket for the simulated DAQ server</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="pyqt4-gui-with-muonic-gui">
+<h2>pyqt4 gui with muonic.gui<a class="headerlink" href="#pyqt4-gui-with-muonic-gui" title="Permalink to this headline">¶</a></h2>
+<p>This package contains all gui relevant classes like dialogboxes and tabwidgets. Every item in the global menu is utilizes a &#8220;Dialog&#8221; class. The &#8220;Canvas&#8221; classes contain plot routines for displaying measurements in the TabWidget.</p>
+<span class="target" id="module-muonic.gui"></span><p>The gui of the programm, written with PyQt4</p>
+<div class="section" id="muonic-gui-mainwindow">
+<h3><cite>muonic.gui.MainWindow</cite><a class="headerlink" href="#muonic-gui-mainwindow" title="Permalink to this headline">¶</a></h3>
+<p>Contains the  &#8220;main&#8221; gui application. It Provides the MainWindow, which initializes the different tabs and draws a menu.</p>
+</div>
+<div class="section" id="muonic-gui-muonicwidgets">
+<h3><cite>muonic.gui.MuonicWidgets</cite><a class="headerlink" href="#muonic-gui-muonicwidgets" title="Permalink to this headline">¶</a></h3>
+<p>The functionality of the software</p>
+</div>
+<div class="section" id="module-muonic.gui.MuonicDialogs">
+<span id="muonic-gui-muonicdialogs"></span><h3><cite>muonic.gui.MuonicDialogs</cite><a class="headerlink" href="#module-muonic.gui.MuonicDialogs" title="Permalink to this headline">¶</a></h3>
+<p>Provide the dialog fields for user interaction</p>
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.AdvancedDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">AdvancedDialog</tt><big>(</big><em>gatewidth=100</em>, <em>timewindow=5.0</em>, <em>status=None</em>, <em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#AdvancedDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.AdvancedDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set Configuration dialog. Set up the readout interval, gatewidth and whether an DAQ status line should be written.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.ConfigDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">ConfigDialog</tt><big>(</big><em>channelcheckbox_0=True</em>, <em>channelcheckbox_1=True</em>, <em>channelcheckbox_2=True</em>, <em>channelcheckbox_3=True</em>, <em>coincidencecheckbox_0=True</em>, <em>coincidencecheckbox_1=False</em>, <em>coincidencecheckbox_2=False</em>, <em>coincidencecheckbox_3=False</em>, <em>vetocheckbox=False</em>, <em>vetocheckbox_0=False</em>, <em>vetocheckbox_1=False</em>, <em>vetocheckbox_2=False</em>, <em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#ConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.ConfigDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set Channel configuration: veto, coincidence, active channels.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.DecayConfigDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">DecayConfigDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#DecayConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.DecayConfigDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Settings for the muondecay</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.FitRangeConfigDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">FitRangeConfigDialog</tt><big>(</big><em>upperlim=None</em>, <em>lowerlim=None</em>, <em>dimension=''</em>, <em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#FitRangeConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.FitRangeConfigDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dialog to configure the fit range. It shows a dialog to change to upper and lower limit of the fit.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.HelpDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">HelpDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#HelpDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.HelpDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows the help dialog with the DAQ commands.</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicDialogs.HelpDialog.helptext">
+<tt class="descname">helptext</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#HelpDialog.helptext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.HelpDialog.helptext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show this text in the help window</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.MuonicDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">MuonicDialog</tt><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#MuonicDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.MuonicDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class of all muonic dialogs</p>
+<dl class="method">
+<dt id="muonic.gui.MuonicDialogs.MuonicDialog.createButtonBox">
+<tt class="descname">createButtonBox</tt><big>(</big><em>objectname='buttonBox'</em>, <em>leftoffset=80</em>, <em>topoffset=900</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#MuonicDialog.createButtonBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.MuonicDialog.createButtonBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a custom button for cancel/apply</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox">
+<tt class="descname">createCheckGroupBox</tt><big>(</big><em>label='Single Pulse', objectname='singlecheckbox', radio=False, leftoffset=20, setchecked=None, checkable=False, checkable_set=False, itemlabels=['Chan0', 'Chan1', 'Chan2', 'Chan3']</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#MuonicDialog.createCheckGroupBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.MuonicDialog.createCheckGroupBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a group of choices</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.PeriodicCallDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">PeriodicCallDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#PeriodicCallDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.PeriodicCallDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issue a command periodically</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.ThresholdDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">ThresholdDialog</tt><big>(</big><em>thr0</em>, <em>thr1</em>, <em>thr2</em>, <em>thr3</em>, <em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#ThresholdDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.ThresholdDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Thresholds in mV.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.gui.MuonicDialogs.VelocityConfigDialog">
+<em class="property">class </em><tt class="descclassname">muonic.gui.MuonicDialogs.</tt><tt class="descname">VelocityConfigDialog</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/muonic/gui/MuonicDialogs.html#VelocityConfigDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.gui.MuonicDialogs.VelocityConfigDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dialog to configure the velocity measurement. One has to set the upper and lower channel.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="muonic-gui-muonicplotcanvases">
+<h3><cite>muonic.gui.MuonicPlotCanvases</cite><a class="headerlink" href="#muonic-gui-muonicplotcanvases" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="module-muonic.analysis">
+<span id="analyis-package-muonic-analysis"></span><h2>analyis package muonic.analysis<a class="headerlink" href="#module-muonic.analysis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="muonic-analysis-pulseanalyzer">
+<h3><cite>muonic.analysis.PulseAnalyzer</cite><a class="headerlink" href="#muonic-analysis-pulseanalyzer" title="Permalink to this headline">¶</a></h3>
+<p>Transformation of ASCII DAQ data. Combination of Pulses to events, and looking for decaying muons with different trigger condi</p>
+<span class="target" id="module-muonic.analysis.PulseAnalyzer"></span><p>Get the absolute timing of the pulses
+by use of the gps time
+Calculate also a non hex representation of
+leading and falling edges of the pulses</p>
+<dl class="class">
+<dt id="muonic.analysis.PulseAnalyzer.DecayTriggerThorough">
+<em class="property">class </em><tt class="descclassname">muonic.analysis.PulseAnalyzer.</tt><tt class="descname">DecayTriggerThorough</tt><big>(</big><em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#DecayTriggerThorough"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.DecayTriggerThorough" title="Permalink to this definition">¶</a></dt>
+<dd><p>We demand a second pulse in the same channel where the muon got stuck
+Should operate for a 10mu sec triggerwindow</p>
+<dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger">
+<tt class="descname">trigger</tt><big>(</big><em>triggerpulses</em>, <em>single_channel=2</em>, <em>double_channel=3</em>, <em>veto_channel=4</em>, <em>mindecaytime=0</em>, <em>minsinglepulsewidth=0</em>, <em>maxsinglepulsewidth=12000</em>, <em>mindoublepulsewidth=0</em>, <em>maxdoublepulsewidth=12000</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#DecayTriggerThorough.trigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.DecayTriggerThorough.trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger on a certain combination of single and doublepulses</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.analysis.PulseAnalyzer.PulseExtractor">
+<em class="property">class </em><tt class="descclassname">muonic.analysis.PulseAnalyzer.</tt><tt class="descname">PulseExtractor</tt><big>(</big><em>pulsefile=''</em>, <em>tmc_ticks=1.25</em>, <em>daq_freq=25000000.0</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#PulseExtractor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.PulseExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the pulses out of a daq line
+speed is important here</p>
+<dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.PulseExtractor._calculate_edges">
+<tt class="descname">_calculate_edges</tt><big>(</big><em>line</em>, <em>counter_diff=0</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#PulseExtractor._calculate_edges"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.PulseExtractor._calculate_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the leading and falling edges of the pulses
+Use counter diff for getting pulse times in subsequent 
+lines of the triggerflag</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.PulseExtractor._get_evt_time">
+<tt class="descname">_get_evt_time</tt><big>(</big><em>time</em>, <em>correction</em>, <em>trigger_count</em>, <em>onepps</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#PulseExtractor._get_evt_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.PulseExtractor._get_evt_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the absolute event time in seconds since day start
+If gps is not available, only relative eventtime based on counts
+is returned</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.PulseExtractor._order_and_cleanpulses">
+<tt class="descname">_order_and_cleanpulses</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#PulseExtractor._order_and_cleanpulses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.PulseExtractor._order_and_cleanpulses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove pulses which have a 
+leading edge later in time than a 
+falling edge and do a bit of sorting
+Remove also single leading or falling edges
+NEW: We add virtual falling edges!</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.PulseExtractor.close_file">
+<tt class="descname">close_file</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#PulseExtractor.close_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.PulseExtractor.close_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.PulseExtractor.extract">
+<tt class="descname">extract</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#PulseExtractor.extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.PulseExtractor.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyze subsequent lines (one per call)
+and check if pulses are related to triggers
+For each new trigger,
+return the set of pulses which belong to that trigger,
+otherwise return None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="muonic.analysis.PulseAnalyzer.VelocityTrigger">
+<em class="property">class </em><tt class="descclassname">muonic.analysis.PulseAnalyzer.</tt><tt class="descname">VelocityTrigger</tt><big>(</big><em>logger</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#VelocityTrigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.VelocityTrigger" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="muonic.analysis.PulseAnalyzer.VelocityTrigger.trigger">
+<tt class="descname">trigger</tt><big>(</big><em>pulses</em>, <em>upperchannel=1</em>, <em>lowerchannel=2</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/PulseAnalyzer.html#VelocityTrigger.trigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.PulseAnalyzer.VelocityTrigger.trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timedifference will be calculated t(upperchannel) - t(lowerchannel)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="muonic-analysis-fit">
+<h3><cite>muonic.analysis.fit</cite><a class="headerlink" href="#muonic-analysis-fit" title="Permalink to this headline">¶</a></h3>
+<p>Provide a fitting routine</p>
+<span class="target" id="module-muonic.analysis.fit"></span><p>Script for performing a fit to a histogramm of recorded 
+time differences for the use with QNet</p>
+<dl class="function">
+<dt id="muonic.analysis.fit.gaussian_fit">
+<tt class="descclassname">muonic.analysis.fit.</tt><tt class="descname">gaussian_fit</tt><big>(</big><em>bincontent</em>, <em>binning=(0</em>, <em>2</em>, <em>10)</em>, <em>fitrange=None</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/fit.html#gaussian_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.fit.gaussian_fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="muonic.analysis.fit.main">
+<tt class="descclassname">muonic.analysis.fit.</tt><tt class="descname">main</tt><big>(</big><em>bincontent=None</em>, <em>binning=(0</em>, <em>10</em>, <em>21)</em>, <em>fitrange=None</em><big>)</big><a class="reference internal" href="_modules/muonic/analysis/fit.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#muonic.analysis.fit.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">muonic package software reference</a><ul>
+<li><a class="reference internal" href="#module-muonic">main package: muonic</a></li>
+<li><a class="reference internal" href="#module-muonic.daq">daq i/o with muonic.daq</a><ul>
+<li><a class="reference internal" href="#muonic-daq-daqprovider"><cite>muonic.daq.DAQProvider</cite></a></li>
+<li><a class="reference internal" href="#muonic-daq-daqconnection"><cite>muonic.daq.DAQConnection</cite></a></li>
+<li><a class="reference internal" href="#muonic-daq-simdaqconnection"><cite>muonic.daq.SimDaqConnection</cite></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pyqt4-gui-with-muonic-gui">pyqt4 gui with muonic.gui</a><ul>
+<li><a class="reference internal" href="#muonic-gui-mainwindow"><cite>muonic.gui.MainWindow</cite></a></li>
+<li><a class="reference internal" href="#muonic-gui-muonicwidgets"><cite>muonic.gui.MuonicWidgets</cite></a></li>
+<li><a class="reference internal" href="#module-muonic.gui.MuonicDialogs"><cite>muonic.gui.MuonicDialogs</cite></a></li>
+<li><a class="reference internal" href="#muonic-gui-muonicplotcanvases"><cite>muonic.gui.MuonicPlotCanvases</cite></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-muonic.analysis">analyis package muonic.analysis</a><ul>
+<li><a class="reference internal" href="#muonic-analysis-pulseanalyzer"><cite>muonic.analysis.PulseAnalyzer</cite></a></li>
+<li><a class="reference internal" href="#muonic-analysis-fit"><cite>muonic.analysis.fit</cite></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hardware.html"
+                        title="previous chapter">Fermilab DAQ - hardware documentation</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hardware.html" title="Fermilab DAQ - hardware documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">muonic 2.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, robert.franke,achim.stoessl,basho.kaminsky.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
