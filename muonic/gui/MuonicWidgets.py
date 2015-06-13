@@ -182,6 +182,26 @@ class RateWidget(QtGui.QWidget):
         if min_rate < self.general_info['min_rate']:
             self.general_info['max_rate'] = min_rate
 
+        #print self.tabwidget.scalars_result
+        #write the rates to data file
+        # we have to catch IOErrors, can occur if program is
+        # exited
+        if self.data_file_write:
+            try:
+                self.data_file.write('%f %f %f %f %f %f %f %f %f %f \n' % (self.mainwindow.scalars_diff_ch0,\
+                                                                           self.mainwindow.scalars_diff_ch1,\
+                                                                           self.mainwindow.scalars_diff_ch2,\
+                                                                           self.mainwindow.scalars_diff_ch3,\
+                                                                           rates[0],\
+                                                                           rates[1],\
+                                                                           rates[2],\
+                                                                           rates[3],\
+                                                                           rates[4],\
+                                                                           rates[5]))
+                self.logger.debug("Rate plot data was written to %s" %self.data_file.__repr__())
+            except ValueError:
+                self.logger.warning("ValueError, Rate plot data was not written to %s" %self.data_file.__repr__())
+
     def update(self):
         if self.run:
             self.general_info['edit_daq_time'].setText('%.2f s' %(self.timewindow))
@@ -219,8 +239,9 @@ class RateWidget(QtGui.QWidget):
                 self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
 
             self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
-      
-    def is_active(self):
+
+    @property
+    def active(self):
         return self.run # rate widget is always active    
 
     def startClicked(self):
@@ -244,9 +265,9 @@ class RateWidget(QtGui.QWidget):
             self.rates['rates_buffer'][ch] = []
 
         comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
-        if self.mainwindow.tabwidget.decaywidget.is_active():
+        if self.mainwindow.tabwidget.decaywidget.active:
             comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
-        if self.mainwindow.tabwidget.velocitywidget.is_active():
+        if self.mainwindow.tabwidget.velocitywidget.active:
             comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
 
 
@@ -336,9 +357,6 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.pulses      = None
         self.pulsewidths = []
         self.active = False
-
-    def is_active(self):
-        return self.active
 
 
     def calculate(self,pulses):
@@ -559,9 +577,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.logger.debug("Saving status information to file.")
         self.logger.warning('Currently not available!')
 
-    def is_active(self):
-        return self.active
-        
+
     def update(self):
         """
         Fill the status information in the widget.
@@ -620,7 +636,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.muonic_stats['open_files'] = str(self.mainwindow.filename)
             if self.mainwindow.tabwidget.daqwidget.write_file:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.rawfilename
-            if self.mainwindow.tabwidget.decaywidget.is_active():
+            if self.mainwindow.tabwidget.decaywidget.active:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.decayfilename
             if self.mainwindow.writepulses:
                 self.muonic_stats['open_files'] += ', ' + self.mainwindow.pulsefilename
@@ -633,13 +649,13 @@ class StatusWidget(QtGui.QWidget): # not used yet
             #self.last_path.setText(self.muonic_stats['last_path'])
             #self.last_path.setEnabled(True)
             measurements = ''
-            if self.mainwindow.tabwidget.ratewidget.is_active():
+            if self.mainwindow.tabwidget.ratewidget.active:
                 measurements = 'Muon Rates'
-            if self.mainwindow.tabwidget.decaywidget.is_active():
+            if self.mainwindow.tabwidget.decaywidget.active:
                 measurements += ', Muon Decay'
-            if self.mainwindow.tabwidget.velocitywidget.is_active():
+            if self.mainwindow.tabwidget.velocitywidget.active:
                 measurements += ', Muon Velocity'
-            if self.mainwindow.tabwidget.pulseanalyzerwidget.is_active():
+            if self.mainwindow.tabwidget.pulseanalyzerwidget.active:
                 measurements += ', Pulse Analyzer'
             self.measurements.setText(measurements)
             self.measurements.setEnabled(True)
@@ -723,9 +739,7 @@ class VelocityWidget(QtGui.QWidget):
         self.findChild(VelocityCanvas,QtCore.QString("velocity_plot")).update_plot(self.times)
         self.times = []
 
-    def is_active(self):
-        return self.active
-    
+
     def velocityFitRangeClicked(self):
         """
         fit the muon velocity histogram
@@ -766,7 +780,7 @@ class VelocityWidget(QtGui.QWidget):
                         self.lower_channel = chan + 1 #
             
                 self.logger.info("Switching off decay measurement if running!")
-                if self.parentWidget().parentWidget().decaywidget.is_active():
+                if self.parentWidget().parentWidget().decaywidget.active:
                     self.parentWidget().parentWidget().decaywidget.activateMuondecayClicked()
                 self.active = True
                 self.parentWidget().parentWidget().parentWidget().daq.put("CE")
@@ -862,9 +876,7 @@ class DecayWidget(QtGui.QWidget):
         
         #self.decaywidget = self.widget(1)
 
-    def is_active(self):
-        return self.active
-     
+
     def calculate(self,pulses):
         #single_channel = self.singlepulsechannel, double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel,mindecaytime = self.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth):
         decay =  self.trigger.trigger(pulses,single_channel = self.singlepulsechannel,double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel, mindecaytime= self.decay_mintime,minsinglepulsewidth = self.minsinglepulsewidth,maxsinglepulsewidth = self.maxsinglepulsewidth, mindoublepulsewidth = self.mindoublepulsewidth, maxdoublepulsewidth = self.maxdoublepulsewidth )
@@ -961,7 +973,7 @@ class DecayWidget(QtGui.QWidget):
                         if channel[1]:
                             self.vetopulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
                     self.logger.info("Switching off velocity measurement if running!")
-                    if self.parentWidget().parentWidget().velocitywidget.is_active():
+                    if self.parentWidget().parentWidget().velocitywidget.active:
                         self.parentWidget().parentWidget().velocitywidget.activateVelocityClicked()
 
                     self.logger.warn("We now activate the Muondecay mode!\n All other Coincidence/Veto settings will be overriden!")
@@ -1108,6 +1120,39 @@ class DAQWidget(QtGui.QWidget):
             except AttributeError:
                 pass
 
+    def calculate(self):
+        """
+        Function that is called via processincoming. It does:
+        - starts file writing stuff
+        """
+        self.text_box.appendPlainText(str(self.mainwindow.daq_msg))
+        if self.write_file:
+            #self.daq_file.write(self.mainwindow.daq_msg, status = self.mainwindow.statusline)
+            self.write_to_file(str(self.mainwindow.daq_msg))
+
+    def write_to_file(self,msg):
+        """
+        Write the "RAW" file
+        :param msg:
+        :return:
+        """
+
+        try:
+            if self.mainwindow.nostatus:
+                fields = msg.rstrip("\n").split(" ")
+                if ((len(fields) == 16) and (len(fields[0]) == 8)):
+                    self.outputfile.write(str(msg)+'\n')
+                else:
+                    self.logger.debug("Not writing line '%s' to file because it does not contain trigger data" %msg)
+            else:
+                self.outputfile.write(str(msg)+'\n')
+
+        except ValueError:
+            self.logger.warning('Trying to write on closed file, captured!')
+
+
+
+
 class GPSWidget(QtGui.QWidget):
 
     def __init__(self,logger,parent=None):
@@ -1207,12 +1252,7 @@ class GPSWidget(QtGui.QWidget):
         self.text_box.appendPlainText('save to clicked - function out of order')        
         self.logger.info("Saving GPS informations still disabled.")
 
-    def is_active(self):
-        """
-        Is the GPS readout activated? return bool
-        """
-        return self.active
-    
+
     def switch_active(self, switch = False):
         """
         Switch the GPS activation status.
@@ -1224,7 +1264,7 @@ class GPSWidget(QtGui.QWidget):
                 self.active = True
         else:
             self.active = switch
-        return self.is_active()
+        return self.active
     
     def calculate(self):
         """
