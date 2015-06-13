@@ -97,9 +97,6 @@ class MainWindow(QtGui.QMainWindow):
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
 
-
-        # this holds the scalars in the time interval
-        self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL') # get the thresholds
         time.sleep(0.5) #give the daq some time to ract
         self.threshold_ch0 = 300
@@ -144,26 +141,6 @@ class MainWindow(QtGui.QMainWindow):
         self.pulseextractor = pa.PulseExtractor(pulsefile=self.pulsefilename) 
         self.pulses = None
 
-        # prepare fields for scalars 
-        self.scalars_ch0_previous = 0
-        self.scalars_ch1_previous = 0
-        self.scalars_ch2_previous = 0
-        self.scalars_ch3_previous = 0
-        self.scalars_trigger_previous = 0
-        self.scalars_time = 0
-        # define the begin of the timeintervall 
-        # for the rate calculation
-        now = time.time()
-        self.thisscalarquery = now
-        self.lastscalarquery = now
-        self.query_daq_for_scalars()
-        while self.daq.data_available():
-            try:
-                msg = self.daq.get(0)
-                self.get_scalars_from_queue(msg)
-            except DAQIOError:
-                self.logger.debug("Queue empty!")
-        
         # A timer to periodically call processIncoming and check what is in the queue
         self.timer = QtCore.QTimer()
         QtCore.QObject.connect(self.timer,
@@ -202,12 +179,15 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
         self.tabwidget.gpswidget = self.tabwidget.widget(6)
 
-        # widgets which should be calculated in processIncoming. The widget is only calculated when it is set to active (True) via widget.active
-        self.tabwidget.calculate_widgets = [self.tabwidget.ratewidget,\
-                                            self.tabwidget.pulseanalyzerwidget,\
+        # widgets which should be calculated in processIncoming.
+        # The widget is only calculated when it is set to active (True)
+        #  via widget.active
+        # only widgets which need pulses go here
+        self.tabwidget.pulse_widgets = [self.tabwidget.pulseanalyzerwidget,\
                                             self.tabwidget.velocitywidget,\
                                             self.tabwidget.decaywidget]
-
+        # the others go in this list
+        self.tabwidget.nopulse_widget = [self.tabwidget.ratewidget]
 
         # widgets which shuld be dynmacally updated by the timer should be in this list
         self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,\
@@ -450,10 +430,10 @@ class MainWindow(QtGui.QMainWindow):
         """
         #docs = (os.path.join(DOCPATH,"index.html"))
         docs = __docs_hosted_at__
-        self.logger.info("opening docs from %s" %docs)
+        self.logger.debug("Opening docs from %s" %docs)
         success = webbrowser.open(docs)
         if not success:
-            self.logger.warning("Can not open webbrowser!")
+            self.logger.warning("Can not open webbrowser! Browse to %s to see the docs" %docs)
 
     def manualdoc_menu(self):
         """
@@ -467,58 +447,6 @@ class MainWindow(QtGui.QMainWindow):
             self.logger.warning("Can not open PDF reader!")
 
 
-
-    def query_daq_for_scalars(self):
-        """
-        Send a "DS" message to DAQ and record the time when this is don
-        """
-        self.lastscalarquery = self.thisscalarquery
-        self.daq.put("DS")
-        self.thisscalarquery = time.time()
-
-    def get_scalars_from_queue(self,msg):
-        """
-        Explicitely scan a message for scalar informatioin
-        Returns True if found, else False
-        """
-        
-        if len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S':                    
-            self.scalars = msg.split()
-            #time_window = self.thisscalarquery - self.lastscalarquery
-            #self.logger.debug("Time window %s" %time_window)
-            errors = False
-
-            for item in self.scalars:
-                if ("S0" in item) & (len(item) == 11):
-                    self.scalars_ch0 = int(item[3:],16)
-                elif ("S1" in item) & (len(item) == 11):
-                    self.scalars_ch1 = int(item[3:],16)
-                elif ("S2" in item) & (len(item) == 11):
-                    self.scalars_ch2 = int(item[3:],16)
-                elif ("S3" in item) & (len(item) == 11):
-                    self.scalars_ch3 = int(item[3:],16)
-                elif ("S4" in item) & (len(item) == 11):
-                    self.scalars_trigger = int(item[3:],16)
-                elif ("S5" in item) & (len(item) == 11):
-                    self.scalars_time = float(int(item[3:],16))
-                #else:
-                    #self.logger.debug("unknown item detected: %s" %item.__repr__())
-                
-            self.scalars_diff_ch0 = self.scalars_ch0 - self.scalars_ch0_previous 
-            self.scalars_diff_ch1 = self.scalars_ch1 - self.scalars_ch1_previous 
-            self.scalars_diff_ch2 = self.scalars_ch2 - self.scalars_ch2_previous 
-            self.scalars_diff_ch3 = self.scalars_ch3 - self.scalars_ch3_previous 
-            self.scalars_diff_trigger = self.scalars_trigger - self.scalars_trigger_previous 
-            
-            self.scalars_ch0_previous = self.scalars_ch0
-            self.scalars_ch1_previous = self.scalars_ch1
-            self.scalars_ch2_previous = self.scalars_ch2
-            self.scalars_ch3_previous = self.scalars_ch3
-            self.scalars_trigger_previous = self.scalars_trigger
-            
-            return True
-        else:
-            return False 
                 
     def get_thresholds_from_queue(self,msg):
         """
@@ -667,6 +595,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.tabwidget.decaywidget.previous_coinc_time_02 = split_msg[3].split("=")[1]
                 except:
                     self.logger.debug('Wrong DC command.')
+                continue
 
             # check for threshold information
             if self.get_thresholds_from_queue(msg):
@@ -678,51 +607,31 @@ class MainWindow(QtGui.QMainWindow):
             # status messages
             if msg.startswith('ST') or len(msg) < 50:
                 continue
-            
-            if self.get_scalars_from_queue(msg):
-                time_window = self.thisscalarquery - self.lastscalarquery
-                rates = (self.scalars_diff_ch0/time_window,self.scalars_diff_ch1/time_window,self.scalars_diff_ch2/time_window,self.scalars_diff_ch3/time_window, self.scalars_diff_trigger/time_window, time_window, self.scalars_diff_ch0, self.scalars_diff_ch1, self.scalars_diff_ch2, self.scalars_diff_ch3, self.scalars_diff_trigger)
-                self.tabwidget.ratewidget.calculate(rates)
-                continue
-            
-            elif (self.tabwidget.decaywidget.active or self.tabwidget.pulseanalyzerwidget.active or self.pulsefilename or self.tabwidget.velocitywidget.active):#self.showpulses or self.pulsefilename) :
-                self.pulses = self.pulseextractor.extract(msg)
-                if self.pulses != None:
-                    #self.pulses_to_show = self.pulses
-                    self.tabwidget.pulseanalyzerwidget.calculate(self.pulses)
-                    # we have to count the triggers in the time intervall
-                    # FIXME: find a method to calculate rate from 
-                    # previously taken RAW file
-                    self.channel_counts[0] += 1                         
-                    for channel,pulses in enumerate(self.pulses[1:]):
-                        if pulses:
-                            for pulse in pulses:
-                                self.channel_counts[channel + 1] += 1
-               
-                    if self.tabwidget.velocitywidget.active:
-                        self.tabwidget.velocitywidget.calculate(self.pulses)
 
-                    if self.tabwidget.decaywidget.active:
-                        self.tabwidget.decaywidget.calculate(self.pulses)
+            if self.tabwidget.ratewidget.calculate():
                 continue
             
-    #FIXME: backporting all the good Basho stuff
+            if (self.tabwidget.decaywidget.active or\
+                        self.tabwidget.pulseanalyzerwidget.active or\
+                        self.pulsefilename or\
+                        self.tabwidget.velocitywidget.active): #self.showpulses or self.pulsefilename) :
+                    self.pulses = self.pulseextractor.extract(msg)
+
+            self.widgetCalculate()
+
+
     def widgetCalculate(self):
         """
         Starts the widgets calculate function inside the processIncoming. Set active flag (second parameter in the calculate_widgets list) to True if it should run only when the widget is active.
         """
-        for widget in self.tabwidget.calculate_widgets:
-            if widget.active:
+        for widget in self.tabwidget.pulse_widgets:
+            if widget.active and (self.pulses is not None):
                 widget.calculate()
-
 
     def widgetUpdate(self):
         """
         Update the widgets
         """
-    
-        # this fct is called every timewindow - so we have to query for scalars
-        self.query_daq_for_scalars()
         for widg in self.tabwidget.dynamic_widgets:
             if widg.active:
                 widg.update()

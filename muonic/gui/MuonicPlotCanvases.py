@@ -144,7 +144,7 @@ class ScalarsCanvas(MuonicPlotCanvas):
         self.MAXLENGTH = MAXLENGTH
         self.reset()
         
-    def reset(self):
+    def reset(self,show_pending = False):
         """reseting all data"""
 
         self.ax.clear()
@@ -174,7 +174,22 @@ class ScalarsCanvas(MuonicPlotCanvas):
         self.N2 = 0
         self.N3 = 0
         self.NT = 0
-        
+
+        if show_pending:
+            left, width = .25, .5
+            bottom, height = .35, .8
+            right = left + width
+            top = bottom + height
+            #pr_ax = self.ax.reshape(-1)[0]
+            self.ax.text(0.5*(left+right), 0.5*(bottom+top), 'Measuring...',
+            horizontalalignment='center',
+            verticalalignment='center',
+            fontsize=56, color='red',
+            fontweight="heavy",
+            alpha=.8,
+            rotation=30,
+            transform=self.fig.transFigure)
+
         self.fig.canvas.draw()
 
     def update_plot(self, result, trigger = False,channelcheckbox_0 = True,channelcheckbox_1 = True,channelcheckbox_2 = True,channelcheckbox_3 = True):

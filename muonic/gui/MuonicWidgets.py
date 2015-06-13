@@ -8,9 +8,9 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 
 #muonic imports
-from LineEdit import LineEdit
-from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
-from MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
+from .LineEdit import LineEdit
+from .MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas,VelocityCanvas,PulseWidthCanvas
+from .MuonicDialogs import DecayConfigDialog,PeriodicCallDialog, VelocityConfigDialog, FitRangeConfigDialog
 from ..analysis.fit import main as fit
 from ..analysis.fit import gaussian_fit
 from ..analysis.PulseAnalyzer import VelocityTrigger,DecayTriggerThorough
@@ -43,12 +43,20 @@ class RateWidget(QtGui.QWidget):
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
         self.ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
-        self.timewindow = 0
         self.now = datetime.datetime.now()
-        self.lastscalerquery = 0
-        self.thisscalerquery = time.time()
+        # define the begin of the timeintervall
+        # for the rate calculation
+        self.lastscalarquery = 0
+        self.thisscalarquery = time.time()
+        self.timewindow = 0
         self.do_not_show_trigger = False
-
+        # prepare fields for scalars
+        self.scalars_ch0_previous = 0
+        self.scalars_ch1_previous = 0
+        self.scalars_ch2_previous = 0
+        self.scalars_ch3_previous = 0
+        self.scalars_trigger_previous = 0
+        self.scalars_time = 0
         self.start_button = QtGui.QPushButton(tr('MainWindow', 'Start run'))
         self.stop_button = QtGui.QPushButton(tr('MainWindow', 'Stop run'))
         self.label_mean_rates = QtGui.QLabel(tr('MainWindow','mean rates:'))
@@ -100,10 +108,8 @@ class RateWidget(QtGui.QWidget):
         self.general_info['max_rate'] = 0
         self.general_info['min_rate'] = 0
 
-        #self.pulses_to_show = None
         self.data_file = open(self.mainwindow.filename, 'w')
         self.data_file.write('chan0 | chan1 | chan2 | chan3 | R0 | R1 | R2 | R3 | trigger | Delta_time \n')
-#        self.data_file.close()
         # always write the rate plot data
         self.data_file_write = False
 
@@ -151,21 +157,61 @@ class RateWidget(QtGui.QWidget):
         rate_widget.addWidget(buttomlineBox,4,0,1,3)
         self.setLayout(rate_widget)
 
-    def calculate(self,rates):
-        #now = time.time()
-        #self.thisscalerquery = now - self.lastscalerquery
-        #self.lastscalerquery = now
+    def query_daq_for_scalars(self):
+        self.lastscalarquery = self.thisscalarquery
+        self.mainwindow.daq.put("DS")
+        self.thisscalarquery = time.time()
+
+    def calculate(self):
+        """
+        Get the rates from the observed counts
+        by dividing by the measurement interval
+        """
+        msg = self.mainwindow.daq_msg
+        if not (len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S'):
+            return False
+
+        scalars = msg.split()
+        for item in scalars:
+            if ("S0" in item) & (len(item) == 11):
+                scalars_ch0 = int(item[3:],16)
+            elif ("S1" in item) & (len(item) == 11):
+                scalars_ch1 = int(item[3:],16)
+            elif ("S2" in item) & (len(item) == 11):
+                scalars_ch2 = int(item[3:],16)
+            elif ("S3" in item) & (len(item) == 11):
+                scalars_ch3 = int(item[3:],16)
+            elif ("S4" in item) & (len(item) == 11):
+                scalars_trigger = int(item[3:],16)
+            elif ("S5" in item) & (len(item) == 11):
+                scalars_time = float(int(item[3:],16))
+            #else:
+                #self.logger.debug("unknown item detected: %s" %item.__repr__())
+        self.scalars_diff_ch0     = scalars_ch0     - self.scalars_ch0_previous
+        self.scalars_diff_ch1     = scalars_ch1     - self.scalars_ch1_previous
+        self.scalars_diff_ch2     = scalars_ch2     - self.scalars_ch2_previous
+        self.scalars_diff_ch3     = scalars_ch3     - self.scalars_ch3_previous
+        self.scalars_diff_trigger = scalars_trigger - self.scalars_trigger_previous
+        self.scalars_ch0_previous     = scalars_ch0
+        self.scalars_ch1_previous     = scalars_ch1
+        self.scalars_ch2_previous     = scalars_ch2
+        self.scalars_ch3_previous     = scalars_ch3
+        self.scalars_trigger_previous = scalars_trigger
+
+        time_window = self.thisscalarquery - self.lastscalarquery
+        rates = (self.scalars_diff_ch0/time_window,\
+                 self.scalars_diff_ch1/time_window,\
+                 self.scalars_diff_ch2/time_window,\
+                 self.scalars_diff_ch3/time_window,\
+                 self.scalars_diff_trigger/time_window,\
+                 time_window, self.scalars_diff_ch0,\
+                 self.scalars_diff_ch1,\
+                 self.scalars_diff_ch2,\
+                 self.scalars_diff_ch3,\
+                 self.scalars_diff_trigger)
+
         self.rates['rates'] = rates
-        self.timewindow += rates[5]
-        self.rates['rates_buffer']['ch0'].append(rates[0])
-        self.rates['rates_buffer']['ch1'].append(rates[1])
-        self.rates['rates_buffer']['ch2'].append(rates[2])
-        self.rates['rates_buffer']['ch3'].append(rates[3])
-        self.rates['rates_buffer']['trigger'].append(rates[4])
-        self.rates['rates_buffer']['l_time'].append(self.timewindow)
-        for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
-            if len(self.rates['rates_buffer'][ch]) > self.MAXLENGTH:
-                self.rates['rates_buffer'][ch].remove(self.rates['rates_buffer'][ch][0])
+        self.timewindow += time_window
 
         self.scalers['scalers_buffer']['ch0'] += rates[6]
         self.scalers['scalers_buffer']['ch1'] += rates[7]
@@ -173,25 +219,22 @@ class RateWidget(QtGui.QWidget):
         self.scalers['scalers_buffer']['ch3'] += rates[9]
         self.scalers['scalers_buffer']['trigger'] += rates[10]
 
-        max_rate = max( max(self.rates['rates_buffer']['ch0']), max(self.rates['rates_buffer']['ch1']), max(self.rates['rates_buffer']['ch2']), 
-                   max(self.rates['rates_buffer']['ch3']))
-        min_rate = min( min(self.rates['rates_buffer']['ch0']), min(self.rates['rates_buffer']['ch1']), min(self.rates['rates_buffer']['ch2']), 
-                       min(self.rates['rates_buffer']['ch3']))
+        max_rate = max([rates[i] for i in range(5)])
+        min_rate = min([rates[i] for i in range(5)])
         if max_rate > self.general_info['max_rate']:
             self.general_info['max_rate'] = max_rate
         if min_rate < self.general_info['min_rate']:
             self.general_info['max_rate'] = min_rate
 
-        #print self.tabwidget.scalars_result
         #write the rates to data file
         # we have to catch IOErrors, can occur if program is
         # exited
         if self.data_file_write:
             try:
-                self.data_file.write('%f %f %f %f %f %f %f %f %f %f \n' % (self.mainwindow.scalars_diff_ch0,\
-                                                                           self.mainwindow.scalars_diff_ch1,\
-                                                                           self.mainwindow.scalars_diff_ch2,\
-                                                                           self.mainwindow.scalars_diff_ch3,\
+                self.data_file.write('%f %f %f %f %f %f %f %f %f %f \n' % (self.scalars_diff_ch0,\
+                                                                           self.scalars_diff_ch1,\
+                                                                           self.scalars_diff_ch2,\
+                                                                           self.scalars_diff_ch3,\
                                                                            rates[0],\
                                                                            rates[1],\
                                                                            rates[2],\
@@ -201,9 +244,16 @@ class RateWidget(QtGui.QWidget):
                 self.logger.debug("Rate plot data was written to %s" %self.data_file.__repr__())
             except ValueError:
                 self.logger.warning("ValueError, Rate plot data was not written to %s" %self.data_file.__repr__())
+        return True # succesful!
 
     def update(self):
+        """
+        Display newly available data
+        """
         if self.run:
+            self.query_daq_for_scalars()
+            if self.timewindow == 0:
+                return
             self.general_info['edit_daq_time'].setText('%.2f s' %(self.timewindow))
             self.general_info['edit_max_rate'].setText('%.2f 1/s' %(self.general_info['max_rate']))
             if self.mainwindow.channelcheckbox_0:
@@ -238,7 +288,12 @@ class RateWidget(QtGui.QWidget):
                 self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
                 self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
 
-            self.scalers_monitor.update_plot(self.rates['rates'],self.do_not_show_trigger,self.mainwindow.channelcheckbox_0,self.mainwindow.channelcheckbox_1,self.mainwindow.channelcheckbox_2,self.mainwindow.channelcheckbox_3)
+            self.scalers_monitor.update_plot(self.rates['rates'],\
+                                             self.do_not_show_trigger,\
+                                             self.mainwindow.channelcheckbox_0,\
+                                             self.mainwindow.channelcheckbox_1,\
+                                             self.mainwindow.channelcheckbox_2,\
+                                             self.mainwindow.channelcheckbox_3)
 
     @property
     def active(self):
@@ -250,8 +305,6 @@ class RateWidget(QtGui.QWidget):
         """
         self.start_button.setEnabled(False)
         self.stop_button.setEnabled(True)
-        self.mainwindow.query_daq_for_scalars()
-        self.mainwindow.daq.put('DC') # FIXME:  why is this necessary
         time.sleep(0.2)
         self.table.setEnabled(True)
 
@@ -264,11 +317,16 @@ class RateWidget(QtGui.QWidget):
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
 
-        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
-        if self.mainwindow.tabwidget.decaywidget.active:
-            comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
-        if self.mainwindow.tabwidget.velocitywidget.active:
-            comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n'\
+                       %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+
+        #FIXME: This does not belong here
+        #if self.mainwindow.tabwidget.decaywidget.active:
+        #    comment_file = '# new decay measurement run from: %i-%i-%i %i-%i-%i\n'\
+        #                   %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        #if self.mainwindow.tabwidget.velocitywidget.active:
+        #    comment_file = '# new velocity measurement run from: %i-%i-%i %i-%i-%i\n'\
+        #                   %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
 
 
         self.data_file = open(self.mainwindow.filename, 'a')        
@@ -299,7 +357,7 @@ class RateWidget(QtGui.QWidget):
             self.rates['edit_trigger'].setText('off')
             self.scalers['edit_trigger'].setText('off')
 
-        self.scalers_monitor.reset()
+        self.scalers_monitor.reset(show_pending=True)
         #time.sleep(3)
         #self.start_button.setEnabled(True)
         
@@ -358,13 +416,15 @@ class PulseanalyzerWidget(QtGui.QWidget):
         self.pulsewidths = []
         self.active = False
 
-
-    def calculate(self,pulses):
-        self.pulses = pulses
+    def calculate(self):
+        self.pulses = self.mainwindow.pulses
+        if self.pulses is None:
+            self.logger.debug("Not received any pulses")
+            return None
         # pulsewidths changed because falling edge can be None.
         # pulsewidths = [fe - le for chan in pulses[1:] for le,fe in chan]
         pulsewidths = []
-        for chan in pulses[1:]:
+        for chan in self.pulses[1:]:
             for le, fe in chan:
                 if fe is not None:
                     pulsewidths.append(fe - le)
@@ -406,7 +466,6 @@ class PulseanalyzerWidget(QtGui.QWidget):
                     self.mainwindow.pulseextractor.pulsefile.close()
                 self.mainwindow.pulseextractor.pulsefile = False
 
-
 class StatusWidget(QtGui.QWidget): # not used yet
     """
     Provide a widget which shows the status informations of the DAQ and the muonic software
@@ -415,9 +474,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         QtGui.QWidget.__init__(self,parent=parent)
         self.mainwindow = self.parentWidget()
         self.logger = logger
-
         self.active = True
-
         # more functional objects
 
         self.muonic_stats = dict()
@@ -723,22 +780,22 @@ class VelocityWidget(QtGui.QWidget):
                               )
         self.pulsefile = self.mainwindow.pulseextractor.pulsefile
         
-    def calculate(self,pulses):
+    def calculate(self):
+        pulses = self.mainwindow.pulses
+        if pulses is None:
+            return
         flighttime = self.trigger.trigger(pulses,upperchannel=self.upper_channel,lowerchannel=self.lower_channel)
         if flighttime != None and flighttime > 0:
             #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             self.logger.info("measured flighttime %s" %flighttime.__repr__())
             self.times.append(flighttime)
-                
-        
-    #FIXME: we should not name this update
-    #since update is already a member
+
+    #FIXME: we should not name this update since update is already a member
     def update(self):
         self.velocityfitrange_button.setEnabled(True)    
         self.velocityfit_button.setEnabled(True)
         self.findChild(VelocityCanvas,QtCore.QString("velocity_plot")).update_plot(self.times)
         self.times = []
-
 
     def velocityFitRangeClicked(self):
         """
@@ -810,7 +867,7 @@ class DecayWidget(QtGui.QWidget):
     
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent) 
-        self.logger = logger 
+        self.logger = logger
         self.mufit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!'))
         self.mainwindow = self.parentWidget()        
         self.mufit_button.setEnabled(False)
@@ -873,11 +930,10 @@ class DecayWidget(QtGui.QWidget):
         decay_tab.addWidget(self.decayfitrange_button,4,1)
         self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
         self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
-        
         #self.decaywidget = self.widget(1)
 
-
-    def calculate(self,pulses):
+    def calculate(self):
+        pulses = self.mainwindow.pulses
         #single_channel = self.singlepulsechannel, double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel,mindecaytime = self.decay_mintime,minsinglepulsewidth = minsinglepulsewidth,maxsinglepulsewidth = maxsinglepulsewidth, mindoublepulsewidth = mindoublepulsewidth, maxdoublepulsewidth = maxdoublepulsewidth):
         decay =  self.trigger.trigger(pulses,single_channel = self.singlepulsechannel,double_channel = self.doublepulsechannel, veto_channel = self.vetopulsechannel, mindecaytime= self.decay_mintime,minsinglepulsewidth = self.minsinglepulsewidth,maxsinglepulsewidth = self.maxsinglepulsewidth, mindoublepulsewidth = self.mindoublepulsewidth, maxdoublepulsewidth = self.maxdoublepulsewidth )
         if decay != None:
@@ -1030,7 +1086,6 @@ class DAQWidget(QtGui.QWidget):
     def __init__(self,logger,parent=None):
         QtGui.QWidget.__init__(self,parent=parent)
         self.mainwindow = self.parentWidget()
-        
         self.write_file      = False
         self.label           = QtGui.QLabel(tr('MainWindow','Command'))
         self.hello_edit      = LineEdit()
