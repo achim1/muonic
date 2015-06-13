@@ -25,9 +25,9 @@ from ..__version__ import __version__,__source_location__,\
 __docs_hosted_at__
 from .styles import RCSettings
 
-from MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
-from MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
-from MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
+from .MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
+from .MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
+from .MuonicWidgets import VelocityWidget,PulseanalyzerWidget,DecayWidget,DAQWidget,RateWidget, GPSWidget, StatusWidget
 
 DOCPATH  = (os.path.dirname(os.path.abspath(__file__)) + os.sep + '..' + os.sep + 'docs' + os.sep + 'html')
 # this is hard-coded! There must be a better solution...
@@ -52,10 +52,18 @@ class MainWindow(QtGui.QMainWindow):
         self.daq = daq
         self.opts = opts
         self.DATAPATH = DATAPATH
+        self.daq_msg = False # try to establish upstream compatibility
+                             # B. introduced a DAQMessage here, but I think
+                             # this is overkill
+                             # however, making it a member allows to distribute
+                             # it more easily to daughter widgets
 
         # we have to ensure that the DAQcard does not sent
         # any automatic status reports every x seconds
-        self.daq.put('ST 0')
+        #FIXME: there was an option for that!
+        self.nostatus = opts.nostatus
+        if self.nostatus:
+            self.daq.put('ST 0')
 
         self.setWindowTitle(QtCore.QString("muonic") )
         self.statusbar = QtGui.QMainWindow.statusBar(self)
@@ -89,7 +97,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.pulsefilename = ''
                 self.pulse_mes_start = False
 
-        self.nostatus = False
+
         # this holds the scalars in the time interval
         self.channel_counts = [0,0,0,0,0] #[trigger,ch0,ch1,ch2,ch3]
         self.daq.put('TL') # get the thresholds
@@ -194,8 +202,19 @@ class MainWindow(QtGui.QMainWindow):
         self.tabwidget.addTab(GPSWidget(logger,parent=self),"GPS Output")
         self.tabwidget.gpswidget = self.tabwidget.widget(6)
 
+        # widgets which should be calculated in processIncoming. The widget is only calculated when it is set to active (True) via widget.active
+        self.tabwidget.calculate_widgets = [self.tabwidget.ratewidget,\
+                                            self.tabwidget.pulseanalyzerwidget,\
+                                            self.tabwidget.velocitywidget,\
+                                            self.tabwidget.decaywidget]
+
+
         # widgets which shuld be dynmacally updated by the timer should be in this list
-        self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,self.tabwidget.pulseanalyzerwidget,self.tabwidget.velocitywidget,self.tabwidget.ratewidget]
+        self.tabwidget.dynamic_widgets = [self.tabwidget.decaywidget,\
+                                          self.tabwidget.pulseanalyzerwidget,\
+                                          self.tabwidget.velocitywidget,\
+                                          self.tabwidget.ratewidget]
+
         self.widgetupdater = QtCore.QTimer()
         QtCore.QObject.connect(self.widgetupdater,
                            QtCore.SIGNAL("timeout()"),
@@ -624,24 +643,24 @@ class MainWindow(QtGui.QMainWindow):
 
             try:
                 msg = self.daq.get(0)
-
             except DAQIOError:
                 self.logger.debug("Queue empty!")
                 return None
 
+            self.daq_msg = msg #make it public for daughters
             # Check contents of message and do what it says
-            self.tabwidget.daqwidget.text_box.appendPlainText(str(msg))
-            if (self.tabwidget.gpswidget.is_active() and self.tabwidget.gpswidget.isEnabled()):
+            self.tabwidget.daqwidget.calculate()
+            if (self.tabwidget.gpswidget.active and self.tabwidget.gpswidget.isEnabled()):
                 if len(self.tabwidget.gpswidget.gps_dump) <= self.tabwidget.gpswidget.read_lines:
                     self.tabwidget.gpswidget.gps_dump.append(msg)
                 if len(self.tabwidget.gpswidget.gps_dump) == self.tabwidget.gpswidget.read_lines:
                     self.tabwidget.gpswidget.calculate()
                 continue
 
-            if (self.tabwidget.statuswidget.isVisible()) and self.tabwidget.statuswidget.is_active():
+            if (self.tabwidget.statuswidget.isVisible()) and self.tabwidget.statuswidget.active:
                 self.tabwidget.statuswidget.update()
 
-            if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.is_active():
+            if msg.startswith('DC') and len(msg) > 2 and self.tabwidget.decaywidget.active:
                 try:
                     split_msg = msg.split(" ")
                     self.tabwidget.decaywidget.previous_coinc_time_03 = split_msg[4].split("=")[1]
@@ -649,27 +668,12 @@ class MainWindow(QtGui.QMainWindow):
                 except:
                     self.logger.debug('Wrong DC command.')
 
-            if self.tabwidget.daqwidget.write_file:
-                try:
-                    if self.nostatus:
-                        fields = msg.rstrip("\n").split(" ")
-                        if ((len(fields) == 16) and (len(fields[0]) == 8)):
-                            self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
-                        else:
-                            self.logger.debug("Not writing line '%s' to file because it does not contain trigger data" %msg)
-                    else:
-                        self.tabwidget.daqwidget.outputfile.write(str(msg)+'\n')
-
-                except ValueError:
-                    self.logger.warning('Trying to write on closed file, captured!')
-
             # check for threshold information
             if self.get_thresholds_from_queue(msg):
                 continue
 
             if self.get_channels_from_queue(msg):
                 continue
-
 
             # status messages
             if msg.startswith('ST') or len(msg) < 50:
@@ -692,7 +696,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.logger.warning("ValueError, Rate plot data was not written to %s" %self.tabwidget.ratewidget.data_file.__repr__())
                 continue
             
-            elif (self.tabwidget.decaywidget.is_active() or self.tabwidget.pulseanalyzerwidget.is_active() or self.pulsefilename or self.tabwidget.velocitywidget.active):#self.showpulses or self.pulsefilename) :
+            elif (self.tabwidget.decaywidget.active or self.tabwidget.pulseanalyzerwidget.active or self.pulsefilename or self.tabwidget.velocitywidget.active):#self.showpulses or self.pulsefilename) :
                 self.pulses = self.pulseextractor.extract(msg)
                 if self.pulses != None:
                     #self.pulses_to_show = self.pulses
@@ -709,10 +713,20 @@ class MainWindow(QtGui.QMainWindow):
                     if self.tabwidget.velocitywidget.active:
                         self.tabwidget.velocitywidget.calculate(self.pulses)
 
-                    if self.tabwidget.decaywidget.is_active():
+                    if self.tabwidget.decaywidget.active:
                         self.tabwidget.decaywidget.calculate(self.pulses)
                 continue
             
+    #FIXME: backporting all the good Basho stuff
+    def widgetCalculate(self):
+        """
+        Starts the widgets calculate function inside the processIncoming. Set active flag (second parameter in the calculate_widgets list) to True if it should run only when the widget is active.
+        """
+        for widget in self.tabwidget.calculate_widgets:
+            if widget.active:
+                widget.calculate()
+
+
     def widgetUpdate(self):
         """
         Update the widgets
@@ -721,7 +735,7 @@ class MainWindow(QtGui.QMainWindow):
         # this fct is called every timewindow - so we have to query for scalars
         self.query_daq_for_scalars()
         for widg in self.tabwidget.dynamic_widgets:
-            if widg.is_active():
+            if widg.active:
                 widg.update()
 
     def closeEvent(self, ev):
@@ -748,8 +762,7 @@ class MainWindow(QtGui.QMainWindow):
                 shutil.move(self.rawfilename,newrawfilename)
                 self.tabwidget.daqwidget.outputfile.close()
 
-            if self.tabwidget.decaywidget.is_active():
-
+            if self.tabwidget.decaywidget.active:
                 mtime = now - self.tabwidget.decaywidget.dec_mes_start
                 mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
                 self.logger.info("The muon decay measurement was active for %f hours" % mtime)
