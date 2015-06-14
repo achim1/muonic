@@ -656,6 +656,8 @@ class MainWindow(QtGui.QMainWindow):
                 'Do you really want to exit?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
+            self.timer.stop()
+            self.widgetupdater.stop()
             now = datetime.datetime.now()
 
             # close the RAW file (if any)

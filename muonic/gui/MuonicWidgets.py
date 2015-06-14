@@ -38,7 +38,7 @@ class RateWidget(QtGui.QWidget):
         self.logger           = logger
         self.run              = False
         self.scalers_result   = False
-        self.MAXLENGTH = 40
+        self.MAXLENGTH        = 40
         self.scalers_monitor  = ScalarsCanvas(self, logger, self.MAXLENGTH)
         self.rate_mes_start   = datetime.datetime.now()
         self.previous_ch_counts = {"ch0" : 0 ,"ch1" : 0,"ch2" : 0,"ch3": 0}
@@ -86,7 +86,6 @@ class RateWidget(QtGui.QWidget):
             self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsEditable)
             #self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsSelectable)
             self.rates[cn[1]].setFlags(QtCore.Qt.ItemIsEnabled)
-            
             self.table.setItem(cn[0], 1, self.scalers[cn[1]])
             self.scalers[cn[1]].setFlags(QtCore.Qt.ItemIsEditable)
             self.scalers[cn[1]].setFlags(QtCore.Qt.ItemIsSelectable)
@@ -258,25 +257,25 @@ class RateWidget(QtGui.QWidget):
             self.general_info['edit_max_rate'].setText('%.2f 1/s' %(self.general_info['max_rate']))
             if self.mainwindow.channelcheckbox_0:
                 self.rates['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']/self.timewindow))
-                self.scalers['edit_ch0'].setText('%.2f' %(self.scalers['scalers_buffer']['ch0']))
+                self.scalers['edit_ch0'].setText('%i' %(self.scalers['scalers_buffer']['ch0']))
             else:
                 self.rates['edit_ch0'].setText('off')
                 self.scalers['edit_ch0'].setText('off')
             if self.mainwindow.channelcheckbox_1:
                 self.rates['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']/self.timewindow))
-                self.scalers['edit_ch1'].setText('%.2f' %(self.scalers['scalers_buffer']['ch1']))
+                self.scalers['edit_ch1'].setText('%i' %(self.scalers['scalers_buffer']['ch1']))
             else:
                 self.rates['edit_ch1'].setText('off')
                 self.scalers['edit_ch1'].setText('off')
             if self.mainwindow.channelcheckbox_2:
                 self.rates['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']/self.timewindow))
-                self.scalers['edit_ch2'].setText('%.2f' %(self.scalers['scalers_buffer']['ch2']))
+                self.scalers['edit_ch2'].setText('%i' %(self.scalers['scalers_buffer']['ch2']))
             else:
                 self.rates['edit_ch2'].setText('off')
                 self.scalers['edit_ch2'].setText('off')
             if self.mainwindow.channelcheckbox_3:
                 self.rates['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']/self.timewindow))
-                self.scalers['edit_ch3'].setText('%.2f' %(self.scalers['scalers_buffer']['ch3']))
+                self.scalers['edit_ch3'].setText('%i' %(self.scalers['scalers_buffer']['ch3']))
             else:
                 self.rates['edit_ch3'].setText('off')
                 self.scalers['edit_ch3'].setText('off')
@@ -286,7 +285,7 @@ class RateWidget(QtGui.QWidget):
                 self.scalers['edit_trigger'].setText('off')
             else:
                 self.rates['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']/self.timewindow))
-                self.scalers['edit_trigger'].setText('%.2f' %(self.scalers['scalers_buffer']['trigger']))
+                self.scalers['edit_trigger'].setText('%i' %(self.scalers['scalers_buffer']['trigger']))
 
             self.scalers_monitor.update_plot(self.rates['rates'],\
                                              self.do_not_show_trigger,\
@@ -1052,7 +1051,8 @@ class DecayWidget(QtGui.QWidget):
                     self.dec_mes_start = now
                     #self.decaywidget.findChild("activate_mudecay").setChecked(True)
                     self.active = True
-                    self.parentWidget().parentWidget().ratewidget.startClicked()            
+                    #FIXME: is this intentional?
+                    #self.parentWidget().parentWidget().ratewidget.startClicked()
                     self.pulsefile = self.mainwindow.pulseextractor.pulsefile
                     if not self.pulsefile:
                         self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
