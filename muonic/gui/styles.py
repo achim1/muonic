@@ -1,8 +1,8 @@
 onesize = 32
 
-def RCSettings(): 
+def LargeScreenMPStyle(): 
     """ 
-    Set some global matplotlib RC settings 
+    Large fonts for large screens
     """ 
     from pylab import rc
 

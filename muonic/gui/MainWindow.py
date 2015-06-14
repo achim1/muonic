@@ -23,7 +23,7 @@ from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 from ..__version__ import __version__,__source_location__,\
 __docs_hosted_at__
-from .styles import RCSettings
+from .styles import LargeScreenMPStyle
 
 from .MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
 from .MuonicPlotCanvases import ScalarsCanvas,LifetimeCanvas,PulseCanvas
@@ -47,7 +47,6 @@ class MainWindow(QtGui.QMainWindow):
     """
 
     def __init__(self, daq, logger, opts,  win_parent = None):
-        RCSettings()
         QtGui.QMainWindow.__init__(self, win_parent)
         self.daq = daq
         self.opts = opts
@@ -68,7 +67,16 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle(QtCore.QString("muonic") )
         self.statusbar = QtGui.QMainWindow.statusBar(self)
         self.logger  = logger
+        desktop = QtGui.QDesktopWidget()
+        screen_size = QtCore.QRectF(desktop.screenGeometry(desktop.primaryScreen()))
+        screen_x = screen_size.x() + screen_size.width()
+        screen_y = screen_size.y() + screen_size.height()
+        self.logger.info("Screen with size %i x %i detected!" %(screen_x,screen_y))
 
+        # FIXME: make it configurable
+        # now simply set to 1600 x 1200
+        if screen_x * screen_y >= 1920000:
+            LargeScreenMPStyle()
         self.date = time.gmtime()
         # put the file in the data directory
         # we chose a global format for naming the files -> decided on 18/01/2012
