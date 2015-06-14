@@ -154,7 +154,7 @@ def main(bincontent=None,binning = (0,10,21), fitrange = None):
 def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
 
     def gauss(p,x):
-        return (1/((p[0]*numpy.sqrt(2*numpy.pi))))*numpy.exp(-0.5*(((x - p[1])/p[0])**2)) 
+        return p[0]*(1/((p[1]*numpy.sqrt(2*numpy.pi))))*numpy.exp(-0.5*(((x - p[2])/p[1])**2))
     
     def error(p,x,y):
         return gauss(p,x)-y
@@ -212,8 +212,12 @@ def gaussian_fit(bincontent,binning = (0,2,10), fitrange = None):
     #        if bin_centers[binindex] <= fit_bin_centers[binindex_fit]:
     #            fit_bincontent[binindex_fit] += content
 
-    p0 = numpy.array([20,1.0,5])
-
+#    p0 = numpy.array([20,1.0,5])
+    wsum = cut_bincontent.sum()
+    mean        = (cut_bincontent * cut_bincenters ).sum() / wsum
+    meansquared = (cut_bincontent * cut_bincenters**2 ).sum() /wsum
+    var = meansquared - mean**2
+    p0 = numpy.array([max(cut_bincontent),var,mean])
     #output = optimize.leastsq(error,p0,args=(fit_bin_centers,fitbincontent),full_output=1)
     output = optimize.leastsq(error,p0,args=(cut_bincenters,cut_bincontent),full_output=1)
 
