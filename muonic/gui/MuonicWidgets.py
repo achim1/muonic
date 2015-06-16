@@ -203,7 +203,8 @@ class RateWidget(QtGui.QWidget):
                  self.scalars_diff_ch2/time_window,\
                  self.scalars_diff_ch3/time_window,\
                  self.scalars_diff_trigger/time_window,\
-                 time_window, self.scalars_diff_ch0,\
+                 time_window,\
+                 self.scalars_diff_ch0,\
                  self.scalars_diff_ch1,\
                  self.scalars_diff_ch2,\
                  self.scalars_diff_ch3,\
@@ -950,27 +951,31 @@ class DecayWidget(QtGui.QWidget):
         """
         fitresults = fit(bincontent=n.asarray(self.lifetime_monitor.heights),binning = self.binning, fitrange = self.fitrange)
         if not fitresults is None:
-            self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],fitresults[2],fitresults[3],fitresults[4],fitresults[5],fitresults[6],fitresults[7])
+            self.lifetime_monitor.show_fit(fitresults[0],fitresults[1],\
+                                           fitresults[2],fitresults[3],\
+                                           fitresults[4],fitresults[5],\
+                                           fitresults[6],fitresults[7])
 
     def update(self):
-        if self.decay:
-            self.mufit_button.setEnabled(True)
-            self.decayfitrange_button.setEnabled(True)
+        if not self.decay:
+            return
 
-            decay_times =  [decay_time[0] for decay_time in self.decay]
-            self.lifetime_monitor.update_plot(decay_times)
-            self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
-            self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
-            for muondecay in self.decay:
-                #muondecay = self.decay[0] 
-                muondecay_time = muondecay[1].replace(' ','_')
-                self.mu_file.write('Decay ')
-                self.mu_file.write(muondecay_time.__repr__() + ' ')
-                self.mu_file.write(muondecay[0].__repr__())
-                self.mu_file.write('\n')
-                self.decay = []
-        else:
-            pass
+        self.mufit_button.setEnabled(True)
+        self.decayfitrange_button.setEnabled(True)
+
+        decay_times =  [decay_time[0] for decay_time in self.decay]
+        self.lifetime_monitor.update_plot(decay_times)
+        self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
+        self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
+        for muondecay in self.decay:
+            #muondecay = self.decay[0]
+            muondecay_time = muondecay[1].replace(' ','_')
+            self.mu_file.write('Decay ')
+            self.mu_file.write(muondecay_time.__repr__() + ' ')
+            self.mu_file.write(muondecay[0].__repr__())
+            self.mu_file.write('\n')
+            self.decay = []
+
 
     def decayFitRangeClicked(self):
         """
