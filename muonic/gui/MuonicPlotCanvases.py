@@ -367,9 +367,18 @@ class MuonicHistCanvas(MuonicPlotCanvas):
         #self.ax.set_ylim(0,max(bincontent)*1.2)
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)
+        # compute the errors on the fit, nb that this calculation assumes that
+        # scipy.optimize.leastsq was used
+        error = []
+        for i in range(len(p)):
+            try:
+              error.append( n.absolute(covar[i][i])**0.5)
+            except:
+              error.append( 0.00 )
+        perr_leastsq = n.array(error)
         try:
             #self.ax.legend(("Data","Fit: (%4.2f +- %4.2f) %s  \n chisq/ndf=%4.2f"%(p[1],n.sqrt(covar[1][1]),self.dimension,chisquare/(nbins-len(p)))),loc=1)
-            self.ax.legend(("Data","Fit: (%4.2f) %s  \n chisq/ndf=%4.2f"%(p[1],self.dimension,chisquare/(nbins-len(p)))),loc=1)
+            self.ax.legend(("Data","Fit: (%4.2f $\pm$ %4.2f) %s  \n chisq/ndf=%4.2f"%(p[2],perr_leastsq[2],self.dimension,chisquare/(nbins-len(p)))),loc=1)
         except TypeError:
             self.logger.warn('Covariance Matrix is None, could not calculate fit error!')
             self.ax.legend(("Data","Fit: (%4.2f) %s \n chisq/ndf=%4.2f"%(p[1],self.dimension,chisquare/(nbins-len(p)))),loc=1)
