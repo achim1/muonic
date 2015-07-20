@@ -1,4 +1,4 @@
-onesize = 32
+onesize = 20
 
 def LargeScreenMPStyle(): 
     """ 
