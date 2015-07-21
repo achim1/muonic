@@ -685,7 +685,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.showpulses = False
                 self.pulseextractor.close_file()
                 mtime = now - self.pulse_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+                mtime = round(mtime.seconds/(3600.),2) + mtime.days*24
                 self.logger.info("The pulse extraction measurement was active for %f hours" % mtime)
                 newpulsefilename = old_pulsefilename.replace("HOURS",str(mtime))
                 shutil.move(old_pulsefilename,newpulsefilename)
