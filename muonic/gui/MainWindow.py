@@ -22,7 +22,7 @@ import webbrowser
 from ..analysis import PulseAnalyzer as pa
 from ..daq.DAQProvider import DAQIOError
 from ..__version__ import __version__,__source_location__,\
-__docs_hosted_at__
+__docs_hosted_at__, __manual_hosted_at__
 from .styles import LargeScreenMPStyle
 
 from .MuonicDialogs import ThresholdDialog,ConfigDialog,HelpDialog,DecayConfigDialog,PeriodicCallDialog,AdvancedDialog
@@ -447,7 +447,8 @@ class MainWindow(QtGui.QMainWindow):
         """
         Show the manual that comes with muonic in a pdf viewer
         """
-        docs = (os.path.join(DOCPATH,"manual.pdf"))
+        #docs = (os.path.join(DOCPATH,"manual.pdf"))
+        docs = __manual_hosted_at__
 
         self.logger.info("opening docs from %s" %docs)
         success = webbrowser.open(docs)
