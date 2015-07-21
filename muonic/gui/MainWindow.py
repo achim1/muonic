@@ -64,6 +64,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.nostatus:
             self.daq.put('ST 0')
 
+        QtCore.QLocale.setDefault(QtCore.QLocale("en_us"))
         self.setWindowTitle(QtCore.QString("muonic") )
         self.statusbar = QtGui.QMainWindow.statusBar(self)
         self.logger  = logger
