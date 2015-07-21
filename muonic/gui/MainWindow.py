@@ -96,7 +96,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.decayfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"L",opts.user[0],opts.user[1]) )
         self.pulse_mes_start = None
-        self.writepulses = False
+        self.writepulses = opts.writepulses
         if self.writepulses:
                 self.daq.put('CE')
                 self.pulsefilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
@@ -664,7 +664,7 @@ class MainWindow(QtGui.QMainWindow):
             if self.tabwidget.daqwidget.write_file:
                 self.tabwidget.daqwidget.write_file = False
                 mtime = now - self.raw_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+                mtime = round(mtime.seconds/(3600.),2) + mtime.days*24
                 self.logger.info("The raw data was written for %f hours" % mtime)
                 newrawfilename = self.rawfilename.replace("HOURS",str(mtime))
                 shutil.move(self.rawfilename,newrawfilename)
@@ -672,7 +672,7 @@ class MainWindow(QtGui.QMainWindow):
 
             if self.tabwidget.decaywidget.active:
                 mtime = now - self.tabwidget.decaywidget.dec_mes_start
-                mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+                mtime = round(mtime.seconds/(3600.),2) + mtime.days*24
                 self.logger.info("The muon decay measurement was active for %f hours" % mtime)
                 newmufilename = self.decayfilename.replace("HOURS",str(mtime))
                 shutil.move(self.decayfilename,newmufilename)
@@ -694,7 +694,7 @@ class MainWindow(QtGui.QMainWindow):
             self.tabwidget.ratewidget.data_file.close()
             mtime = now - self.tabwidget.ratewidget.rate_mes_start
             #print 'HOURS ', now, '|', mtime, '|', mtime.days, '|', str(mtime)                
-            mtime = round(mtime.seconds/(3600.),2) + mtime.days*86400
+            mtime = round(mtime.seconds/(3600.),2) + mtime.days*24
             #print 'new mtime ', mtime, str(mtime)
             self.logger.info("The rate measurement was active for %f hours" % mtime)
             newratefilename = self.filename.replace("HOURS",str(mtime))
