@@ -156,6 +156,8 @@ class RateWidget(QtGui.QWidget):
         rate_widget.addWidget(buttomlineBox,4,0,1,3)
         self.setLayout(rate_widget)
 
+        self.first_bin = False
+
     def query_daq_for_scalars(self):
         self.lastscalarquery = self.thisscalarquery
         self.mainwindow.daq.put("DS")
@@ -169,6 +171,29 @@ class RateWidget(QtGui.QWidget):
         msg = self.mainwindow.daq_msg
         if not (len(msg) >= 2 and msg[0]=='D' and msg[1] == 'S'):
             return False
+
+        # if this is the first time calculate is called, we want to set all
+        # counters to zero. This is the beginning of the first bin.
+        if self.first_bin:
+            self.logger.debug("Buffering muon counts for the first bin of the rate plot.")
+
+            scalars = msg.split()
+            for item in scalars:
+                if ("S0" in item) & (len(item) == 11):
+                    self.scalars_ch0_previous = int(item[3:],16)
+                elif ("S1" in item) & (len(item) == 11):
+                    self.scalars_ch1_previous = int(item[3:],16)
+                elif ("S2" in item) & (len(item) == 11):
+                    self.scalars_ch2_previous = int(item[3:],16)
+                elif ("S3" in item) & (len(item) == 11):
+                    self.scalars_ch3_previous = int(item[3:],16)
+                elif ("S4" in item) & (len(item) == 11):
+                    self.scalars_trigger_previous = int(item[3:],16)
+                elif ("S5" in item) & (len(item) == 11):
+                    scalars_time = float(int(item[3:],16))
+
+            self.first_bin = False
+            return True
 
         scalars = msg.split()
         for item in scalars:
@@ -307,6 +332,8 @@ class RateWidget(QtGui.QWidget):
         self.stop_button.setEnabled(True)
         time.sleep(0.2)
         self.table.setEnabled(True)
+
+        self.first_bin = True
 
         self.logger.debug("Start Button Clicked")
         date = time.gmtime()
