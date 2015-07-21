@@ -341,7 +341,7 @@ class ConfigDialog(MuonicDialog):
         if vetocheckbox_2: vetochecks.append(2)
         
         grid.addWidget(self.createCheckGroupBox(label="Select Channel",objectname = "channelcheckbox",leftoffset=300,setchecked=channels), 0, 0)
-        grid.addWidget(self.createCheckGroupBox(radio=True,label="Coincidence",objectname = "coincidencecheckbox",leftoffset=20,setchecked=coincidence,itemlabels=["Single","Twofold","Threefold","Fourfold"]), 0, 1)
+        grid.addWidget(self.createCheckGroupBox(radio=True,label="Trigger Condition",objectname = "coincidencecheckbox",leftoffset=20,setchecked=coincidence,itemlabels=["Single","Twofold","Threefold","Fourfold"]), 0, 1)
         grid.addWidget(self.createCheckGroupBox(radio=True,checkable=True,checkable_set=vetocheckbox,label="Veto",objectname = "vetocheckbox",leftoffset=180,setchecked=vetochecks,itemlabels=["Chan1","Chan2","Chan3"]), 0, 2)
                 
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
