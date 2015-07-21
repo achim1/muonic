@@ -310,10 +310,10 @@ class MainWindow(QtGui.QMainWindow):
             chan2_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_2")).isChecked() 
             chan3_active = config_window.findChild(QtGui.QCheckBox,QtCore.QString("channelcheckbox_3")).isChecked() 
             singles = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_0")).isChecked() 
-            if singles:
-                self.tabwidget.ratewidget.do_not_show_trigger = True
-            else:             
-                self.tabwidget.ratewidget.do_not_show_trigger = False
+            #if singles: 
+            #    self.tabwidget.ratewidget.do_not_show_trigger = True
+            #else:             
+            self.tabwidget.ratewidget.do_not_show_trigger = False
             
             twofold   = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_1")).isChecked() 
             threefold = config_window.findChild(QtGui.QRadioButton,QtCore.QString("coincidencecheckbox_2")).isChecked() 
