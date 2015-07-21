@@ -894,7 +894,8 @@ class DecayWidget(QtGui.QWidget):
         self.previous_coinc_time_03 = "00"
         self.previous_coinc_time_02 = "0A"
         self.binning = (0,10,21)
-        self.fitrange = (self.binning[0],self.binning[1])
+        self.fitrange = (1.5,10.) # ignore first bin because of afterpulses, 
+                                  # see https://github.com/achim1/muonic/issues/39 
 
         QtCore.QObject.connect(self.mufit_button,
                               QtCore.SIGNAL("clicked()"),
