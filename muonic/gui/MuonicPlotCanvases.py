@@ -138,7 +138,8 @@ class ScalarsCanvas(MuonicPlotCanvas):
     
     def __init__(self,parent,logger, MAXLENGTH = 40):
         
-        MuonicPlotCanvas.__init__(self,parent,logger,xlabel="Time (s)",ylabel="Rate (Hz)")
+        MuonicPlotCanvas.__init__(self,parent,logger,ymin=0, ymax=20,xlabel="Time (s)",ylabel="Rate (1/s)")
+        logger.debug(self.ax.get_xlim())
         self.do_not_show_trigger = False
         #max length of shown = MAXLENGTH*timewindow
         self.MAXLENGTH = MAXLENGTH
@@ -151,6 +152,8 @@ class ScalarsCanvas(MuonicPlotCanvas):
         self.ax.grid()
         self.ax.set_xlabel(self.xlabel)
         self.ax.set_ylabel(self.ylabel)
+        self.ax.set_xlim((self.xmin, self.xmax))
+        self.ax.set_ylim((self.ymin, self.ymax))
 
         # and disable figure-wide autoscale
         #self.ax.set_autoscale_on(False)
