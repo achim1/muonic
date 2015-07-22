@@ -78,7 +78,6 @@ class MainWindow(QtGui.QMainWindow):
         # now simply set to 1600 x 1200
         if screen_x * screen_y >= 1920000:
             LargeScreenMPStyle()
-        self.date = time.gmtime()
         # put the file in the data directory
         # we chose a global format for naming the files -> decided on 18/01/2012
         # we use GMT times
@@ -91,7 +90,9 @@ class MainWindow(QtGui.QMainWindow):
  
         # the time when the rate measurement is started
         self.now = datetime.datetime.now()
+        self.logger.debug("self.now is %s" %str(self.now))
         self.filename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1]) )
+        self.logger.debug("Writing Rates to %s." %self.filename)
         self.rawfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",opts.user[0],opts.user[1]) )
         self.raw_mes_start = False
 
@@ -101,6 +102,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.writepulses:
                 self.daq.put('CE')
                 self.pulsefilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"P",opts.user[0],opts.user[1]) )
+                self.logger.debug("Writing pulses to %s." %self.pulsefilename)
                 self.pulse_mes_start = self.now
         else:
                 self.pulsefilename = ''

@@ -139,7 +139,6 @@ class ScalarsCanvas(MuonicPlotCanvas):
     def __init__(self,parent,logger, MAXLENGTH = 40):
         
         MuonicPlotCanvas.__init__(self,parent,logger,ymin=0, ymax=20,xlabel="Time (s)",ylabel="Rate (1/s)")
-        logger.debug(self.ax.get_xlim())
         self.do_not_show_trigger = False
         #max length of shown = MAXLENGTH*timewindow
         self.MAXLENGTH = MAXLENGTH

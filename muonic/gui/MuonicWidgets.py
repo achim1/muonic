@@ -477,9 +477,14 @@ class PulseanalyzerWidget(QtGui.QWidget):
 
             self.mainwindow.daq.put('CE')
             if not self.pulsefile:
-                self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
+                self.mainwindow.pulsefilename = \
+                        os.path.join(self.mainwindow.DATAPATH,"%s_%s_HOURS_%s%s" %(self.mainwindow.now.strftime('%Y-%m-%d_%H-%M-%S'),
+                                                                   "P",
+                                                                   self.mainwindow.opts.user[0],
+                                                                   self.mainwindow.opts.user[1]) )
                 self.mainwindow.pulse_mes_start = self.mainwindow.now
                 self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
+                self.logger.debug("Starting to write pulses to %s" %self.mainwindow.pulsefilename)
 
         else:
             self.logger.debug("Switching off Pulseanalyzer.")
@@ -870,9 +875,14 @@ class VelocityWidget(QtGui.QWidget):
                 self.parentWidget().parentWidget().parentWidget().daq.put("CE")
                 self.parentWidget().parentWidget().ratewidget.startClicked()
                 if not self.pulsefile:
-                    self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
+                    self.mainwindow.pulsefilename = \
+                            os.path.join(self.mainwindow.DATAPATH,"%s_%s_HOURS_%s%s" %(self.mainwindow.now.strftime('%Y-%m-%d_%H-%M-%S'),
+                                                                       "P",
+                                                                       self.mainwindow.opts.user[0],
+                                                                       self.mainwindow.opts.user[1]) )
                     self.mainwindow.pulse_mes_start = self.mainwindow.now
                     self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
+                    self.logger.debug("Starting to write pulses to %s" %self.mainwindow.pulsefilename)
 
 
             else:
@@ -1088,9 +1098,14 @@ class DecayWidget(QtGui.QWidget):
                     #self.parentWidget().parentWidget().ratewidget.startClicked()
                     self.pulsefile = self.mainwindow.pulseextractor.pulsefile
                     if not self.pulsefile:
-                        self.mainwindow.pulsefilename = os.path.join(self.mainwindow.DATAPATH,"%i-%i-%i_%i-%i-%i_%s_HOURS_%s%s" %(self.mainwindow.date.tm_year,self.mainwindow.date.tm_mon,self.mainwindow.date.tm_mday,self.mainwindow.date.tm_hour,self.mainwindow.date.tm_min,self.mainwindow.date.tm_sec,"P",self.mainwindow.opts.user[0],self.mainwindow.opts.user[1]))
+                        self.mainwindow.pulsefilename = \
+                            os.path.join(self.mainwindow.DATAPATH,"%s_%s_HOURS_%s%s" %(self.mainwindow.now.strftime('%Y-%m-%d_%H-%M-%S'),
+                                                                       "P",
+                                                                       self.mainwindow.opts.user[0],
+                                                                       self.mainwindow.opts.user[1]) )
                         self.mainwindow.pulse_mes_start = self.mainwindow.now
                         self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
+                        self.logger.debug("Starting to write pulses to %s" %self.mainwindow.pulsefilename)
 
                 else:
                     self.activateMuondecay.setChecked(False)
