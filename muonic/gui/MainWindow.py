@@ -90,7 +90,6 @@ class MainWindow(QtGui.QMainWindow):
  
         # the time when the rate measurement is started
         self.now = datetime.datetime.now()
-        self.logger.debug("self.now is %s" %str(self.now))
         self.filename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"R",opts.user[0],opts.user[1]) )
         self.logger.debug("Writing Rates to %s." %self.filename)
         self.rawfilename = os.path.join(DATAPATH,"%s_%s_HOURS_%s%s" %(self.now.strftime('%Y-%m-%d_%H-%M-%S'),"RAW",opts.user[0],opts.user[1]) )
