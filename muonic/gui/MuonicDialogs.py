@@ -381,7 +381,7 @@ class AdvancedDialog(MuonicDialog):
         grid.addWidget(self.gatewidth,0,1)
         grid.addWidget(self.gatewidth_label,0,0)
 
-        self.timewindow_label = QtGui.QLabel("Readout interval (default: 5 s): ")
+        self.timewindow_label = QtGui.QLabel("Readout Interval (default: 5 s): ")
         self.timewindow = QtGui.QDoubleSpinBox()
         self.timewindow.setDecimals(1)
         self.timewindow.setSingleStep(0.1)
