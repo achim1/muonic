@@ -79,12 +79,13 @@ def main(bincontent=None):
         datapath = os.getenv('HOME') + os.sep + 'muonic_data'
          
 
-        pylab.savefig(os.path.join(datapath,"muon_lifetime_%i-%i-%i_%i-%i-%i.png" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)))
+        date = datetime.datetime.now()
+        pylab.savefig(os.path.join(datapath,"muon_lifetime_%s.png" %(%date.strftime('%Y-%m-%d_%H-%M-%S'))))
 
-        pylab.savefig(os.path.join(datapath,"muon_lifetime_%i-%i-%i_%i-%i-%i.pdf" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)))
+        pylab.savefig(os.path.join(datapath,"muon_lifetime_%s.pdf" %(%date.strftime('%Y-%m-%d_%H-%M-%S'))))
 
         #FIXME: should think about invoking p.show() here...
-        p=Popen("eog " + os.path.join(datapath,"muon_lifetime_%i-%i-%i_%i-%i-%i.png" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)), shell=True) 
+        p=Popen("eog " + os.path.join(datapath,"muon_lifetime%s.png" %(%date.strftime('%Y-%m-%d_%H-%M-%S'))), shell=True) 
        
 
     else:

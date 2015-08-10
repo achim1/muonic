@@ -336,7 +336,7 @@ class RateWidget(QtGui.QWidget):
         self.first_bin = True
 
         self.logger.debug("Start Button Clicked")
-        date = time.gmtime()
+        date = datetime.datetime.now()
 
         self.timewindow = 0
         for ch in ['ch0','ch1','ch2','ch3','trigger']:
@@ -344,8 +344,8 @@ class RateWidget(QtGui.QWidget):
         for ch in ['ch0','ch1','ch2','ch3','l_time','trigger']:
             self.rates['rates_buffer'][ch] = []
 
-        comment_file = '# new rate measurement run from: %i-%i-%i %i-%i-%i\n'\
-                       %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        comment_file = '# new rate measurement run from: %s\n'\
+                %date.strftime('%Y-%m-%d_%H-%M-%S')
 
         #FIXME: This does not belong here
         #if self.mainwindow.tabwidget.decaywidget.active:
@@ -402,8 +402,9 @@ class RateWidget(QtGui.QWidget):
 
         self.run = False
         self.data_file_write = False
-        date = time.gmtime()        
-        comment_file = '# stopped run on: %i-%i-%i %i-%i-%i\n' %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)
+        date = datetime.datetime.now()
+        comment_file = '# stopped run on: %s\n'\
+                %date.strftime('%Y-%m-%d_%H-%M-%S')
         if not self.data_file.closed:
             self.data_file.write(comment_file)
             self.data_file.close()

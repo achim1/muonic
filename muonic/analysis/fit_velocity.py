@@ -72,10 +72,10 @@ def main(bincontent=None):
         datapath = os.getenv('HOME') + os.sep + 'muonic_data'
 
 
-
-        pylab.savefig(os.path.join(datapath,"muon_velocity_%i-%i-%i_%i-%i-%i.png" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)))
-        pylab.savefig(os.path.join(datapath,"muon_velocity_%i-%i-%i_%i-%i-%i.pdf" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)))
-        p=Popen("eog " + os.path.join(datapath,"muon_velocity_%i-%i-%i_%i-%i-%i.png" %(date.tm_year,date.tm_mon,date.tm_mday,date.tm_hour,date.tm_min,date.tm_sec)), shell=True) 
+        date = datetime.datetime.now()
+        pylab.savefig(os.path.join(datapath,"muon_velocity_%s.png" %(%date.strftime('%Y-%m-%d_%H-%M-%S'))))
+        pylab.savefig(os.path.join(datapath,"muon_velocity_%s.pdf" %(%date.strftime('%Y-%m-%d_%H-%M-%S'))))
+        p=Popen("eog " + os.path.join(datapath,"muon_velocity%s.png" %(%date.strftime('%Y-%m-%d_%H-%M-%S'))), shell=True) 
 
    
     else:
