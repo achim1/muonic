@@ -242,7 +242,7 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(sphinxdocs,QtCore.SIGNAL('triggered()'),self.sphinxdoc_menu)
         
         # manual
-        manualdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Manual', self)
+        manualdocs = QtGui.QAction(QtGui.QIcon('icons/blah.png'), 'Website with Manual', self)
         self.connect(manualdocs,QtCore.SIGNAL('triggered()'),self.manualdoc_menu)
    
         # about
@@ -259,9 +259,9 @@ class MainWindow(QtGui.QMainWindow):
         settings.addAction(advanced)
 
         helpmenu = menubar.addMenu(tr('MainWindow','&Help'))
+        helpmenu.addAction(manualdocs)
         helpmenu.addAction(helpdaqcommands)
         helpmenu.addAction(sphinxdocs)
-        helpmenu.addAction(manualdocs)
         helpmenu.addAction(aboutmuonic)
 
         self.processIncoming()

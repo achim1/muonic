@@ -447,6 +447,8 @@ class HelpDialog(MuonicDialog):
     Quick Guide,
     see http://neutrino.phys.washington.edu/~walta/qnet_daq/
     for more information
+    Manual at
+    http://physik-begreifen-zeuthen.desy.de/sites2009/site_PhyBegZ/content/e2198/e2451/e6374/e129804/e129813/infoboxContent129819/DAQ-KarteUserManual_ger.pdf
     ------------------------------------------------------------
     General
     HE - Help
