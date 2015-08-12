@@ -24,8 +24,8 @@ print vals
 bincontent,__ = n.histogram(vals,bins=BINS)
 bincontent = n.log(bincontent)
 with open(outfile,"w") as f:
-    for item in zip(BINS,bincontent):
-        f.write(str(item[0]) + "\t" + str(item[1]) + "\n")
+    for item in zip(BINS[:-1], BINS[1:],bincontent):
+        f.write(str(item[0]) + "\t" + str(item[1]) + "\t" + str(item[2]) + "\n")
 
 print "Histogram xy points written to %s" %outfile
 
