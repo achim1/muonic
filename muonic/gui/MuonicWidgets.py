@@ -486,6 +486,7 @@ class PulseanalyzerWidget(QtGui.QWidget):
                 self.mainwindow.pulse_mes_start = self.mainwindow.now
                 self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
                 self.logger.debug("Starting to write pulses to %s" %self.mainwindow.pulsefilename)
+                self.mainwindow.writepulses = True
 
         else:
             self.logger.debug("Switching off Pulseanalyzer.")
@@ -884,6 +885,7 @@ class VelocityWidget(QtGui.QWidget):
                     self.mainwindow.pulse_mes_start = self.mainwindow.now
                     self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
                     self.logger.debug("Starting to write pulses to %s" %self.mainwindow.pulsefilename)
+                    self.mainwindow.writepulses = True
 
 
             else:
@@ -1096,7 +1098,7 @@ class DecayWidget(QtGui.QWidget):
                     #self.decaywidget.findChild("activate_mudecay").setChecked(True)
                     self.active = True
                     #FIXME: is this intentional?
-                    #self.parentWidget().parentWidget().ratewidget.startClicked()
+                    self.parentWidget().parentWidget().ratewidget.startClicked()
                     self.pulsefile = self.mainwindow.pulseextractor.pulsefile
                     if not self.pulsefile:
                         self.mainwindow.pulsefilename = \
@@ -1107,6 +1109,7 @@ class DecayWidget(QtGui.QWidget):
                         self.mainwindow.pulse_mes_start = self.mainwindow.now
                         self.mainwindow.pulseextractor.pulsefile = open(self.mainwindow.pulsefilename,'w')
                         self.logger.debug("Starting to write pulses to %s" %self.mainwindow.pulsefilename)
+                        self.mainwindow.writepulses = True
 
                 else:
                     self.activateMuondecay.setChecked(False)
