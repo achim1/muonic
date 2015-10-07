@@ -787,15 +787,28 @@ class VelocityWidget(QtGui.QWidget):
         self.activateVelocity.setObjectName("activate_velocity")
         self.velocityfit_button = QtGui.QPushButton(tr('MainWindow', 'Fit!')) 
         self.velocityfitrange_button = QtGui.QPushButton(tr('MainWindow', 'Fit Range')) 
+        displayMuons                 = QtGui.QLabel(self)
+        displayMuons.setObjectName("muoncounter")
+        self.muon_counter = 0
+        lastdecay = QtGui.QLabel(self)
+        lastdecay.setObjectName("lastdecay")
+        self.last_muon = None
+        activesince = QtGui.QLabel(self)
+        activesince.setObjectName("activesince")
+        self.active_since = None
         layout = QtGui.QGridLayout(self)
         layout.addWidget(self.activateVelocity,0,0,1,3)
+        layout.addWidget(displayMuons, 1,0)
+        layout.addWidget(lastdecay, 2,0)
+        layout.addWidget(activesince, 3,0)
+        self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have detected %d muons "%self.muon_counter ,None, QtGui.QApplication.UnicodeUTF8))
         self.velocitycanvas = VelocityCanvas(self,logger,binning = self.binning)
         self.velocitycanvas.setObjectName("velocity_plot")
-        layout.addWidget(self.velocitycanvas,1,0,1,3)
+        layout.addWidget(self.velocitycanvas,4,0,1,3)
         ntb = NavigationToolbar(self.velocitycanvas, self)
-        layout.addWidget(ntb,2,0)
-        layout.addWidget(self.velocityfitrange_button,2,1)
-        layout.addWidget(self.velocityfit_button,2,2)
+        layout.addWidget(ntb,5,0)
+        layout.addWidget(self.velocityfitrange_button,5,1)
+        layout.addWidget(self.velocityfit_button,5,2)
         self.velocityfitrange_button.setEnabled(False)
         self.velocityfit_button.setEnabled(False)
         QtCore.QObject.connect(self.activateVelocity,
@@ -823,6 +836,8 @@ class VelocityWidget(QtGui.QWidget):
             #velocity = (self.channel_distance/((10**(-9))*flighttime))/C #flighttime is in ns, return in fractions of C
             self.logger.info("measured flighttime %s" %flighttime.__repr__())
             self.times.append(flighttime)
+            self.last_muon = datetime.datetime.now()
+            self.muon_counter += 1
 
     #FIXME: we should not name this update since update is already a member
     def update(self):
@@ -830,6 +845,8 @@ class VelocityWidget(QtGui.QWidget):
         self.velocityfit_button.setEnabled(True)
         self.findChild(VelocityCanvas,QtCore.QString("velocity_plot")).update_plot(self.times)
         self.times = []
+        self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have detected %d muons "%self.muon_counter ,None, QtGui.QApplication.UnicodeUTF8))
+        self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "The last muon was detected at %s"%self.last_muon.strftime('%Y-%m-%d %H:%M:%S') ,None, QtGui.QApplication.UnicodeUTF8))
 
     def velocityFitRangeClicked(self):
         """
@@ -861,6 +878,8 @@ class VelocityWidget(QtGui.QWidget):
             rv = config_dialog.exec_()
             if rv == 1:
                 self.activateVelocity.setChecked(True)
+                self.active_since = datetime.datetime.now()
+                self.findChild(QtGui.QLabel,QtCore.QString("activesince")).setText(tr("Dialog", "The measurement is active since %s"%self.active_since.strftime('%Y-%m-%d %H:%M:%S') ,None, QtGui.QApplication.UnicodeUTF8))
 
                 for chan,ch_label in enumerate(["0","1","2","3"]):
                     if config_dialog.findChild(QtGui.QRadioButton,QtCore.QString("uppercheckbox_" + ch_label )).isChecked():
@@ -891,9 +910,11 @@ class VelocityWidget(QtGui.QWidget):
             else:
                 self.activateVelocity.setChecked(False)
                 self.active = False
+                self.findChild(QtGui.QLabel,QtCore.QString("activesince")).setText(tr("Dialog", "" ,None, QtGui.QApplication.UnicodeUTF8))
         else:
             self.activateVelocity.setChecked(False)            
             self.active = False
+            self.findChild(QtGui.QLabel,QtCore.QString("activesince")).setText(tr("Dialog", "" ,None, QtGui.QApplication.UnicodeUTF8))
             if not self.pulsefile:
                 self.mainwindow.pulsefilename = ''
                 self.mainwindow.pulse_mes_start = False
@@ -960,17 +981,21 @@ class DecayWidget(QtGui.QWidget):
         displayMuons.setObjectName("muoncounter")
         lastDecay                    = QtGui.QLabel(self)
         lastDecay.setObjectName("lastdecay")
+        activesince = QtGui.QLabel(self)
+        activesince.setObjectName("activesince")
+        self.active_since = None
  
         decay_tab = QtGui.QGridLayout(self)
         decay_tab.addWidget(self.activateMuondecay,0,0)
         decay_tab.addWidget(displayMuons,1,0)
         decay_tab.addWidget(lastDecay,2,0)
-        decay_tab.addWidget(self.lifetime_monitor,3,0,1,2)
-        decay_tab.addWidget(ntb1,4,0)
-        decay_tab.addWidget(self.mufit_button,4,2)
-        decay_tab.addWidget(self.decayfitrange_button,4,1)
+        decay_tab.addWidget(activesince, 3,0)
+        decay_tab.addWidget(self.lifetime_monitor,4,0,1,2)
+        decay_tab.addWidget(ntb1,5,0)
+        decay_tab.addWidget(self.mufit_button,5,2)
+        decay_tab.addWidget(self.decayfitrange_button,5,1)
         self.findChild(QtGui.QLabel,QtCore.QString("muoncounter")).setText(tr("Dialog", "We have %i decayed muons " %self.muondecaycounter, None, QtGui.QApplication.UnicodeUTF8))
-        self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
+        #self.findChild(QtGui.QLabel,QtCore.QString("lastdecay")).setText(tr("Dialog", "Last detected decay at time %s " %self.lastdecaytime, None, QtGui.QApplication.UnicodeUTF8))
         #self.decaywidget = self.widget(1)
 
     def calculate(self):
@@ -1043,6 +1068,7 @@ class DecayWidget(QtGui.QWidget):
                 rv = config_window.exec_()
                 if rv == 1:
                     self.activateMuondecay.setChecked(True)
+                    self.active_since = datetime.datetime.now()
                     chan0_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_0")).isChecked()
                     chan1_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_1")).isChecked()
                     chan2_single = config_window.findChild(QtGui.QRadioButton,QtCore.QString("singlecheckbox_2")).isChecked()
@@ -1062,6 +1088,7 @@ class DecayWidget(QtGui.QWidget):
                         self.mindoublepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("mindoublepulsewidth")).value())
                         self.maxdoublepulsewidth = int(config_window.findChild(QtGui.QSpinBox,QtCore.QString("maxdoublepulsewidth")).value())
                     
+                    self.findChild(QtGui.QLabel,QtCore.QString("activesince")).setText(tr("Dialog", "The measurement is active since %s"%self.active_since.strftime('%Y-%m-%d %H:%M:%S') ,None, QtGui.QApplication.UnicodeUTF8))
                     for channel in enumerate([chan0_single,chan1_single,chan2_single,chan3_single]):
                         if channel[1]:
                             self.singlepulsechannel = channel[0] + 1 # there is a mapping later from this to an index with an offset
@@ -1113,6 +1140,7 @@ class DecayWidget(QtGui.QWidget):
 
                 else:
                     self.activateMuondecay.setChecked(False)
+                    self.findChild(QtGui.QLabel,QtCore.QString("activesince")).setText(tr("Dialog", "" ,None, QtGui.QApplication.UnicodeUTF8))
                     self.active = False
 
         else:
@@ -1131,6 +1159,7 @@ class DecayWidget(QtGui.QWidget):
             #self.parentWidget().parentWidget().parentWidget().daq.put("CD")
             self.active = False
             self.activateMuondecay.setChecked(False)
+            self.findChild(QtGui.QLabel,QtCore.QString("activesince")).setText(tr("Dialog", "" ,None, QtGui.QApplication.UnicodeUTF8))
             self.parentWidget().parentWidget().ratewidget.stopClicked()            
 
 class DAQWidget(QtGui.QWidget):
