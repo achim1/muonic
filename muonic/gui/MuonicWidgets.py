@@ -529,6 +529,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.muonic_stats['refreshtime'] = 'not set yet - click on Refresh.'
         self.muonic_stats['open_files'] = 'not set yet - click on Refresh.'
         self.muonic_stats['last_path'] = 'not set yet - click on Refresh.'
+        self.muonic_stats['decay_veto'] = 'not set yet - start Muon Decay Measurement.'
 
         self.label_daq = QtGui.QLabel(tr('MainWindow','Status of the DAQ card:'))
         self.label_thresholds = QtGui.QLabel(tr('MainWindow','Threshold:'))
@@ -536,6 +537,7 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.label_coincidences = QtGui.QLabel(tr('MainWindow','Trigger condition:'))
         self.label_coincidence_timewindow = QtGui.QLabel(tr('MainWindow','Time window for trigger condition:'))
         self.label_veto = QtGui.QLabel(tr('MainWindow','Veto:'))
+        self.decay_label_veto = QtGui.QLabel(tr('MainWindow','Muon Decay Veto:'))
         self.thresholds = []
         for cnt in range(4):
             self.thresholds.append(QtGui.QLineEdit(self))
@@ -570,6 +572,10 @@ class StatusWidget(QtGui.QWidget): # not used yet
         self.veto.setReadOnly(True)
         self.veto.setDisabled(True)
         self.veto.setText(self.daq_stats['veto'])
+        self.decay_veto = QtGui.QLineEdit(self)
+        self.decay_veto.setReadOnly(True)
+        self.decay_veto.setDisabled(True)
+        self.decay_veto.setText(self.muonic_stats['decay_veto'])
 
         self.label_muonic = QtGui.QLabel(tr('MainWindow','Status of Muonic:'))
         self.label_measurements = QtGui.QLabel(tr('MainWindow','Active measurements:'))
@@ -631,21 +637,23 @@ class StatusWidget(QtGui.QWidget): # not used yet
         status_layout.addWidget(self.coincidence_timewindow,3,4)
         status_layout.addWidget(self.label_veto,4,0)
         status_layout.addWidget(self.veto,4,1,1,4)
+        status_layout.addWidget(self.decay_label_veto,5,0)
+        status_layout.addWidget(self.decay_veto,5,1,1,4)
         nix = QtGui.QLabel(self)        
-        status_layout.addWidget(nix,5,0)
-        status_layout.addWidget(self.label_muonic,6,0)
-        status_layout.addWidget(self.label_measurements,7,0)
-        status_layout.addWidget(self.measurements,7,1,1,2)
-        status_layout.addWidget(self.label_refreshtime,7,3)
-        status_layout.addWidget(self.refreshtime,7,4)
-        status_layout.addWidget(self.label_start_params,8,0)
-        status_layout.addWidget(self.start_params,8,1,2,4)
-        status_layout.addWidget(self.label_open_files,10,0)
-        status_layout.addWidget(self.open_files,10,1,2,4)
+        status_layout.addWidget(nix,6,0)
+        status_layout.addWidget(self.label_muonic,7,0)
+        status_layout.addWidget(self.label_measurements,8,0)
+        status_layout.addWidget(self.measurements,8,1,1,2)
+        status_layout.addWidget(self.label_refreshtime,8,3)
+        status_layout.addWidget(self.refreshtime,8,4)
+        status_layout.addWidget(self.label_start_params,9,0)
+        status_layout.addWidget(self.start_params,9,1,2,4)
+        status_layout.addWidget(self.label_open_files,11,0)
+        status_layout.addWidget(self.open_files,11,1,2,4)
         #status_layout.addWidget(self.label_last_path,11,1)
         #status_layout.addWidget(self.last_path,11,2,1,8)
 
-        status_layout.addWidget(self.refresh_button,12,0,1,6)
+        status_layout.addWidget(self.refresh_button,13,0,1,6)
         #status_layout.addWidget(self.save_button,11,2,1,2)
 
     def on_refresh_clicked(self):
@@ -678,6 +686,9 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.muonic_stats['start_params'] = str(self.mainwindow.opts).replace('{', '').replace('}','')
             self.muonic_stats['refreshtime'] = str(self.mainwindow.timewindow)+ ' s'
             self.muonic_stats['last_path'] = 'too'
+            if self.mainwindow.tabwidget.decaywidget.active:
+                self.muonic_stats['decay_veto'] =\
+                    'software veto with channel %d' % (self.mainwindow.tabwidget.decaywidget.vetopulsechannel-1)
             
             self.daq_stats['thresholds'][0] = str(self.mainwindow.threshold_ch0)+ ' mV'
             self.daq_stats['thresholds'][1] = str(self.mainwindow.threshold_ch1)+ ' mV'
@@ -723,6 +734,8 @@ class StatusWidget(QtGui.QWidget): # not used yet
             self.coincidence_timewindow.setEnabled(True)
             self.veto.setText(self.daq_stats['veto'])
             self.veto.setEnabled(True)
+            self.decay_veto.setText(self.muonic_stats['decay_veto'])
+            self.decay_veto.setEnabled(True)
             
             self.muonic_stats['open_files'] = str(self.mainwindow.filename)
             if self.mainwindow.tabwidget.daqwidget.write_file:
@@ -741,13 +754,20 @@ class StatusWidget(QtGui.QWidget): # not used yet
             #self.last_path.setEnabled(True)
             measurements = ''
             if self.mainwindow.tabwidget.ratewidget.active:
-                measurements = 'Muon Rates'
+                measurements += 'Muon Rates'
             if self.mainwindow.tabwidget.decaywidget.active:
-                measurements += ', Muon Decay'
+                if len(measurements) > 0:
+                    measurements += ', '
+                measurements += 'Muon Decay'
+                self.decay_veto.setText(self.muonic_stats['decay_veto'])
             if self.mainwindow.tabwidget.velocitywidget.active:
-                measurements += ', Muon Velocity'
+                if len(measurements) > 0:
+                    measurements += ', '
+                measurements += 'Muon Velocity'
             if self.mainwindow.tabwidget.pulseanalyzerwidget.active:
-                measurements += ', Pulse Analyzer'
+                if len(measurements) > 0:
+                    measurements += ', '
+                measurements += 'Pulse Analyzer' 
             self.measurements.setText(measurements)
             self.measurements.setEnabled(True)
             self.start_params.setEnabled(True)

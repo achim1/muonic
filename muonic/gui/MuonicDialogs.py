@@ -82,7 +82,7 @@ class DecayConfigDialog(MuonicDialog):
         grid = QtGui.QGridLayout()
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Single Pulse",objectname = "singlecheckbox",leftoffset=20, setchecked=[1]), 0, 0)
         grid.addWidget(self.createCheckGroupBox(radio=True,label="Double Pulse",objectname = "doublecheckbox",leftoffset=180,setchecked=[2]), 0, 1)
-        grid.addWidget(self.createCheckGroupBox(radio=True,label="Veto Pulse",objectname = "vetocheckbox",leftoffset=300,    setchecked=[3]), 0, 2)
+        grid.addWidget(self.createCheckGroupBox(radio=True,label="Software Veto Channel",objectname = "vetocheckbox",leftoffset=300,    setchecked=[3]), 0, 2)
         
         
         # add line edits to perform cuts on the events
