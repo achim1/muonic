@@ -1139,6 +1139,10 @@ class DecayWidget(QtGui.QWidget):
                     self.parentWidget().parentWidget().parentWidget().daq.put("CE") 
                     self.parentWidget().parentWidget().parentWidget().daq.put("WC 03 04")
                     self.parentWidget().parentWidget().parentWidget().daq.put("WC 02 0A")
+
+                    # this should set the veto to none (because we have a software veto)
+                    # and the coinincidence to single, so we take all pulses
+                    self.parentWidget().parentWidget().parentWidget().daq.put("WC 00 0F")
                   
                     self.mu_file = open(self.parentWidget().parentWidget().parentWidget().decayfilename,'w')        
                     self.dec_mes_start = now
